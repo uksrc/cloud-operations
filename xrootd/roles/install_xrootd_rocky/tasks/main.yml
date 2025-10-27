@@ -1,0 +1,29 @@
+  #https://xrootd.org/dload.html#official-rpm-repositories
+
+- name: printing debug
+  debug:
+    msg: "You are in the Rocky Block Zone"
+
+- name: install xrootd-client
+  ansible.builtin.dnf:
+    name: xrootd-client
+    state: present
+  become: true
+
+- name: install xrootd-server
+  ansible.builtin.dnf:
+    name: xrootd-server
+    state: present
+  become: true
+
+- name: install python3-xrootd
+  ansible.builtin.dnf:
+    name: python3-xrootd
+    state: present
+  become: true
+
+- name: install scitokens
+  ansible.builtin.dnf:
+    name: xrootd-scitokens
+    state: present
+  become: true

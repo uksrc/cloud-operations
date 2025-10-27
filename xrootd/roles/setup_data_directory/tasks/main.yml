@@ -1,0 +1,15 @@
+- name: check {{ data_path }} exists
+  ansible.builtin.stat:
+    path: "{{ data_path }}"
+  register: validate_data_path
+
+- name: Create {{ data_path }}
+  ansible.builtin.file:
+    path: "{{ data_path }}"
+    state: directory
+    mode: '0755'
+    owner: xrootd
+    group: xrootd
+  when: validate_data_path.stat.isdir is defined and validate_data_path.stat.isdir
+  become: true
+
