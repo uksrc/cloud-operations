@@ -1,0 +1,26 @@
+- name: Get service facts
+  ansible.builtin.systemd:
+    name: "xrootd@http.service"
+  register: service_state
+
+- name: Print service running state
+  debug:
+    msg: "{{ service_state.status.SubState }}"
+
+- name: Print service Active state
+  debug:
+    msg: "{{ service_state.status.ActiveState }}"
+    
+
+- name: test grid certs
+  ansible.builtin.uri:
+    url: https://gracc.opensciencegrid.org
+    headers:
+      cacert: /etc/grid-security/certificates/cilogon-osg.pem
+      capath: /etc/grid-security/certificates/
+  register: result
+
+- name: print result
+  ansible.builtin.debug:
+    msg: "{{ result.msg }}"
+

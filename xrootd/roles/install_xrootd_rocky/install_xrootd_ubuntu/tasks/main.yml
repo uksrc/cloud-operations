@@ -1,0 +1,51 @@
+  #https://xrootd.org/dload.html#official-rpm-repositories
+
+- name: printing debug
+  debug:
+    msg: "You are in the block zone"
+
+- name: curl xrootd repo gpg KEY
+  ansible.builtin.uri:
+    url: https://xrootd.web.cern.ch/repo/RPM-GPG-KEY.txt
+    dest: /etc/apt/trusted.gpg.d/xrootd.asc
+  become: true
+  ignore_errors: yes
+
+- name: add repo to source list
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/xrootd.list
+    line: "deb https://xrootd.web.cern.ch/ubuntu noble stable"
+    create: yes
+  become: true
+  when: ansible_distribution_major_version == "24"
+
+- name: add repo to source list
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/xrootd.list
+    line: "deb https://xrootd.web.cern.ch/debian bookworm stable"
+    create: yes
+  become: true
+  when: ansible_distribution_major_version == "22"
+
+- name: update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+  become: true
+
+- name: install xrootd-client
+  ansible.builtin.apt:
+    name: xrootd-client
+    state: present
+  become: true
+
+- name: install xrootd-server
+  ansible.builtin.apt:
+    name: xrootd-server
+    state: present
+  become: true
+
+- name: install python3-xrootd
+  ansible.builtin.apt:
+    name: python3-xrootd
+    state: present
+  become: true

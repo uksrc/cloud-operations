@@ -1,0 +1,65 @@
+- name: Copy xrootd config file
+  ansible.builtin.template:
+    src: xrootd-http.cfg.j2
+    dest: /etc/xrootd/xrootd-http.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy robots.txt
+  ansible.builtin.copy:
+    src: robots.txt
+    dest: /etc/xrootd/robots.txt
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: create /opt/xrd/etc
+  ansible.builtin.file:
+    path: /opt/xrd/etc
+    state: directory
+    mode: '0755'
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy Authfile
+  ansible.builtin.template:
+    src: Authfile.j2
+    dest: /opt/xrd/etc/Authfile
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy scitokens.cfg
+  ansible.builtin.copy:
+    src: scitokens.cfg
+    dest: /etc/xrootd/scitokens.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Generate macaroon secret
+  ansible.builtin.shell: openssl rand -base64 -out /etc/xrootd/macaroon-secret 64
+  become: true
+
+- name: change owner of macaroon secret
+  ansible.builtin.file:
+    path: /etc/xrootd/macaroon-secret
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: start and enable xrootd http socket service
+  ansible.builtin.service: 
+    name: xrdhttp@http.socket
+    state: started
+    enabled: true
+  become: true
+
+- name: start and enable xrootd http service
+  ansible.builtin.service: 
+    name: xrootd@http
+    state: started
+    enabled: true
+  become: true
