@@ -3,6 +3,22 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Terraform/Tofu files
+*.tfplan
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+crash.dmp
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+# Local .terraform directories
+**/.terraform/*
 # User-specific files
 *.rsuser
 *.suo
@@ -10,6 +26,8 @@
 *.userosscache
 *.sln.docstates
 *.env
+brew
+brew/*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
