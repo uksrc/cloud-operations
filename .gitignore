@@ -8,7 +8,6 @@
 *.tfstate
 *.tfstate.backup
 .terraform/
-.terraform.lock.hcl
 crash.dmp
 crash.log
 override.tf
