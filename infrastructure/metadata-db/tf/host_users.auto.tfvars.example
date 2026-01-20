@@ -3,3 +3,5 @@ users = {
   "username"       = "SSH_PUBLIC_KEY_CONTENT",
   "another_user"   = "ANOTHER_SSH_PUBLIC_KEY_CONTENT"
 }
+
+primary_user = "your username"

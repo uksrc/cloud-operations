@@ -15,9 +15,15 @@ variable "users" {
   default     = {}
 }
 
+variable "primary_user" {
+  description = "Username to use as primary user for SSH and Ansible. If not set, the first key in the users map will be used, or empty string if no users are defined."
+  type        = string
+  default     = ""
+}
+
 locals {
   user_map     = var.users
-  primary_user = length(keys(local.user_map)) > 0 ? keys(local.user_map)[0] : ""
+  primary_user = var.primary_user != "" ? var.primary_user : (length(keys(var.users)) > 0 ? keys(var.users)[0] : "")
 }
 
 resource "openstack_compute_keypair_v2" "postgres_keys" {
