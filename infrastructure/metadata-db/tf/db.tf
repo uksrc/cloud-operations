@@ -10,7 +10,7 @@ resource "null_resource" "postgres_provisioner" {
   provisioner "local-exec" {
     command = <<-EOT
             sleep 60
-            cd ${path.module}/ansible
+            cd ${path.module}/../ansible
             # ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
             #   -i '${openstack_compute_instance_v2.postgres_vm.access_ip_v4},' \
             #   -u ${local.primary_user} \

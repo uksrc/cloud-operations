@@ -1,0 +1,5 @@
+# users and their public keys
+users = {
+  "username"       = "SSH_PUBLIC_KEY_CONTENT",
+  "another_user"   = "ANOTHER_SSH_PUBLIC_KEY_CONTENT"
+}
