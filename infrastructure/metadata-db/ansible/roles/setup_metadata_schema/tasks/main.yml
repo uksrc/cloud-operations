@@ -1,0 +1,77 @@
+---
+- name: Create database users
+  postgresql_user:
+    name: "{{ item.key }}"
+    password: "{{ item.value.password }}"
+    role_attr_flags: LOGIN
+    state: present
+  become_user: postgres
+  loop: "{{ db_users | dict2items }}"
+  no_log: true
+
+- name: Create database
+  postgresql_db:
+    name: "{{ database_name }}"
+    encoding: "{{ postgres_encoding }}"
+    lc_collate: "{{ postgres_lc_collate }}"
+    lc_ctype: "{{ postgres_lc_ctype }}"
+    state: present
+  become_user: postgres
+
+- name: Create required PostgreSQL extensions
+  postgresql_ext:
+    name: "{{ item }}"
+    db: "{{ database_name }}"
+    state: present
+  become_user: postgres
+  loop: "{{ postgres_extensions }}"
+
+- name: Create schemas with appropriate owners
+  postgresql_schema:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+    database: "{{ database_name }}"
+    state: present
+  become_user: postgres
+  loop: "{{ postgres_schemas }}"
+
+- name: Grant schema privileges to owners
+  postgresql_privs:
+    database: "{{ database_name }}"
+    state: present
+    privs: ALL
+    type: schema
+    objs: "{{ item.name }}"
+    roles: "{{ item.owner }}"
+  become_user: postgres
+  loop: "{{ postgres_schemas }}"
+
+- name: Grant usage on tap_upload schema to tapuser
+  postgresql_privs:
+    database: "{{ database_name }}"
+    state: present
+    privs: USAGE,CREATE
+    type: schema
+    objs: tap_upload
+    roles: tapuser
+  become_user: postgres
+
+- name: Grant connect privilege on database to all users
+  postgresql_privs:
+    database: "{{ database_name }}"
+    state: present
+    privs: CONNECT
+    type: database
+    roles: "{{ item.key }}"
+  become_user: postgres
+  loop: "{{ db_users | dict2items }}"
+
+- name: Display database information
+  debug:
+    msg:
+      - "Database '{{ database_name }}' has been configured"
+      - "Users created: {{ db_users.keys() | list | join(', ') }}"
+      - "Schemas created: {{ postgres_schemas | map(attribute='name') | list | join(', ') }}"
+      - "Extensions installed: {{ postgres_extensions | join(', ') }}"
+      - "IMPORTANT: Change default passwords in production!"
+      - "Set environment variables: CADMIN_PASSWORD, TAPADM_PASSWORD, TAPUSER_PASSWORD"

@@ -1,0 +1,38 @@
+---
+# PostgreSQL configuration variables
+postgres_version: "16"
+database_name: "caomdb"
+
+# Database users and passwords
+# IMPORTANT: In production, use vault or secure secret management
+db_users:
+  cadmin:
+    password: "{{ lookup('env', 'CADMIN_PASSWORD') | default('changeme-cadmin', true) }}"
+    role: "content admin"
+  tapadm:
+    password: "{{ lookup('env', 'TAPADM_PASSWORD') | default('changeme-tapadm', true) }}"
+    role: "TAP admin"
+  tapuser:
+    password: "{{ lookup('env', 'TAPUSER_PASSWORD') | default('changeme-tapuser', true) }}"
+    role: "TAP user"
+
+# Required PostgreSQL extensions
+postgres_extensions:
+  - citext
+  - pg_sphere
+
+# Required schemas and their owners
+postgres_schemas:
+  - name: caom2
+    owner: cadmin
+  - name: uws
+    owner: tapadm
+  - name: tap_schema
+    owner: tapadm
+  - name: tap_upload
+    owner: tapuser
+
+# PostgreSQL initialization settings (must be set at initdb time)
+postgres_encoding: "UTF8"
+postgres_lc_collate: "C"
+postgres_lc_ctype: "C"

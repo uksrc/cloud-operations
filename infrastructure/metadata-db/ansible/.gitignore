@@ -1,0 +1,5 @@
+# Environment variables file containing secrets
+.env
+
+# Ansible retry files (already disabled in ansible.cfg)
+*.retry

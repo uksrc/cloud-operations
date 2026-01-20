@@ -1,0 +1,49 @@
+---
+- name: Check if PostgreSQL cluster exists
+  stat:
+    path: "/var/lib/postgresql/{{ postgres_version }}/main/PG_VERSION"
+  register: pg_cluster
+
+- name: Stop PostgreSQL if cluster needs to be recreated
+  systemd:
+    name: postgresql
+    state: stopped
+  when: not pg_cluster.stat.exists
+
+- name: Remove old PostgreSQL cluster if it exists without proper encoding
+  shell: |
+    pg_dropcluster --stop {{ postgres_version }} main || true
+  when: not pg_cluster.stat.exists
+  become_user: postgres
+
+- name: Create PostgreSQL cluster with correct encoding and collation
+  shell: |
+    pg_createcluster \
+      --encoding={{ postgres_encoding }} \
+      --lc-collate={{ postgres_lc_collate }} \
+      --lc-ctype={{ postgres_lc_ctype }} \
+      {{ postgres_version }} main
+  when: not pg_cluster.stat.exists
+
+- name: Start PostgreSQL service
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Configure PostgreSQL to listen on all interfaces
+  lineinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  notify: restart postgresql
+
+- name: Configure pg_hba.conf for network access
+  blockinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      # Allow connections from any host (adjust as needed for security)
+      host    all             all             0.0.0.0/0               md5
+      host    all             all             ::/0                    md5
+  notify: restart postgresql

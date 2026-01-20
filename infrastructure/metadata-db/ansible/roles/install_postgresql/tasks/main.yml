@@ -1,0 +1,14 @@
+---
+- name: Install PostgreSQL and dependencies
+  apt:
+    name:
+      - "postgresql-{{ postgres_version }}"
+      - "postgresql-{{ postgres_version }}-pgsphere"
+    state: present
+    update_cache: yes
+
+- name: Ensure PostgreSQL service is running and enabled
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
