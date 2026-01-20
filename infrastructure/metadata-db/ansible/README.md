@@ -43,11 +43,13 @@ Edit [group_vars/all/variables.yml](group_vars/all/variables.yml) to customize:
 #### Option 1: Using .env file (Recommended for development)
 
 1. Copy the example file:
+
    ```bash
    cp .env.example .env
    ```
 
 2. Edit `.env` and set your passwords:
+
    ```bash
    export CADMIN_PASSWORD="secure-password-here"
    export TAPADM_PASSWORD="secure-password-here"

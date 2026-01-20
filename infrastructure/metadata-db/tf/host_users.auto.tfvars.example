@@ -1,6 +1,7 @@
 # users and their public keys
 users = {
-  "username"       = "SSH_PUBLIC_KEY_CONTENT",
+  "rocky"          = "ROCKY_USER_SSH_KEY_FROM_1PASSWORD"
+  "username"       = "SSH_PUBLIC_KEY_CONTENT"
   "another_user"   = "ANOTHER_SSH_PUBLIC_KEY_CONTENT"
 }
 
