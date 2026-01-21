@@ -4,6 +4,7 @@
     name:
       - "postgresql-{{ postgres_version }}"
       - "postgresql-{{ postgres_version }}-pgsphere"
+      - python3-psycopg2
     state: present
     update_cache: yes
 
