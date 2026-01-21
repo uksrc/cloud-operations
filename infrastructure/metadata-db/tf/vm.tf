@@ -21,6 +21,12 @@ variable "primary_user" {
   default     = ""
 }
 
+variable "network_cidr" {
+  description = "CIDR of the internal network allowed to access the database"
+  type        = string
+  default     = "192.168.64.0/22"
+}
+
 locals {
   user_map     = var.users
   primary_user = var.primary_user != "" ? var.primary_user : (length(keys(var.users)) > 0 ? keys(var.users)[0] : "")
@@ -32,11 +38,27 @@ resource "openstack_compute_keypair_v2" "postgres_keys" {
   public_key = each.value
 }
 
+resource "openstack_networking_secgroup_v2" "postgres_sg" {
+  name        = "postgres-vm-sg"
+  description = "Security group for PostgreSQL VM - allows internal network access"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "postgres_db" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 5432
+  port_range_max    = 5432
+  remote_ip_prefix  = var.network_cidr
+  security_group_id = openstack_networking_secgroup_v2.postgres_sg.id
+  description       = "Allow PostgreSQL from internal network"
+}
+
 resource "openstack_compute_instance_v2" "postgres_vm" {
   name            = "postgres-vm"
   image_id        = data.openstack_images_image_v2.openstack_image.id
   flavor_id       = data.openstack_compute_flavor_v2.vm_flavor.flavor_id
-  security_groups = ["default"]
+  security_groups = ["default", openstack_networking_secgroup_v2.postgres_sg.name]
   key_pair        = length(keys(local.user_map)) > 0 ? openstack_compute_keypair_v2.postgres_keys[local.primary_user].name : null
 
   user_data = templatefile("cloud-config.yaml.tpl", {
