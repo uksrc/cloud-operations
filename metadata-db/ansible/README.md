@@ -6,7 +6,7 @@ https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
 ## What it does
 
 1. **Updates the system** - Ensures all packages are up-to-date
-2. **Installs PostgreSQL 15** - With required dependencies and the pg_sphere extension
+2. **Installs PostgreSQL 16** - With required dependencies and the pg_sphere extension
 3. **Configures the database cluster** - With proper encoding (UTF8) and collation (C) settings
 4. **Creates database users**:
    - `cadmin` - Content admin for torkeep service
