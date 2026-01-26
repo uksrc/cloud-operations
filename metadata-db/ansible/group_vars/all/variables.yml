@@ -36,3 +36,7 @@ postgres_schemas:
 postgres_encoding: "UTF8"
 postgres_lc_collate: "C"
 postgres_lc_ctype: "C"
+
+# Slack notification configuration for system updates
+# Set SLACK_WEBHOOK_URL environment variable or update this value
+slack_webhook_url: "{{ lookup('env', 'SLACK_WEBHOOK_URL') | default('', true) }}"
