@@ -1,6 +1,7 @@
 ---
-# PostgreSQL configuration variables
-postgres_version: "16"
+# CAOM Database Schema Configuration
+# This file contains schema-specific variables for the CAOM metadata database
+
 database_name: "caomdb"
 
 # Database users and passwords
@@ -16,7 +17,7 @@ db_users:
     password: "{{ lookup('env', 'TAPUSER_PASSWORD') | default('changeme-tapuser', true) }}"
     role: "TAP user"
 
-# Required PostgreSQL extensions
+# Required PostgreSQL extensions for this database
 postgres_extensions:
   - citext
   - pg_sphere
@@ -31,12 +32,3 @@ postgres_schemas:
     owner: tapadm
   - name: tap_upload
     owner: tapuser
-
-# PostgreSQL initialization settings (must be set at initdb time)
-postgres_encoding: "UTF8"
-postgres_lc_collate: "C"
-postgres_lc_ctype: "C"
-
-# Slack notification configuration for system updates
-# Set SLACK_WEBHOOK_URL environment variable or update this value
-slack_webhook_url: "{{ lookup('env', 'SLACK_WEBHOOK_URL') | default('', true) }}"

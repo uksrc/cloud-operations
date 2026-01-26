@@ -62,7 +62,6 @@
       Unattended-Upgrade::Automatic-Reboot "false";
       Unattended-Upgrade::Automatic-Reboot-Time "03:00";
       Unattended-Upgrade::IgnoreAppsRequireRestart "true";
-      Unattended-Upgrade::Update-Days {"Mon";"Tue";"Wed";"Thu";"Fri";};
       Unattended-Upgrade::OnlyOnACPower "false";
     mode: "0644"
   notify: restart unattended-upgrades

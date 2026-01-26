@@ -1,0 +1,10 @@
+---
+- name: Setup CAOM database schema
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all/schema/caomdb.yml
+    - group_vars/all/postgres.yml
+
+  roles:
+    - setup_metadata_db_schema

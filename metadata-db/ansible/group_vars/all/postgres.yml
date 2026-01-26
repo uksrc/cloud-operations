@@ -1,0 +1,6 @@
+---
+# PostgreSQL installation defaults
+postgres_version: "16"
+postgres_encoding: "UTF8"
+postgres_lc_collate: "C"
+postgres_lc_ctype: "C"
