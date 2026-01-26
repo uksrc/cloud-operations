@@ -19,6 +19,10 @@ resource "null_resource" "postgres_provisioner" {
     instance_id = openstack_compute_instance_v2.postgres_vm.id
     # Re-run if playbook changes
     playbook_hash = filemd5("${path.module}/../ansible/postgres.yml")
+    # Re-run if roles directory changes
+    roles_hash = md5(join("", [for f in fileset("${path.module}/../ansible/roles", "**") : filemd5("${path.module}/../ansible/roles/${f}")]))
+    # Re-run if group_vars directory changes
+    group_vars_hash = md5(join("", [for f in fileset("${path.module}/../ansible/group_vars", "**") : filemd5("${path.module}/../ansible/group_vars/${f}")]))
     # Re-run if provisioner command changes
     provisioner_command = md5(local.ansible_command)
   }
