@@ -1,13 +1,13 @@
 locals {
   ansible_base_command = <<-EOT
     cd ${path.module}/../ansible
-		set -a
+        set -a
     [ -f .env ] && source .env
     set +a
-    ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
+    NETWORK_CIDR='${var.network_cidr}' ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
       -i '${openstack_compute_instance_v2.postgres_vm.access_ip_v4},' \
       -u ${local.primary_user} \
-	EOT
+    EOT
 
   system_update_command       = "sleep 60\n${local.ansible_base_command} update_system.yml"
   postgres_install_command    = "${local.ansible_base_command} install_and_configure_postgres.yml"
@@ -65,7 +65,7 @@ resource "null_resource" "caomdb_schema_provisioner" {
     # Re-run if postgres playbook (schema setup) changes
     playbook_hash = filemd5("${path.module}/../ansible/setup_metadata_db_schema.yml")
     # Re-run if caomdb or postgres variables change
-    caomdb_vars_hash = filemd5("${path.module}/../ansible/group_vars/all/schema/caomdb.yml")
+    caomdb_vars_hash   = filemd5("${path.module}/../ansible/group_vars/all/schema/caomdb.yml")
     postgres_vars_hash = filemd5("${path.module}/../ansible/group_vars/all/postgres.yml")
     # Re-run if setup_metadata_schema role changes
     schema_role_hash = md5(join("", [for f in fileset("${path.module}/../ansible/roles/setup_metadata_db_schema", "**") : filemd5("${path.module}/../ansible/roles/setup_metadata_db_schema/${f}")]))

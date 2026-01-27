@@ -56,7 +56,6 @@
     path: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     block: |
-      # Allow connections from any host (adjust as needed for security)
-      host    all             all             0.0.0.0/0               md5
-      host    all             all             ::/0                    md5
+      # Allow connections from internal network
+      host    all             all             {{ network_cidr }}               md5
   notify: restart postgresql

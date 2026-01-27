@@ -71,4 +71,3 @@ The host and database are fairly secure, as they are only accessible from the UK
 2. **Use SSL/TLS** - Configure PostgreSQL to require encrypted connections
 3. **Firewall rules** - Limit PostgreSQL port (5432) access
 4. **Regular backups** - Implement backup strategy
-5. **Keep updated** - Apply security patches regularly
