@@ -49,9 +49,9 @@ Edit [group_vars/all/variables.yml](group_vars/all/variables.yml) to customize:
 2. Edit `.env` and set your passwords:
 
    ```bash
-   export CADMIN_PASSWORD="secure-password-here"
-   export TAPADM_PASSWORD="secure-password-here"
-   export TAPUSER_PASSWORD="secure-password-here"
+   export CAOM_ADMIN_PASSWORD="secure-password-here"
+   export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
+   export CAOM_TAP_USER_PASSWORD="secure-password-here"
    ```
 
 3. The playbook will automatically load the `.env` file when you run it (configured in `ansible.cfg`)
@@ -59,9 +59,9 @@ Edit [group_vars/all/variables.yml](group_vars/all/variables.yml) to customize:
 #### Option 2: Export environment variables manually
 
 ```bash
-export CADMIN_PASSWORD="secure-password-here"
-export TAPADM_PASSWORD="secure-password-here"
-export TAPUSER_PASSWORD="secure-password-here"
+export CAOM_ADMIN_PASSWORD="secure-password-here"
+export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
+export CAOM_TAP_USER_PASSWORD="secure-password-here"
 ```
 
 #### Option 3: Use Ansible Vault (Recommended for production)

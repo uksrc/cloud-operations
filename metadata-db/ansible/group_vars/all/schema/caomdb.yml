@@ -8,14 +8,14 @@ database_name: "caomdb"
 # IMPORTANT: In production, use vault or secure secret management
 db_users:
   cadmin:
-    password: "{{ lookup('env', 'CADMIN_PASSWORD') | default('changeme-cadmin', true) }}"
-    role: "content admin"
-  tapadm:
-    password: "{{ lookup('env', 'TAPADM_PASSWORD') | default('changeme-tapadm', true) }}"
-    role: "TAP admin"
+    password: "{{ lookup('env', 'CAOM_ADMIN_PASSWORD') | default('changeme-caom-admin', true) }}"
+    role: "CAOM content admin"
+  tapadmin:
+    password: "{{ lookup('env', 'CAOM_TAP_ADMIN_PASSWORD') | default('changeme-caom-tap-admin', true) }}"
+    role: "CAOM TAP admin"
   tapuser:
-    password: "{{ lookup('env', 'TAPUSER_PASSWORD') | default('changeme-tapuser', true) }}"
-    role: "TAP user"
+    password: "{{ lookup('env', 'CAOM_TAP_USER_PASSWORD') | default('changeme-caom-tap-user', true) }}"
+    role: "CAOM TAP user"
 
 # Required PostgreSQL extensions for this database
 postgres_extensions:
