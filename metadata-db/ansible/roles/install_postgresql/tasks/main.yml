@@ -59,6 +59,15 @@
     state: started
     enabled: yes
 
+- name: Set password for postgres superuser
+  postgresql_user:
+    name: postgres
+    password: "{{ postgres_superuser_password }}"
+    role_attr_flags: SUPERUSER
+    state: present
+  become_user: postgres
+  no_log: true
+
 - name: Configure PostgreSQL to listen on all interfaces
   lineinfile:
     path: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
