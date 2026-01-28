@@ -21,7 +21,10 @@ resource "null_resource" "system_update_provisioner" {
     host_instance_id = openstack_compute_instance_v2.postgres_vm.id
     playbook_hash = filemd5("${path.module}/../ansible/update_system.yml")
     role_hash = md5(join("", [for f in fileset("${path.module}/../ansible/roles/update_system", "**") : filemd5("${path.module}/../ansible/roles/update_system/${f}")]))
-    vars_hash = filemd5("${path.module}/../ansible/group_vars/all/system.yml")
+    vars_hash = md5(join("", [
+      filemd5("${path.module}/../ansible/group_vars/all/system.yml"),
+      try(filemd5("${path.module}/../ansible/.env"), "")
+    ]))
     provisioner_command_hash = md5(local.system_update_command)
   }
 
@@ -38,7 +41,10 @@ resource "null_resource" "postgres_install_provisioner" {
     host_instance_id = openstack_compute_instance_v2.postgres_vm.id
     playbook_hash = filemd5("${path.module}/../ansible/install_and_configure_postgres.yml")
     role_hash = md5(join("", [for f in fileset("${path.module}/../ansible/roles/install_postgresql", "**") : filemd5("${path.module}/../ansible/roles/install_postgresql/${f}")]))
-    vars_hash = filemd5("${path.module}/../ansible/group_vars/all/postgres.yml")
+    vars_hash = md5(join("", [
+      filemd5("${path.module}/../ansible/group_vars/all/postgres.yml"),
+      try(filemd5("${path.module}/../ansible/.env"), "")
+    ]))
     provisioner_command_hash = md5(local.postgres_install_command)
   }
 
@@ -56,7 +62,8 @@ resource "null_resource" "caomdb_schema_provisioner" {
     playbook_hash = filemd5("${path.module}/../ansible/setup_metadata_db_schema.yml")
     vars_hash = md5(join("", [
       filemd5("${path.module}/../ansible/group_vars/all/schema/caomdb.yml"),
-      filemd5("${path.module}/../ansible/group_vars/all/postgres.yml")
+      filemd5("${path.module}/../ansible/group_vars/all/postgres.yml"),
+      try(filemd5("${path.module}/../ansible/.env"), "")
     ]))
     role_hash = md5(join("", [for f in fileset("${path.module}/../ansible/roles/setup_metadata_db_schema", "**") : filemd5("${path.module}/../ansible/roles/setup_metadata_db_schema/${f}")]))
     provisioner_command_hash = md5(local.caomdb_schema_setup_command)
