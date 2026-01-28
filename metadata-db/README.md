@@ -67,7 +67,6 @@ Expected output:
 
 The host and database are fairly secure, as they are only accessible from the UKSRC subnet and not expose to the public internet directly. However, there are few things that could be done to harden the host:
 
-1. **Restrict network access** - Edit `pg_hba.conf` to limit connections
-2. **Use SSL/TLS** - Configure PostgreSQL to require encrypted connections
-3. **Firewall rules** - Limit PostgreSQL port (5432) access
-4. **Regular backups** - Implement backup strategy
+1. **Use SSL/TLS** - Configure PostgreSQL to require encrypted connections (this would require more from the client - all traffic should be inside the internal network, so risk is low)
+2. **Firewall rules** - Limit PostgreSQL port (5432) access - this would be the 3rd level of security (pga_conf and Openstack security group in place, so risk while not having this is low)
+3. **Regular backups** - Implement backup strategy (future ticket TBA)
