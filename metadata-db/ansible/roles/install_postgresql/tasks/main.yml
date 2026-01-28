@@ -13,3 +13,64 @@
     name: postgresql
     state: started
     enabled: yes
+
+- name: Check if PostgreSQL cluster exists
+  stat:
+    path: "/var/lib/postgresql/{{ postgres_version }}/main/PG_VERSION"
+  register: pg_cluster
+
+- name: Check current cluster collation if cluster exists
+  shell: |
+    psql -U postgres -t -c "SELECT datcollate FROM pg_database WHERE datname='template1';"
+  register: current_collation
+  when: pg_cluster.stat.exists
+  become_user: postgres
+  changed_when: false
+  failed_when: false
+
+- name: Determine if cluster needs to be recreated
+  set_fact:
+    recreate_cluster: "{{ not pg_cluster.stat.exists or (current_collation.stdout is defined and postgres_lc_collate not in current_collation.stdout) }}"
+
+- name: Stop PostgreSQL if cluster needs to be recreated
+  systemd:
+    name: postgresql
+    state: stopped
+  when: recreate_cluster
+
+- name: Remove old PostgreSQL cluster if it exists without proper encoding
+  shell: |
+    pg_dropcluster --stop {{ postgres_version }} main || true
+  when: recreate_cluster
+  become_user: postgres
+
+- name: Create PostgreSQL cluster with correct encoding and collation
+  shell: |
+    pg_createcluster \
+      --encoding={{ postgres_encoding }} \
+      --lc-collate={{ postgres_lc_collate }} \
+      --lc-ctype={{ postgres_lc_ctype }} \
+      {{ postgres_version }} main
+  when: recreate_cluster
+
+- name: Start PostgreSQL service
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Configure PostgreSQL to listen on all interfaces
+  lineinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  notify: restart postgresql
+
+- name: Configure pg_hba.conf for network access
+  blockinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      # Allow connections from internal network
+      host    all             all             {{ network_cidr }}               md5
+  notify: restart postgresql

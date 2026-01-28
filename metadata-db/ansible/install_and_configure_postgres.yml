@@ -7,4 +7,3 @@
 
   roles:
     - install_postgresql
-    - configure_database
