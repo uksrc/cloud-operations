@@ -7,13 +7,13 @@ database_name: "caomdb"
 # Database users and passwords
 # IMPORTANT: In production, use vault or secure secret management
 db_users:
-  cadmin:
+  caom_admin:
     password: "{{ lookup('env', 'CAOM_ADMIN_PASSWORD') | default('changeme-caom-admin', true) }}"
     role: "CAOM content admin"
-  tapadmin:
+  caom_tap_admin:
     password: "{{ lookup('env', 'CAOM_TAP_ADMIN_PASSWORD') | default('changeme-caom-tap-admin', true) }}"
     role: "CAOM TAP admin"
-  tapuser:
+  caom_tap_user:
     password: "{{ lookup('env', 'CAOM_TAP_USER_PASSWORD') | default('changeme-caom-tap-user', true) }}"
     role: "CAOM TAP user"
 
@@ -25,10 +25,10 @@ postgres_extensions:
 # Required schemas and their owners
 postgres_schemas:
   - name: caom2
-    owner: cadmin
+    owner: caom_admin
   - name: uws
-    owner: tapadm
+    owner: caom_tap_admin
   - name: tap_schema
-    owner: tapadm
+    owner: caom_tap_admin
   - name: tap_upload
-    owner: tapuser
+    owner: caom_tap_user

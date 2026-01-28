@@ -9,14 +9,14 @@ https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
 2. **Installs PostgreSQL 16** - With the pg_sphere extension
 3. **Configures the database cluster** - With proper encoding (UTF8) and collation (C) settings
 4. **Creates database users**:
-   - `cadmin` - Content admin for torkeep service
-   - `tapadm` - TAP admin for argus service
-   - `tapuser` - TAP user for argus service
+   - `caom_admin` - CAOM content admin
+   - `caom_tap_admin` - CAOM TAP admin
+   - `caom_tap_user` - CAOM TAP user
 5. **Creates the caomdb database** with required schemas:
-   - `caom2` - For metadata content (owned by cadmin)
-   - `uws` - For Universal Worker Service (owned by tapadm)
-   - `tap_schema` - For TAP metadata (owned by tapadm)
-   - `tap_upload` - For TAP uploads (owned by tapuser)
+   - `caom2` - For metadata content (owned by caom_admin)
+   - `uws` - For Universal Worker Service (owned by caom_tap_admin)
+   - `tap_schema` - For TAP metadata (owned by caom_tap_admin)
+   - `tap_upload` - For TAP uploads (owned by caom_tap_user)
 6. **Installs extensions**:
    - `citext` - Case-insensitive text
    - `pg_sphere` - Spatial query support
