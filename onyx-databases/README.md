@@ -1,6 +1,6 @@
-# Metadata DB Server
+# DB Server for Onyx Databases
 
-This directory contains the configuration used to deploy the SKA Metadata DB server.
+This directory contains the configuration used to deploy databases and their host for the Onyx team development - e.g. metadata manager and software discovery service
 
 There are more [docs in the Ansible directory](./ansible/README.md) on how to customise the database provision.
 
