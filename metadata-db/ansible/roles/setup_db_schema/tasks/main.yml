@@ -73,5 +73,3 @@
       - "Users created: {{ db_users.keys() | list | join(', ') }}"
       - "Schemas created: {{ postgres_schemas | map(attribute='name') | list | join(', ') }}"
       - "Extensions installed: {{ postgres_extensions | join(', ') }}"
-      - "IMPORTANT: Change default passwords in production!"
-      - "Set environment variables: CAOM_ADMIN_PASSWORD, CAOM_TAP_ADMIN_PASSWORD, CAOM_TAP_USER_PASSWORD"
