@@ -46,15 +46,16 @@
   become_user: postgres
   loop: "{{ postgres_schemas }}"
 
-- name: Grant usage on tap_upload schema to tapuser
+- name: Grant usage on tap_upload schema to tap_user
   postgresql_privs:
     database: "{{ database_name }}"
     state: present
     privs: USAGE,CREATE
     type: schema
     objs: tap_upload
-    roles: tapuser
+    roles: "{{ (postgres_schemas | selectattr('name', 'equalto', 'tap_upload') | first).owner }}"
   become_user: postgres
+  when: postgres_schemas | selectattr('name', 'equalto', 'tap_upload') | list | length > 0
 
 - name: Grant connect privilege on database to all users
   postgresql_privs:
