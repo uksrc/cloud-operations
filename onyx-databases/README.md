@@ -34,34 +34,49 @@ tofu apply
 
 ## Verification
 
-Obtain the metadata DB host IP from running, in the `tf` directory:
+1. Obtain the metadata DB host IP from running, in the `tf` directory:
 
-```shell
-tofu output
-```
+    ```shell
+    tofu output
+    ```
 
-After running the playbook, verify the setup:
+2. Connect to the DB host:
 
-```shell
-# Connect to PostgreSQL
-ssh [USER]@[POSTGRES_VM_IP]
-sudo -u postgres psql -d caomdb
+    ```shell
+    # Connect to PostgreSQL
+    ssh [USER]@[POSTGRES_VM_IP]
+    ```
 
-# Check extensions
-\dx
+3. Connect with the database:
 
-# Check schemas
-\dn
+    ```shell
+    sudo -u postgres psql -d caomdb
 
-# Check users
-\du
-```
+    # Check extensions
+    \dx
 
-Expected output:
+    # Check schemas
+    \dn
 
-- Extensions: citext, pg_sphere
-- Schemas: caom2, uws, tap_schema, tap_upload
-- Users: cadmin, tapadm, tapuser
+    # Check users
+    \du
+    ```
+
+    Expected output:
+
+    - Extensions: citext, pg_sphere
+    - Schemas: caom2, uws, tap_schema, tap_upload
+    - Users: caom_admin, caom_tap_admin, caom_tap_user
+
+4. A similar test can be performed for the sdsdb database.
+
+Another test is to connect to the database from the bastion directly, without SSHing into the DB host first:
+
+1. From bastion:
+
+    ```shell
+    psql -U postgres -h [POSTGRES_VM_IP]
+    ```
 
 ## Security Notes
 
