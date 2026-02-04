@@ -24,6 +24,7 @@
       #!/bin/bash
       SLACK_WEBHOOK="{{ slack_webhook_url }}"
       HOSTNAME=$(hostname)
+      STATE_FILE="/var/lib/reboot-notification-state"
 
       # Exit if no webhook URL configured
       if [ -z "$SLACK_WEBHOOK" ]; then
@@ -34,15 +35,32 @@
       if [ -f /var/run/reboot-required ]; then
         PACKAGES=""
         if [ -f /var/run/reboot-required.pkgs ]; then
-          PACKAGES=$(cat /var/run/reboot-required.pkgs | sort -u | tr '\n' ', ' | sed 's/, $//')
+          PACKAGES=$(cat /var/run/reboot-required.pkgs | sort -u)
         fi
 
-        MESSAGE=":warning: *Reboot Required on $HOSTNAME*\n\nSecurity updates have been installed that require a system reboot.\n\n*Packages:* $PACKAGES\n\n*Action needed:* Schedule a maintenance window to reboot this server."
+        # Check if we've already notified for these specific packages
+        if [ -f "$STATE_FILE" ]; then
+          PREVIOUS_PACKAGES=$(cat "$STATE_FILE")
+          if [ "$PACKAGES" = "$PREVIOUS_PACKAGES" ]; then
+            # Same packages, no need to notify again
+            exit 0
+          fi
+        fi
+
+        # Package list changed or first notification - send alert
+        PACKAGES_DISPLAY=$(echo "$PACKAGES" | paste -sd, - | sed 's/,/, /g')
+        MESSAGE=":warning: *Reboot Required on $HOSTNAME*\n\nSecurity updates have been installed that require a system reboot.\n\n*Packages:* $PACKAGES_DISPLAY\n\n*Action needed:* Schedule a maintenance window to reboot this server."
 
         curl -X POST "$SLACK_WEBHOOK" \
           -H 'Content-Type: application/json' \
           -d "{\"text\": \"$MESSAGE\"}" \
           --silent --show-error
+
+        # Store the current package list
+        echo "$PACKAGES" > "$STATE_FILE"
+      else
+        # No reboot required - remove state file so we can notify again next time
+        rm -f "$STATE_FILE"
       fi
     mode: "0755"
 
@@ -103,7 +121,6 @@
 
       [Timer]
       OnCalendar=daily
-      OnUnitActiveSec=1h
       Persistent=true
 
       [Install]
