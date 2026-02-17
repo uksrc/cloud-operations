@@ -49,6 +49,17 @@ resource "openstack_networking_secgroup_v2" "postgres_sg" {
   description = "Security group for PostgreSQL VM - allows internal network access"
 }
 
+resource "openstack_networking_secgroup_rule_v2" "postgres_ssh" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_ip_prefix  = var.network_cidr
+  security_group_id = openstack_networking_secgroup_v2.postgres_sg.id
+  description       = "Allow SSH from internal network"
+}
+
 resource "openstack_networking_secgroup_rule_v2" "postgres_db" {
   direction         = "ingress"
   ethertype         = "IPv4"
