@@ -27,6 +27,12 @@ variable "network_cidr" {
   default     = "192.168.64.0/22"
 }
 
+variable "fixed_ip" {
+  description = "Fixed IP address for the PostgreSQL VM within the internal network"
+  type        = string
+  default     = "192.168.64.10"
+}
+
 locals {
   user_map     = var.users
   primary_user = var.primary_user != "" ? var.primary_user : (length(keys(var.users)) > 0 ? keys(var.users)[0] : "")
@@ -54,19 +60,42 @@ resource "openstack_networking_secgroup_rule_v2" "postgres_db" {
   description       = "Allow PostgreSQL from internal network"
 }
 
+data "openstack_networking_network_v2" "uksrc_network" {
+  name = "UKSRC-Network"
+}
+
+data "openstack_networking_subnet_v2" "uksrc_subnet" {
+  network_id = data.openstack_networking_network_v2.uksrc_network.id
+  cidr       = var.network_cidr
+}
+
+resource "openstack_networking_port_v2" "postgres_port" {
+  name           = "postgres-vm-port"
+  network_id     = data.openstack_networking_network_v2.uksrc_network.id
+  admin_state_up = true
+
+  fixed_ip {
+    subnet_id  = data.openstack_networking_subnet_v2.uksrc_subnet.id
+    ip_address = var.fixed_ip
+  }
+
+  security_group_ids = [
+    openstack_networking_secgroup_v2.postgres_sg.id
+  ]
+}
+
 resource "openstack_compute_instance_v2" "postgres_vm" {
-  name            = "postgres-vm"
-  image_id        = data.openstack_images_image_v2.openstack_image.id
-  flavor_id       = data.openstack_compute_flavor_v2.vm_flavor.flavor_id
-  security_groups = ["default", openstack_networking_secgroup_v2.postgres_sg.name]
-  key_pair        = length(keys(local.user_map)) > 0 ? openstack_compute_keypair_v2.postgres_keys[local.primary_user].name : null
+  name      = "postgres-vm"
+  image_id  = data.openstack_images_image_v2.openstack_image.id
+  flavor_id = data.openstack_compute_flavor_v2.vm_flavor.flavor_id
+  key_pair  = length(keys(local.user_map)) > 0 ? openstack_compute_keypair_v2.postgres_keys[local.primary_user].name : null
 
   user_data = templatefile("cloud-config.yaml.tpl", {
     users = local.user_map
   })
 
   network {
-    name = "UKSRC-Network"
+    port = openstack_networking_port_v2.postgres_port.id
   }
 }
 
@@ -98,6 +127,11 @@ output "primary_user" {
 output "primary_keypair_name" {
   description = "Name of the keypair for the primary_user, or null if none"
   value       = try(openstack_compute_keypair_v2.postgres_keys[local.primary_user].name, null)
+}
+
+output "fixed_ip_address" {
+  description = "Fixed internal IP address of the PostgreSQL VM"
+  value       = var.fixed_ip
 }
 
 output "instance_ip_address" {
