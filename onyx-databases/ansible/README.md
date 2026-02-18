@@ -28,11 +28,39 @@ https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
 
 ## Configuration
 
+### CAOM Database
+
 Edit [group_vars/all/variables.yml](group_vars/all/variables.yml) to customize:
 
 - `postgres_version`: PostgreSQL version (default: 16)
 - `database_name`: Database name (default: caomdb)
 - `db_users`: User accounts and passwords
+
+### SDS Database (Software Discovery Service)
+
+The SDS database supports multiple environments (production and preprod) using a single configuration file with variables.
+
+**Database Names:**
+
+- Production: `software-discovery`
+- Preprod: `software-discovery_preprod`
+
+**Environment Variables:**
+
+- Production: `SDS_PROD_ADMIN_PASSWORD`, `SDS_PROD_TAP_ADMIN_PASSWORD`, `SDS_PROD_TAP_USER_PASSWORD`
+- Preprod: `SDS_PREPROD_ADMIN_PASSWORD`, `SDS_PREPROD_TAP_ADMIN_PASSWORD`, `SDS_PREPROD_TAP_USER_PASSWORD`
+
+**Usage:**
+
+```bash
+# Setup production database
+ansible-playbook setup_sds_db_schema.yml -e env=prod
+
+# Setup preprod database (default)
+ansible-playbook setup_sds_db_schema.yml -e env=preprod
+# or simply:
+ansible-playbook setup_sds_db_schema.yml
+```
 
 ### Setting Passwords (IMPORTANT!)
 
@@ -49,9 +77,20 @@ Edit [group_vars/all/variables.yml](group_vars/all/variables.yml) to customize:
 2. Edit `.env` and set your passwords:
 
    ```bash
+   # CAOM Database
    export CAOM_ADMIN_PASSWORD="secure-password-here"
    export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
    export CAOM_TAP_USER_PASSWORD="secure-password-here"
+
+   # SDS Database - Production
+   export SDS_PROD_ADMIN_PASSWORD="secure-password-here"
+   export SDS_PROD_TAP_ADMIN_PASSWORD="secure-password-here"
+   export SDS_PROD_TAP_USER_PASSWORD="secure-password-here"
+
+   # SDS Database - Preprod
+   export SDS_PREPROD_ADMIN_PASSWORD="secure-password-here"
+   export SDS_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
+   export SDS_PREPROD_TAP_USER_PASSWORD="secure-password-here"
    ```
 
 3. The playbook will automatically load the `.env` file when you run it (configured in `ansible.cfg`)
@@ -62,6 +101,14 @@ Edit [group_vars/all/variables.yml](group_vars/all/variables.yml) to customize:
 export CAOM_ADMIN_PASSWORD="secure-password-here"
 export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
 export CAOM_TAP_USER_PASSWORD="secure-password-here"
+
+export SDS_PROD_ADMIN_PASSWORD="secure-password-here"
+export SDS_PROD_TAP_ADMIN_PASSWORD="secure-password-here"
+export SDS_PROD_TAP_USER_PASSWORD="secure-password-here"
+
+export SDS_PREPROD_ADMIN_PASSWORD="secure-password-here"
+export SDS_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
+export SDS_PREPROD_TAP_USER_PASSWORD="secure-password-here"
 ```
 
 #### Option 3: Use Ansible Vault (Recommended for production)
