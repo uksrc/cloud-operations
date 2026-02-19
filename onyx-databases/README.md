@@ -23,7 +23,7 @@ There are more [docs in the Ansible directory](./ansible/README.md) on how to cu
    ```
 
 2. Add `host_users.auto.tfvars` with users and SSH keys, based on the example, in the `tf` directory.
-3. Add `.env` with database passwords, based on the example, in the `ansible` directory.
+3. Add `.env` with database passwords, based on the example, in the `ansible` directory. **Important:** You need to set passwords for both preprod and prod environments for both CAOM and SDS databases.
 4. Run OpenTofu:
 
 ```shell
@@ -31,6 +31,8 @@ cd tf
 tofu plan
 tofu apply
 ```
+
+This will automatically deploy both preprod and prod environments for the CAOM and SDS databases.
 
 ## Verification
 
@@ -47,10 +49,24 @@ tofu apply
     ssh [USER]@[POSTGRES_VM_IP]
     ```
 
-3. Connect with the database:
+3. Check the databases. The deployment creates both preprod and prod databases:
+
+    **CAOM Databases:**
+    - `caom_preprod` - Preprod environment
+    - `caom` - Production environment
+
+    **SDS Databases:**
+    - `software_discovery_preprod` - Preprod environment
+    - `software_discovery` - Production environment
+
+4. Connect with a database:
 
     ```shell
-    sudo -u postgres psql -d caomdb
+    # Connect to CAOM production database
+    sudo -u postgres psql -d caom
+
+    # Or connect to preprod
+    sudo -u postgres psql -d caom_preprod
 
     # Check extensions
     \dx
@@ -62,13 +78,13 @@ tofu apply
     \du
     ```
 
-    Expected output:
+    Expected output for CAOM:
 
     - Extensions: citext, pg_sphere
     - Schemas: caom2, uws, tap_schema, tap_upload
     - Users: caom_admin, caom_tap_admin, caom_tap_user
 
-4. A similar test can be performed for the sdsdb database.
+5. Similar tests can be performed for the SDS databases (software_discovery and software_discovery_preprod).
 
 Another test is to connect to the database from the bastion directly, without SSHing into the DB host first:
 

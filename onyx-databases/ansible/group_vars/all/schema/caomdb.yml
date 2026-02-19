@@ -2,19 +2,29 @@
 # CAOM Database Schema Configuration
 # This file contains schema-specific variables for the CAOM metadata database
 
-database_name: "caomdb"
+# Environments to deploy (both preprod and prod)
+caom_envs:
+  - preprod
+  - prod
 
-# Database users and passwords
-# IMPORTANT: In production, use vault or secure secret management
+# Database name with conditional suffix
+database_name: "caom{{ '_' + caom_env if caom_env != 'prod' else '' }}"
+
+# Environment variable prefix for password lookups
+# Produces: CAOM_PREPROD for preprod, CAOM for prod
+env_prefix: "CAOM{{ ('_' + caom_env | upper) if caom_env != 'prod' else '' }}"
+
+# Database users with environment-specific credentials
+# Environment variables follow pattern: CAOM_<ENV>_<ROLE>_PASSWORD
 db_users:
   caom_admin:
-    password: "{{ lookup('env', 'CAOM_ADMIN_PASSWORD') | default('changeme-caom-admin', true) }}"
+    password: "{{ lookup('env', env_prefix + '_ADMIN_PASSWORD') | default('changeme-caom-' + caom_env + '-admin', true) }}"
     role: "CAOM content admin"
   caom_tap_admin:
-    password: "{{ lookup('env', 'CAOM_TAP_ADMIN_PASSWORD') | default('changeme-caom-tap-admin', true) }}"
+    password: "{{ lookup('env', env_prefix + '_TAP_ADMIN_PASSWORD') | default('changeme-caom-' + caom_env + '-tap-admin', true) }}"
     role: "CAOM TAP admin"
   caom_tap_user:
-    password: "{{ lookup('env', 'CAOM_TAP_USER_PASSWORD') | default('changeme-caom-tap-user', true) }}"
+    password: "{{ lookup('env', env_prefix + '_TAP_USER_PASSWORD') | default('changeme-caom-' + caom_env + '-tap-user', true) }}"
     role: "CAOM TAP user"
 
 # Required PostgreSQL extensions for this database

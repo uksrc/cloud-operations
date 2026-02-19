@@ -8,16 +8,16 @@ https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
 1. **Updates the system** - Ensures all packages are up-to-date
 2. **Installs PostgreSQL 16** - With the pg_sphere extension
 3. **Configures the database cluster** - With proper encoding (UTF8) and collation (C) settings
-4. **Creates database users**:
-   - `caom_admin` - CAOM content admin
-   - `caom_tap_admin` - CAOM TAP admin
-   - `caom_tap_user` - CAOM TAP user
-5. **Creates the caomdb database** with required schemas:
-   - `caom2` - For metadata content (owned by caom_admin)
-   - `uws` - For Universal Worker Service (owned by caom_tap_admin)
-   - `tap_schema` - For TAP metadata (owned by caom_tap_admin)
-   - `tap_upload` - For TAP uploads (owned by caom_tap_user)
-6. **Installs extensions**:
+4. **Creates databases for both preprod and prod environments**:
+   - **CAOM databases**: `caom_preprod` and `caom`
+   - **SDS databases**: `software_discovery_preprod` and `software_discovery`
+5. **Creates database users** (for each environment):
+   - CAOM: `caom_admin`, `caom_tap_admin`, `caom_tap_user`
+   - SDS: `sds_admin`, `sds_tap_admin`, `sds_tap_user`
+6. **Creates required schemas**:
+   - CAOM: `caom2`, `uws`, `tap_schema`, `tap_upload`
+   - SDS: `sdm`, `uws`, `tap_schema`, `tap_upload`
+7. **Installs extensions**:
    - `citext` - Case-insensitive text
    - `pg_sphere` - Spatial query support
 
@@ -28,39 +28,45 @@ https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
 
 ## Configuration
 
+### Multi-Environment Setup
+
+Both CAOM and SDS databases are configured to deploy preprod and prod environments automatically in a single playbook run. The configuration is managed via environment-specific variables.
+
 ### CAOM Database
-
-Edit [group_vars/all/variables.yml](group_vars/all/variables.yml) to customize:
-
-- `postgres_version`: PostgreSQL version (default: 16)
-- `database_name`: Database name (default: caomdb)
-- `db_users`: User accounts and passwords
-
-### SDS Database (Software Discovery Service)
-
-The SDS database supports multiple environments (production and preprod) using a single configuration file with variables.
 
 **Database Names:**
 
-- Production: `software-discovery`
-- Preprod: `software-discovery_preprod`
+- Preprod: `caom_preprod`
+- Production: `caom`
 
 **Environment Variables:**
 
-- Production: `SDS_PROD_ADMIN_PASSWORD`, `SDS_PROD_TAP_ADMIN_PASSWORD`, `SDS_PROD_TAP_USER_PASSWORD`
+- Preprod: `CAOM_PREPROD_ADMIN_PASSWORD`, `CAOM_PREPROD_TAP_ADMIN_PASSWORD`, `CAOM_PREPROD_TAP_USER_PASSWORD`
+- Production: `CAOM_ADMIN_PASSWORD`, `CAOM_TAP_ADMIN_PASSWORD`, `CAOM_TAP_USER_PASSWORD`
+
+Configuration file: [group_vars/all/schema/caomdb.yml](group_vars/all/schema/caomdb.yml)
+
+### SDS Database (Software Discovery Service)
+
+**Database Names:**
+
+- Preprod: `software_discovery_preprod`
+- Production: `software_discovery`
+
+**Environment Variables:**
+
 - Preprod: `SDS_PREPROD_ADMIN_PASSWORD`, `SDS_PREPROD_TAP_ADMIN_PASSWORD`, `SDS_PREPROD_TAP_USER_PASSWORD`
+- Production: `SDS_ADMIN_PASSWORD`, `SDS_TAP_ADMIN_PASSWORD`, `SDS_TAP_USER_PASSWORD`
 
-**Usage:**
+Configuration file: [group_vars/all/schema/sdsdb.yml](group_vars/all/schema/sdsdb.yml)
 
-```bash
-# Setup production database
-ansible-playbook setup_sds_db_schema.yml -e env=prod
+### PostgreSQL Settings
 
-# Setup preprod database (default)
-ansible-playbook setup_sds_db_schema.yml -e env=preprod
-# or simply:
-ansible-playbook setup_sds_db_schema.yml
-```
+Edit [group_vars/all/postgres.yml](group_vars/all/postgres.yml) to customize:
+
+- `postgres_version`: PostgreSQL version (default: 16)
+- `postgres_encoding`: Database encoding (default: UTF8)
+- Other PostgreSQL-specific settings
 
 ### Setting Passwords (IMPORTANT!)
 
@@ -77,38 +83,56 @@ ansible-playbook setup_sds_db_schema.yml
 2. Edit `.env` and set your passwords:
 
    ```bash
-   # CAOM Database
+   # PostgreSQL superuser
+   export POSTGRES_PASSWORD="secure-password-here"
+
+   # CAOM Database - Preprod
+   export CAOM_PREPROD_ADMIN_PASSWORD="secure-password-here"
+   export CAOM_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
+   export CAOM_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+
+   # CAOM Database - Production
    export CAOM_ADMIN_PASSWORD="secure-password-here"
    export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
    export CAOM_TAP_USER_PASSWORD="secure-password-here"
-
-   # SDS Database - Production
-   export SDS_PROD_ADMIN_PASSWORD="secure-password-here"
-   export SDS_PROD_TAP_ADMIN_PASSWORD="secure-password-here"
-   export SDS_PROD_TAP_USER_PASSWORD="secure-password-here"
 
    # SDS Database - Preprod
    export SDS_PREPROD_ADMIN_PASSWORD="secure-password-here"
    export SDS_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
    export SDS_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+
+   # SDS Database - Production
+   export SDS_ADMIN_PASSWORD="secure-password-here"
+   export SDS_TAP_ADMIN_PASSWORD="secure-password-here"
+   export SDS_TAP_USER_PASSWORD="secure-password-here"
    ```
 
-3. The playbook will automatically load the `.env` file when you run it (configured in `ansible.cfg`)
+3. The playbook will automatically load the `.env` file when run via Terraform (configured in `ansible.cfg`)
 
 #### Option 2: Export environment variables manually
 
 ```bash
+export POSTGRES_PASSWORD="secure-password-here"
+
+# CAOM Preprod
+export CAOM_PREPROD_ADMIN_PASSWORD="secure-password-here"
+export CAOM_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
+export CAOM_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+
+# CAOM Production
 export CAOM_ADMIN_PASSWORD="secure-password-here"
 export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
 export CAOM_TAP_USER_PASSWORD="secure-password-here"
 
-export SDS_PROD_ADMIN_PASSWORD="secure-password-here"
-export SDS_PROD_TAP_ADMIN_PASSWORD="secure-password-here"
-export SDS_PROD_TAP_USER_PASSWORD="secure-password-here"
-
+# SDS Preprod
 export SDS_PREPROD_ADMIN_PASSWORD="secure-password-here"
 export SDS_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
 export SDS_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+
+# SDS Production
+export SDS_ADMIN_PASSWORD="secure-password-here"
+export SDS_TAP_ADMIN_PASSWORD="secure-password-here"
+export SDS_TAP_USER_PASSWORD="secure-password-here"
 ```
 
 #### Option 3: Use Ansible Vault (Recommended for production)
@@ -121,9 +145,11 @@ ansible-vault create group_vars/all/vault.yml
 
 ### From Terraform/OpenTofu (Automated)
 
-The Terraform configuration will automatically run this playbook after creating the VM.
+The Terraform configuration will automatically run the playbooks after creating the VM. Both preprod and prod environments for CAOM and SDS databases are deployed automatically.
 
 ### Manual Execution
+
+If you need to run the playbooks manually:
 
 1. Create an inventory file with your host:
 
@@ -132,9 +158,16 @@ The Terraform configuration will automatically run this playbook after creating 
    your-host-ip ansible_user=your-username
    ```
 
-2. Run the playbook:
+2. Run the playbooks:
 
    ```bash
    cd ansible
-   ansible-playbook -i inventory postgres.yml
+   
+   # Deploy both CAOM preprod and prod databases
+   ansible-playbook -i inventory setup_mm_db_schema.yml
+   
+   # Deploy both SDS preprod and prod databases
+   ansible-playbook -i inventory setup_sds_db_schema.yml
    ```
+
+Each playbook automatically creates both preprod and prod environments.
