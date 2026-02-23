@@ -1,0 +1,11 @@
+---
+- name: Manage additional users on PostgreSQL VM
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all/users.yml
+  vars:
+    # Set this to your primary user to prevent accidental removal
+    primary_user: "ubuntu" # Change this to match your primary user
+  roles:
+    - manage_users

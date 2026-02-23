@@ -1,4 +1,6 @@
 locals {
+  primary_user = var.primary_user
+
   ansible_base_command = <<-EOT
     cd ${path.module}/../ansible
         set -a
@@ -10,6 +12,7 @@ locals {
     EOT
 
   system_update_command       = "sleep 60\n${local.ansible_base_command} update_system.yml"
+  manage_users_command        = "${local.ansible_base_command} manage_users.yml"
   postgres_install_command    = "${local.ansible_base_command} install_and_configure_postgres.yml"
   caomdb_schema_setup_command = "${local.ansible_base_command} setup_mm_db_schema.yml"
   sdsdb_schema_setup_command  = "${local.ansible_base_command} setup_sds_db_schema.yml"
@@ -35,8 +38,27 @@ resource "null_resource" "system_update_provisioner" {
   }
 }
 
-resource "null_resource" "postgres_install_provisioner" {
+resource "null_resource" "manage_users_provisioner" {
   depends_on = [null_resource.system_update_provisioner]
+
+  triggers = {
+    host_instance_id = openstack_compute_instance_v2.postgres_vm.id
+    playbook_hash    = filemd5("${path.module}/../ansible/manage_users.yml")
+    role_hash        = md5(join("", [for f in fileset("${path.module}/../ansible/roles/manage_users", "**") : filemd5("${path.module}/../ansible/roles/manage_users/${f}")]))
+    vars_hash = md5(join("", [
+      try(filemd5("${path.module}/../ansible/group_vars/all/users.yml"), "")
+    ]))
+    provisioner_command_hash = md5(local.manage_users_command)
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = local.manage_users_command
+  }
+}
+
+resource "null_resource" "postgres_install_provisioner" {
+  depends_on = [null_resource.manage_users_provisioner]
 
   triggers = {
     host_instance_id = openstack_compute_instance_v2.postgres_vm.id

@@ -68,6 +68,35 @@ Edit [group_vars/all/postgres.yml](group_vars/all/postgres.yml) to customize:
 - `postgres_encoding`: Database encoding (default: UTF8)
 - Other PostgreSQL-specific settings
 
+### User Management
+
+Additional system users (beyond the primary user created via Terraform) are managed through Ansible.
+
+**Setup:**
+
+1. Create your users configuration file:
+
+   ```bash
+   cd group_vars/all
+   cp users.yml.example users.yml
+   ```
+
+2. Edit `users.yml` (not the `.example` file) with your actual users and SSH keys:
+
+   ```yaml
+   additional_users:
+     alice: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... alice@example.com"
+     bob: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... bob@example.com"
+   ```
+
+3. Deploy users:
+
+   ```bash
+   ansible-playbook -i inventory manage_users.yml
+   ```
+
+**Note:** `users.yml` is gitignored to keep SSH keys out of version control. See [roles/manage_users/README.md](roles/manage_users/README.md) for more details.
+
 ### Setting Passwords (IMPORTANT!)
 
 **DO NOT use default passwords in production!**
@@ -162,10 +191,10 @@ If you need to run the playbooks manually:
 
    ```bash
    cd ansible
-   
+
    # Deploy both CAOM preprod and prod databases
    ansible-playbook -i inventory setup_mm_db_schema.yml
-   
+
    # Deploy both SDS preprod and prod databases
    ansible-playbook -i inventory setup_sds_db_schema.yml
    ```

@@ -1,0 +1,46 @@
+---
+- name: Ensure ansible-added group exists
+  ansible.builtin.group:
+    name: ansible-added
+    state: present
+    system: yes
+
+- name: Ensure additional users exist
+  ansible.builtin.user:
+    name: "{{ item.key }}"
+    comment: "{{ item.key }}"
+    shell: /bin/bash
+    create_home: yes
+    groups: users,admin,wheel,ansible-added
+    append: yes
+  loop: "{{ additional_users | dict2items }}"
+  when: additional_users is defined and additional_users | length > 0
+
+- name: Set up SSH directory for additional users
+  ansible.builtin.file:
+    path: "/home/{{ item.key }}/.ssh"
+    state: directory
+    owner: "{{ item.key }}"
+    group: "{{ item.key }}"
+    mode: "0700"
+  loop: "{{ additional_users | dict2items }}"
+  when: additional_users is defined and additional_users | length > 0
+
+- name: Add SSH authorized keys for additional users
+  ansible.posix.authorized_key:
+    user: "{{ item.key }}"
+    state: present
+    key: "{{ item.value }}"
+    exclusive: no
+  loop: "{{ additional_users | dict2items }}"
+  when: additional_users is defined and additional_users | length > 0
+
+- name: Configure sudo access for additional users
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/{{ item.key }}
+    line: "{{ item.key }} ALL=(ALL) NOPASSWD:ALL"
+    create: yes
+    mode: "0440"
+    validate: "/usr/sbin/visudo -cf %s"
+  loop: "{{ additional_users | dict2items }}"
+  when: additional_users is defined and additional_users | length > 0
