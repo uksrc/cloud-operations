@@ -24,7 +24,8 @@ There are more [docs in the Ansible directory](./ansible/README.md) on how to cu
 
 2. Add `host_users.auto.tfvars` with users and SSH keys, based on the example, in the `tf` directory.
 3. Add `.env` with database passwords, based on the example, in the `ansible` directory. **Important:** You need to set passwords for both preprod and prod environments for both CAOM and SDS databases.
-4. Run OpenTofu:
+4. Add a `users.yml` in the `ansible/group_vars/all` directory, see the example file in the same directory for hints.
+5. Run OpenTofu:
 
 ```shell
 cd tf
@@ -38,51 +39,50 @@ This will automatically deploy both preprod and prod environments for the CAOM a
 
 1. Obtain the metadata DB host IP from running, in the `tf` directory:
 
-    ```shell
-    tofu output
-    ```
+   ```shell
+   tofu output
+   ```
 
 2. Connect to the DB host:
 
-    ```shell
-    # Connect to PostgreSQL
-    ssh [USER]@[POSTGRES_VM_IP]
-    ```
+   ```shell
+   # Connect to PostgreSQL
+   ssh [USER]@[POSTGRES_VM_IP]
+   ```
 
 3. Check the databases. The deployment creates both preprod and prod databases:
 
-    **CAOM Databases:**
-    - `caom_preprod` - Preprod environment
-    - `caom` - Production environment
+   **CAOM Databases:**
+   - `caom_preprod` - Preprod environment
+   - `caom` - Production environment
 
-    **SDS Databases:**
-    - `software_discovery_preprod` - Preprod environment
-    - `software_discovery` - Production environment
+   **SDS Databases:**
+   - `software_discovery_preprod` - Preprod environment
+   - `software_discovery` - Production environment
 
 4. Connect with a database:
 
-    ```shell
-    # Connect to CAOM production database
-    sudo -u postgres psql -d caom
+   ```shell
+   # Connect to CAOM production database
+   sudo -u postgres psql -d caom
 
-    # Or connect to preprod
-    sudo -u postgres psql -d caom_preprod
+   # Or connect to preprod
+   sudo -u postgres psql -d caom_preprod
 
-    # Check extensions
-    \dx
+   # Check extensions
+   \dx
 
-    # Check schemas
-    \dn
+   # Check schemas
+   \dn
 
-    # Check users
-    \du
-    ```
+   # Check users
+   \du
+   ```
 
-    Expected output for CAOM:
-
-    - Extensions: citext, pg_sphere
-    - Schemas: caom2, uws, tap_schema, tap_upload
-    - Users: caom_admin, caom_tap_admin, caom_tap_user
+   Expected output for CAOM:
+   - Extensions: citext, pg_sphere
+   - Schemas: caom2, uws, tap_schema, tap_upload
+   - Users: caom_admin, caom_tap_admin, caom_tap_user
 
 5. Similar tests can be performed for the SDS databases (software_discovery and software_discovery_preprod).
 
@@ -90,14 +90,6 @@ Another test is to connect to the database from the bastion directly, without SS
 
 1. From bastion:
 
-    ```shell
-    psql -U postgres -h [POSTGRES_VM_IP]
-    ```
-
-## Security Notes
-
-The host and database are fairly secure, as they are only accessible from the UKSRC subnet and not expose to the public internet directly. However, there are few things that could be done to harden the host:
-
-1. **Use SSL/TLS** - Configure PostgreSQL to require encrypted connections (this would require more from the client - all traffic should be inside the internal network, so risk is low)
-2. **Firewall rules** - Limit PostgreSQL port (5432) access - this would be the 3rd level of security (pga_conf and Openstack security group in place, so risk while not having this is low)
-3. **Regular backups** - Implement backup strategy (future ticket TBA)
+   ```shell
+   psql -U postgres -h [POSTGRES_VM_IP]
+   ```
