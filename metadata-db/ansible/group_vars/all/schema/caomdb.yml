@@ -1,0 +1,34 @@
+---
+# CAOM Database Schema Configuration
+# This file contains schema-specific variables for the CAOM metadata database
+
+database_name: "caomdb"
+
+# Database users and passwords
+# IMPORTANT: In production, use vault or secure secret management
+db_users:
+  caom_admin:
+    password: "{{ lookup('env', 'CAOM_ADMIN_PASSWORD') | default('changeme-caom-admin', true) }}"
+    role: "CAOM content admin"
+  caom_tap_admin:
+    password: "{{ lookup('env', 'CAOM_TAP_ADMIN_PASSWORD') | default('changeme-caom-tap-admin', true) }}"
+    role: "CAOM TAP admin"
+  caom_tap_user:
+    password: "{{ lookup('env', 'CAOM_TAP_USER_PASSWORD') | default('changeme-caom-tap-user', true) }}"
+    role: "CAOM TAP user"
+
+# Required PostgreSQL extensions for this database
+postgres_extensions:
+  - citext
+  - pg_sphere
+
+# Required schemas and their owners
+postgres_schemas:
+  - name: caom2
+    owner: caom_admin
+  - name: uws
+    owner: caom_tap_admin
+  - name: tap_schema
+    owner: caom_tap_admin
+  - name: tap_upload
+    owner: caom_tap_user

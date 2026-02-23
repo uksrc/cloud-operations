@@ -1,0 +1,2 @@
+# Inventory file - will be populated dynamically by Terraform
+# or specified via command line with -i flag

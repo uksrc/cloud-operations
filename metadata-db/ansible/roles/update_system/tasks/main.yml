@@ -1,0 +1,125 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade all packages
+  apt:
+    upgrade: dist
+    autoremove: yes
+    autoclean: yes
+
+- name: Install unattended-upgrades package
+  apt:
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+    state: present
+
+- name: Create Slack notification script for reboot requirements
+  copy:
+    dest: /usr/local/bin/notify-reboot-required.sh
+    content: |
+      #!/bin/bash
+      SLACK_WEBHOOK="{{ slack_webhook_url }}"
+      HOSTNAME=$(hostname)
+
+      # Exit if no webhook URL configured
+      if [ -z "$SLACK_WEBHOOK" ]; then
+        exit 0
+      fi
+
+      # Check if reboot is required
+      if [ -f /var/run/reboot-required ]; then
+        PACKAGES=""
+        if [ -f /var/run/reboot-required.pkgs ]; then
+          PACKAGES=$(cat /var/run/reboot-required.pkgs | sort -u | tr '\n' ', ' | sed 's/, $//')
+        fi
+
+        MESSAGE=":warning: *Reboot Required on $HOSTNAME*\n\nSecurity updates have been installed that require a system reboot.\n\n*Packages:* $PACKAGES\n\n*Action needed:* Schedule a maintenance window to reboot this server."
+
+        curl -X POST "$SLACK_WEBHOOK" \
+          -H 'Content-Type: application/json' \
+          -d "{\"text\": \"$MESSAGE\"}" \
+          --silent --show-error
+      fi
+    mode: "0755"
+
+- name: Configure automatic security updates
+  copy:
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    content: |
+      Unattended-Upgrade::Allowed-Origins {
+          "${distro_id}:${distro_codename}-security";
+          "${distro_id}ESMApps:${distro_codename}-apps-security";
+          "${distro_id}ESM:${distro_codename}-infra-security";
+      };
+      Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+      Unattended-Upgrade::MinimalSteps "true";
+      Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::Automatic-Reboot "false";
+      Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+      Unattended-Upgrade::IgnoreAppsRequireRestart "true";
+      Unattended-Upgrade::OnlyOnACPower "false";
+    mode: "0644"
+  notify: restart unattended-upgrades
+
+- name: Enable automatic updates
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Download-Upgradeable-Packages "1";
+      APT::Periodic::AutocleanInterval "7";
+      APT::Periodic::Unattended-Upgrade "1";
+    mode: "0644"
+  notify: restart unattended-upgrades
+
+- name: Create systemd service for Slack notification
+  copy:
+    dest: /etc/systemd/system/notify-reboot-slack.service
+    content: |
+      [Unit]
+      Description=Send Slack notification if reboot is required
+      After=apt-daily-upgrade.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/notify-reboot-required.sh
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: "0644"
+  notify: reload systemd
+
+- name: Create systemd timer for Slack notification
+  copy:
+    dest: /etc/systemd/system/notify-reboot-slack.timer
+    content: |
+      [Unit]
+      Description=Check for reboot requirements after unattended upgrades
+
+      [Timer]
+      OnCalendar=daily
+      OnUnitActiveSec=1h
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+    mode: "0644"
+  notify: reload systemd
+
+- name: Ensure unattended-upgrades service is enabled and running
+  systemd:
+    name: unattended-upgrades
+    enabled: yes
+    state: started
+
+- name: Enable and start Slack notification timer
+  systemd:
+    name: notify-reboot-slack.timer
+    enabled: yes
+    state: started
+    daemon_reload: yes

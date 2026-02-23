@@ -1,0 +1,9 @@
+---
+- name: restart unattended-upgrades
+  systemd:
+    name: unattended-upgrades
+    state: restarted
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes

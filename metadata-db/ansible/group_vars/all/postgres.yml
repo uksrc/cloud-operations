@@ -1,0 +1,11 @@
+---
+# PostgreSQL installation defaults
+postgres_version: "16"
+postgres_encoding: "UTF8"
+postgres_lc_collate: "C"
+postgres_lc_ctype: "C"
+
+# Network CIDR allowed to access the database (passed from Terraform)
+network_cidr: "{{ lookup('env', 'NETWORK_CIDR') | default('0.0.0.0/0', true) }}"
+
+postgres_superuser_password: "{{ lookup('env', 'POSTGRES_PASSWORD') | default('changeme-postgres', true) }}"
