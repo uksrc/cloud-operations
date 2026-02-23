@@ -8,9 +8,8 @@
 # The primary user is already created by cloud-init during VM provisioning
 # and is defined in tf/host_users.auto.tfvars
 #
-# Users are tracked via the 'ansible-managed' group. If you remove a user
-# from this list and re-run the playbook, that user will be automatically
-# removed from the system (including their home directory).
+# Users are tracked via the 'ansible-added' group. If you remove a user, you will
+# need to manually remove them from the host; including `/etc/sudoers.d/` file.
 #
 # Format:
 #   username: "ssh-rsa AAAAB3... user@host"
@@ -19,9 +18,5 @@
 # additional_users:
 #   alice: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... alice@example.com"
 #   bob: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... bob@example.com"
-#
-# Deploy changes with:
-#   cd ansible
-#   ansible-playbook -i inventory manage_users.yml
 
 additional_users: {}
