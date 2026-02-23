@@ -1,0 +1,44 @@
+---
+# Software Delivery Service Database Schema Configuration
+# This file contains schema-specific variables for the SDS database
+
+# Environments to deploy (both preprod and prod)
+sds_envs:
+  - preprod
+  - prod
+
+# Database name with conditional suffix
+database_name: "software_discovery{{ '_' + sds_env if sds_env != 'prod' else '' }}"
+
+# Environment variable prefix for password lookups
+# Produces: SDS_PREPROD for preprod, SDS for prod
+env_prefix: "SDS{{ ('_' + sds_env | upper) if sds_env != 'prod' else '' }}"
+
+# Database users with environment-specific credentials
+# Environment variables follow pattern: SDS_<ENV>_<ROLE>_PASSWORD
+db_users:
+  sds_admin:
+    password: "{{ lookup('env', env_prefix + '_ADMIN_PASSWORD') | default('changeme-sds-' + sds_env + '-admin', true) }}"
+    role: "SDS admin"
+  sds_tap_admin:
+    password: "{{ lookup('env', env_prefix + '_TAP_ADMIN_PASSWORD') | default('changeme-sds-' + sds_env + '-tap-admin', true) }}"
+    role: "SDS TAP admin"
+  sds_tap_user:
+    password: "{{ lookup('env', env_prefix + '_TAP_USER_PASSWORD') | default('changeme-sds-' + sds_env + '-tap-user', true) }}"
+    role: "SDS TAP user"
+
+# Required PostgreSQL extensions for this database
+postgres_extensions:
+  - citext
+  - pg_sphere
+
+# Required schemas and their owners
+postgres_schemas:
+  - name: sdm
+    owner: sds_admin
+  - name: uws
+    owner: sds_tap_admin
+  - name: tap_schema
+    owner: sds_tap_admin
+  - name: tap_upload
+    owner: sds_tap_admin

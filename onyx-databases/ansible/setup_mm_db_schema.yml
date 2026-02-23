@@ -1,0 +1,18 @@
+---
+# Setup CAOM database schema
+# This playbook deploys both preprod and prod environments
+#
+- name: Setup CAOM database schema
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all/schema/caomdb.yml
+    - group_vars/all/postgres.yml
+
+  tasks:
+    - name: Setup database schema for each environment
+      include_role:
+        name: setup_db_schema
+      loop: "{{ caom_envs }}"
+      loop_control:
+        loop_var: caom_env

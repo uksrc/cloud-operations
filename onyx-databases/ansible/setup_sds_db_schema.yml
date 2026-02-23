@@ -1,0 +1,18 @@
+---
+# Setup SDS database schema
+# This playbook deploys both preprod and prod environments
+#
+- name: Setup SDS database schema
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all/schema/sdsdb.yml
+    - group_vars/all/postgres.yml
+
+  tasks:
+    - name: Setup database schema for each environment
+      include_role:
+        name: setup_db_schema
+      loop: "{{ sds_envs }}"
+      loop_control:
+        loop_var: sds_env
