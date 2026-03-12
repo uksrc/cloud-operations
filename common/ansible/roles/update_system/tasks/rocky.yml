@@ -1,0 +1,29 @@
+---
+- name: Update dnf packages
+  ansible.builtin.dnf:
+    update_cache: yes
+    name: "*"
+    state: latest
+  register: result
+  until: result is not failed
+  retries: 5
+  delay: 30
+
+- name: Install the automatic updates package
+  ansible.builtin.dnf:
+    name: "dnf-automatic"
+    state: latest
+
+- name: Change update reboot behavior to "reboot if needed"
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/automatic.conf
+    regexp: '^reboot = .*$'
+    line: 'reboot = when-needed'
+
+- name: Enable the automatic updates timer
+  ansible.builtin.systemd_service:
+    name: dnf-automatic.timer
+    enabled: yes
+    state: started
+
+# Default trigger time for updates is 6am

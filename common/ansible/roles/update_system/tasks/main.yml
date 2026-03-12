@@ -1,0 +1,11 @@
+---
+
+- name: Update Rocky Packages and Configure Unattended Upgrades
+  import_tasks: rocky.yml
+  when: ansible_distribution == 'Rocky'
+  become: true
+
+- name: Update Ubuntu Packages and Configure Unattended Upgrades
+  import_tasks: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+  become: true

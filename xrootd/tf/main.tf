@@ -25,7 +25,7 @@ resource "openstack_compute_instance_v2" "xrootd_instance" {
   flavor_id = data.openstack_compute_flavor_v2.xrootd_flavor.flavor_id
   key_pair  = data.openstack_compute_keypair_v2.xrootd_keypair.name
 
-  security_groups = ["default","uksrc-ska-xrootd"]
+  security_groups = ["default", "uksrc-ska-xrootd"]
 
   user_data = templatefile("cloud-config.yaml.tpl", {})
 
