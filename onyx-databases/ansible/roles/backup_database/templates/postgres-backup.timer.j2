@@ -1,0 +1,10 @@
+[Unit]
+Description={{ backup_description | default('PostgreSQL Database Backup Timer') }}
+Requires={{ backup_service | default('postgres-backup') }}.service
+
+[Timer]
+OnCalendar={{ backup_schedule_time }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target
