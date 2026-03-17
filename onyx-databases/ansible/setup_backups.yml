@@ -1,0 +1,10 @@
+---
+- name: Configure PostgreSQL backups
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all/backup.yml
+    - group_vars/all/postgres.yml
+
+  roles:
+    - backup_database

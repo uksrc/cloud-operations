@@ -1,0 +1,115 @@
+---
+- name: Ensure required packages for backups are installed
+  ansible.builtin.apt:
+    name:
+      - python3-swiftclient
+      - python3-keystoneclient
+      - postgresql-client
+    state: present
+    update_cache: true
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ backup_local_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0750'
+
+- name: Create daily backup script
+  ansible.builtin.template:
+    src: backup-postgres.sh.j2
+    dest: /usr/local/bin/backup-postgres-daily.sh
+    owner: root
+    group: root
+    mode: '0755'
+  vars:
+    backup_retention_days: "{{ backup_daily_retention_days }}"
+
+- name: Create frequent backup script
+  ansible.builtin.template:
+    src: backup-postgres.sh.j2
+    dest: /usr/local/bin/backup-postgres-frequent.sh
+    owner: root
+    group: root
+    mode: '0755'
+  vars:
+    backup_retention_days: "{{ backup_frequent_retention_days }}"
+
+- name: Create OpenStack credentials file for backups
+  ansible.builtin.template:
+    src: openstack-backup.rc.j2
+    dest: /etc/postgresql/.openstack-backup.rc
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  when: >
+    openstack_auth_url is defined and
+    openstack_application_credential_id is defined and
+    openstack_application_credential_secret is defined
+
+- name: Create systemd service for daily backup
+  ansible.builtin.template:
+    src: postgres-backup.service.j2
+    dest: /etc/systemd/system/postgres-backup-daily.service
+    owner: root
+    group: root
+    mode: '0644'
+  vars:
+    backup_script: /usr/local/bin/backup-postgres-daily.sh
+    backup_description: "PostgreSQL Database Daily Backup"
+  notify: reload systemd
+
+- name: Create systemd service for frequent backup
+  ansible.builtin.template:
+    src: postgres-backup.service.j2
+    dest: /etc/systemd/system/postgres-backup-frequent.service
+    owner: root
+    group: root
+    mode: '0644'
+  vars:
+    backup_script: /usr/local/bin/backup-postgres-frequent.sh
+    backup_description: "PostgreSQL Database Frequent Backup"
+  notify: reload systemd
+
+- name: Create systemd timer for daily backup
+  ansible.builtin.template:
+    src: postgres-backup.timer.j2
+    dest: /etc/systemd/system/postgres-backup-daily.timer
+    owner: root
+    group: root
+    mode: '0644'
+  vars:
+    backup_schedule_time: "{{ backup_daily_schedule_time }}"
+    backup_service: postgres-backup-daily
+    backup_description: "PostgreSQL Database Daily Backup Timer"
+  notify: reload systemd
+
+- name: Create systemd timer for frequent backup
+  ansible.builtin.template:
+    src: postgres-backup.timer.j2
+    dest: /etc/systemd/system/postgres-backup-frequent.timer
+    owner: root
+    group: root
+    mode: '0644'
+  vars:
+    backup_schedule_time: "{{ backup_frequent_schedule_time }}"
+    backup_service: postgres-backup-frequent
+    backup_description: "PostgreSQL Database Frequent Backup Timer"
+  notify: reload systemd
+
+- name: Enable and start daily backup timer
+  ansible.builtin.systemd:
+    name: postgres-backup-daily.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: backup_daily_enabled | default(true)
+
+- name: Enable and start frequent backup timer
+  ansible.builtin.systemd:
+    name: postgres-backup-frequent.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: backup_frequent_enabled | default(true)

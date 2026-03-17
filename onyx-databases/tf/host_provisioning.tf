@@ -16,6 +16,7 @@ locals {
   postgres_install_command    = "${local.ansible_base_command} install_and_configure_postgres.yml"
   caomdb_schema_setup_command = "${local.ansible_base_command} setup_mm_db_schema.yml"
   sdsdb_schema_setup_command  = "${local.ansible_base_command} setup_sds_db_schema.yml"
+  backup_setup_command        = "${local.ansible_base_command} setup_backups.yml"
 }
 
 resource "null_resource" "system_update_provisioner" {
@@ -119,5 +120,25 @@ resource "null_resource" "sds_schema_provisioner" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command     = local.sdsdb_schema_setup_command
+  }
+}
+
+resource "null_resource" "backup_setup_provisioner" {
+  depends_on = [null_resource.postgres_install_provisioner]
+
+  triggers = {
+    host_instance_id = openstack_compute_instance_v2.postgres_vm.id
+    playbook_hash    = filemd5("${path.module}/../ansible/setup_backups.yml")
+    role_hash        = md5(join("", [for f in fileset("${path.module}/../ansible/roles/backup_database", "**") : filemd5("${path.module}/../ansible/roles/backup_database/${f}")]))
+    vars_hash        = md5(join("", [
+      try(filemd5("${path.module}/../ansible/group_vars/all/backup.yml"), ""),
+      try(filemd5("${path.module}/../ansible/.env"), "")
+    ]))
+    provisioner_command_hash = md5(local.backup_setup_command)
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = local.backup_setup_command
   }
 }
