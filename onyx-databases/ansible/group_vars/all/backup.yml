@@ -13,7 +13,7 @@ backup_daily_retention_days: 7
 
 # Short-lived backup (every 2 hours, 1-day retention)
 backup_frequent_enabled: true
-backup_frequent_schedule_time: "*-*-* 00,02,04,06,08,10,12,14,16,18,20,22:00:00"
+backup_frequent_schedule_time: "*-*-* 02,04,06,08,10,12,14,16,18,20,22:00:00"
 backup_frequent_retention_days: 1
 
 # OpenStack Swift credentials (Application Credentials only)
