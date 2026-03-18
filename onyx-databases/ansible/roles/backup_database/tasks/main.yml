@@ -25,6 +25,7 @@
     mode: '0755'
   vars:
     backup_retention_days: "{{ backup_daily_retention_days }}"
+    backup_type: "daily"
 
 - name: Create frequent backup script
   ansible.builtin.template:
@@ -35,6 +36,7 @@
     mode: '0755'
   vars:
     backup_retention_days: "{{ backup_frequent_retention_days }}"
+    backup_type: "frequent"
 
 - name: Create OpenStack credentials file for backups
   ansible.builtin.template:
