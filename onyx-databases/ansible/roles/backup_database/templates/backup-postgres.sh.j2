@@ -9,6 +9,7 @@ BACKUP_DIR="{{ backup_local_dir }}"
 RETENTION_DAYS="{{ backup_retention_days }}"
 DATABASES="{{ backup_databases }}"
 SWIFT_CONTAINER="{{ swift_container_name }}"
+BACKUP_TYPE="{{ backup_type | default('daily') }}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 HOSTNAME=$(hostname -s)
 
@@ -28,9 +29,9 @@ mkdir -p "${BACKUP_DIR}"
 # Function to backup a single database
 backup_database() {
     local db_name=$1
-    local backup_file="${BACKUP_DIR}/${HOSTNAME}_${db_name}_${TIMESTAMP}.sql.gz"
+    local backup_file="${BACKUP_DIR}/${BACKUP_TYPE}_${HOSTNAME}_${db_name}_${TIMESTAMP}.sql.gz"
 
-    log "Starting backup of database: ${db_name}"
+    log "Starting backup of database: ${db_name} (type: ${BACKUP_TYPE})"
 
     # Create backup
     if pg_dump -U postgres "${db_name}" | gzip > "${backup_file}"; then
@@ -65,11 +66,49 @@ backup_database() {
     fi
 }
 
-# Function to cleanup old backups
-cleanup_old_backups() {
-    log "Cleaning up local backups older than ${RETENTION_DAYS} days"
-    find "${BACKUP_DIR}" -name "*.sql.gz" -type f -mtime +${RETENTION_DAYS} -delete
-    log "Cleanup completed"
+# Function to cleanup old local backups
+cleanup_old_local_backups() {
+    log "Cleaning up local ${BACKUP_TYPE} backups older than ${RETENTION_DAYS} days"
+    find "${BACKUP_DIR}" -name "${BACKUP_TYPE}_*.sql.gz" -type f -mtime +${RETENTION_DAYS} -delete
+    log "Local cleanup completed"
+}
+
+# Function to cleanup old Swift backups
+cleanup_old_swift_backups() {
+    if ! command -v swift &> /dev/null || [ -z "${OS_APPLICATION_CREDENTIAL_ID:-}" ]; then
+        log "Swift client not configured, skipping Swift cleanup"
+        return 0
+    fi
+
+    log "Cleaning up Swift ${BACKUP_TYPE} backups older than ${RETENTION_DAYS} days"
+
+    # Calculate cutoff date
+    local cutoff_date=$(date -d "${RETENTION_DAYS} days ago" +%s 2>/dev/null || date -v-${RETENTION_DAYS}d +%s)
+
+    # List all objects with the backup type prefix
+    swift list "${SWIFT_CONTAINER}" --prefix "${BACKUP_TYPE}_${HOSTNAME}_" 2>/dev/null | while read -r object_name; do
+        if [ -z "$object_name" ]; then
+            continue
+        fi
+
+        # Get object metadata to check last modified date
+        local last_modified=$(swift stat "${SWIFT_CONTAINER}" "$object_name" 2>/dev/null | grep "Last Modified:" | cut -d: -f2- | xargs)
+
+        if [ -n "$last_modified" ]; then
+            local object_date=$(date -d "$last_modified" +%s 2>/dev/null || date -j -f "%a, %d %b %Y %H:%M:%S %Z" "$last_modified" +%s 2>/dev/null)
+
+            if [ -n "$object_date" ] && [ "$object_date" -lt "$cutoff_date" ]; then
+                log "Deleting old Swift backup: $object_name"
+                if swift delete "${SWIFT_CONTAINER}" "$object_name"; then
+                    log "Successfully deleted $object_name from Swift"
+                else
+                    log "WARNING: Failed to delete $object_name from Swift"
+                fi
+            fi
+        fi
+    done
+
+    log "Swift cleanup completed"
 }
 
 # Main execution
@@ -88,8 +127,9 @@ for db in "${DB_ARRAY[@]}"; do
     fi
 done
 
-# Cleanup old backups
-cleanup_old_backups
+# Cleanup old backups (both local and Swift)
+cleanup_old_local_backups
+cleanup_old_swift_backups
 
 log "=== PostgreSQL Backup Completed ==="
 
@@ -97,9 +137,5 @@ if [ $FAILED_BACKUPS -gt 0 ]; then
     log "WARNING: ${FAILED_BACKUPS} database backup(s) failed"
     exit 1
 fi
-
-log "All backups completed successfully"
-exit 0
-
 log "All backups completed successfully"
 exit 0
