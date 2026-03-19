@@ -15,9 +15,11 @@ This Ansible role configures automated PostgreSQL database backups with upload t
    - OpenStack credentials file (`/etc/postgresql/.openstack-backup.rc`)
 
 3. Configures systemd:
-   - Service unit (`postgres-backup.service`)
-   - Timer unit (`postgres-backup.timer`)
-   - Enables and starts the timer
+   - Daily service (`postgres-backup-daily.service`)
+   - .. and timer (`postgres-backup-daily.timer`)
+   - Frequent service (`postgres-backup-frequent.service`)
+   - ... and timer (`postgres-backup-frequent.timer`)
+   - Enables and starts both timers
 
 4. Optionally runs an immediate backup (if `backup_run_now: true`)
 
@@ -51,35 +53,11 @@ These should be set via environment variables (in `ansible/.env`), they will be 
 
 The backup script (`/usr/local/bin/backup-postgres.sh`) performs the following:
 
-1. For each database in `backup_databases`:
-   - Creates compressed SQL dump using `pg_dump`
-   - Names file: `{hostname}_{database}_{timestamp}.sql.gz`
-   - Uploads to Swift container (if configured)
-
-2. Cleans up local backups older than `backup_retention_days`
-
-3. Logs all operations with timestamps
-
-4. Returns exit code 0 on success, 1 on failure
-
-## Systemd Integration
-
-### Service Unit
-
-The service unit (`postgres-backup.service`):
-
-- Runs as `postgres` user
-- Executes backup script
-- Logs to systemd journal
-- One-shot execution type
-
-### Timer Unit
-
-The timer unit (`postgres-backup.timer`):
-
-- Scheduled via `OnCalendar` directive
-- Persistent scheduling (catches up if system was down)
-- Installed in `timers.target`
+- For each database in `backup_databases`:
+  - Creates compressed SQL dump using `pg_dump`
+  - Names file: `{hostname}_{database}_{timestamp}.sql.gz`
+  - Uploads to Swift container
+- Cleans up local backups older than `backup_retention_days`
 
 ## Usage
 
@@ -102,26 +80,45 @@ ansible-playbook -i [HOST_IP], -u [USER] setup_backups.yml
 ### Manual Backup
 
 ```bash
-sudo -u postgres /usr/local/bin/backup-postgres.sh
+# Trigger daily backup
+sudo systemctl start postgres-backup-daily.service
+
+# Trigger frequent backup
+sudo systemctl start postgres-backup-frequent.service
+```
+
+... or directly run the script:
+
+```bash
+# Run daily backup manually
+sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-daily.sh'
+
+# Run frequent backup manually
+sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-frequent.sh'
 ```
 
 ### Check Timer Status
 
 ```bash
-systemctl status postgres-backup.timer
-systemctl list-timers postgres-backup.timer
+# Check both timers
+systemctl status postgres-backup-daily.timer
+systemctl status postgres-backup-frequent.timer
+
+# List all backup timers with schedule info
+systemctl list-timers postgres-backup-*
 ```
 
 ### View Logs
 
 ```bash
-journalctl -u postgres-backup.service -n 50
-```
+# View daily backup logs
+journalctl -u postgres-backup-daily.service -n 50
 
-### Trigger Backup via Systemd
+# View frequent backup logs
+journalctl -u postgres-backup-frequent.service -n 50
 
-```bash
-sudo systemctl start postgres-backup.service
+# View all backup logs
+journalctl -u postgres-backup-*.service -n 100
 ```
 
 ## Backup Format
@@ -134,7 +131,8 @@ Backups are stored as compressed SQL dumps with a type prefix:
 - Compression: gzip
 - Content: Full PostgreSQL database dump created with `pg_dump`
 
-**Backup Types:**
+### Backup Types
+
 - `daily` - Daily backups at 00:00, retained for 7 days (both local and Swift)
 - `frequent` - Backups every 2 hours, retained for 1 day (both local and Swift)
 
@@ -144,7 +142,7 @@ Backups are stored as compressed SQL dumps with a type prefix:
 
 Local backups are stored on the database server:
 
-- **Directory**: `/var/backups/postgresql/` (default, configurable via `backup_local_dir`)
+- **Directory**: `/var/backups/postgresql/`
 - **Permissions**: `0750`, owned by `postgres:postgres`
 - **Retention**: Files older than `backup_retention_days` (default: 7 days) are automatically deleted
 - **Purpose**: Recent backups for quick local recovery
@@ -179,8 +177,6 @@ ls -lh /var/backups/postgresql/frequent_*.sql.gz
 
 # Find specific database backups (daily only)
 ls -lh /var/backups/postgresql/daily_*_caom_*.sql.gz
-
-# Show all /var/backups/postgresql/*_caomdb_*.sql.gz
 
 # Show backups from last 7 days
 find /var/backups/postgresql/ -name "*.sql.gz" -mtime -7 -ls
@@ -224,10 +220,10 @@ swift list [CONTAINER_NAME] --prefix daily_
 swift list [CONTAINER_NAME] --prefix frequent_
 
 # List daily backups for specific database (e.g. `caom`)
-swift list [CONTAINER_NAME] --prefix daily_$(hostname -s)_caom_
+swift list [CONTAINER_NAME] --prefix daily_postgres-vm_[DATABASE_NAME]_
 
 # List frequent backups from a specific date (e.g. `caom` for 18th March 2026)
-swift list [CONTAINER_NAME] --prefix frequent_$(hostname -s)_caom_20260318
+swift list [CONTAINER_NAME] --prefix frequent_postgres-vm_[DATABASE_NAME]_20260318
 ```
 
 #### Download Backups from Swift
@@ -242,10 +238,10 @@ swift download [CONTAINER_NAME] daily_postgres-vm_[DATABASE_NAME]_20260318_00000
 swift download [CONTAINER_NAME] frequent_postgres-vm_[DATABASE_NAME]_20260318_140000.sql.gz -o /tmp/backup.sql.gz
 
 # Download all daily backups for a database
-swift download [CONTAINER_NAME] --prefix daily_$(hostname -s)_caomdb_
+swift download [CONTAINER_NAME] --prefix daily_postgres-vm_[DATABASE_NAME]_
 
 # Download all frequent backups from today
-swift download [CONTAINER_NAME] --prefix frequent_$(hostname -s)_caomdb_$(date +%Y%m%d)
+swift download [CONTAINER_NAME] --prefix frequent_postgres-vm_[DATABASE_NAME]_$(date +%Y%m%d)
 
 # Download entire container
 swift download [CONTAINER_NAME]
@@ -257,28 +253,28 @@ swift download [CONTAINER_NAME]
 
 2. Restore the database:
 
-    ```bash
-    # Option A: Restore to existing database (overwrites data) - using daily backup
-    gunzip -c /var/backups/postgresql/daily_postgres-vm_[DATABASE_NAME]_20260318_000000.sql.gz | \
-        sudo -u postgres psql [DATABASE_NAME]
+   ```bash
+   # Option A: Restore to existing database (overwrites data) - using daily backup
+   gunzip -c /var/backups/postgresql/daily_postgres-vm_[DATABASE_NAME]_20260318_000000.sql.gz | \
+       sudo -u postgres psql [DATABASE_NAME]
 
-    # Option B: Drop and recreate database (clean restore) - using daily backup
-    sudo -u postgres dropdb caomdb
-    sudo -u postgres createdb caomdb -O caomdb_owner
-    gunzip -c /var/backups/postgresql/daily_postgres-vm_caomdb_20260318_000000.sql.gz | \
-        sudo -u postgres psql caomdb
+   # Option B: Drop and recreate database (clean restore) - using daily backup
+   sudo -u postgres dropdb caomdb
+   sudo -u postgres createdb caomdb -O caomdb_owner
+   gunzip -c /var/backups/postgresql/daily_postgres-vm_[DATABASE_NAME]__20260318_000000.sql.gz | \
+       sudo -u postgres psql caomdb
 
-    # Option C: Restore from recent frequent backup (if daily is too old)
-    gunzip -c /var/backups/postgresql/frequent_postgres-vm_caomdb_20260318_140000.sql.gz | \
-        sudo -u postgres psql caomdb
-    ```
+   # Option C: Restore from recent frequent backup (if daily is too old)
+   gunzip -c /var/backups/postgresql/frequent_postgres-vm_[DATABASE_NAME]__20260318_140000.sql.gz | \
+       sudo -u postgres psql caomdb
+   ```
 
 3. Verify database restoration:
 
-    From RAL Bastion:
+   From RAL Bastion:
 
-    ```bash
-    psql -h 192.168.66.106 -U postgres
-    ```
+   ```bash
+   psql -h 192.168.66.106 -U postgres
+   ```
 
-    ...and check the various databases (e.g. with `\l`, `\c [database]`, `\dt`, `SELECT * FROM [table]`).
+   ... and check the various databases (e.g. with `\l`, `\c [database]`, `\dt`, `SELECT * FROM [table]`).
