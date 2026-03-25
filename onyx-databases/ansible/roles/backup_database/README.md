@@ -1,8 +1,122 @@
 # PostgreSQL Backup Role
 
-This Ansible role configures automated PostgreSQL database backups with upload to OpenStack Swift object storage.
+## Database Restoration
 
-## What the Ansible Role does
+The most important aspect of the Ansible role is that it creates backups of the Onyx databases.  Here's how to restore from those backups.
+
+This can be done from the RAL Bastion host.  The DB VM IP needs to be known (which can be found from a `tofu output`
+command run in the `onyx_database/tf` directory).
+
+1. Download a backup file from Swift or obtain the file from the local files on the DB server, as described [here](#accessing-backups).
+
+2. Restore the database:
+
+   ```bash
+   # Option A: Restore to existing database (overwrites data)
+   gunzip -c [BACKUP_FILE_STEM].sql.gz | psql -h [DB_VM_IP] -U postgres -d [DATABASE_NAME]
+
+   # Option B: Drop and recreate database (clean restore)
+   sudo -u postgres dropdb [DATABASE_NAME]
+   sudo -u postgres createdb [DATABASE_NAME]
+   gunzip -c [BACKUP_FILE_STEM].sql.gz | psql -h [DB_VM_IP] -U postgres -d [DATABASE_NAME]
+   ```
+
+3. Verify database restoration:
+
+   ```bash
+   psql -h [DB_VM_IP] -U postgres
+   ```
+
+   ... and check the various databases (e.g. with `\l`, `\c [database]`, `\dt *.*`, `SELECT * FROM [table]`).
+
+## Accessing Backups
+
+### Local Backups on the DB VM
+
+On the database server:
+
+```bash
+# As root or with sudo
+ls -lh /var/backups/postgresql/
+
+# As postgres user
+# List daily backups
+ls -lh /var/backups/postgresql/daily_*.sql.gz
+
+# List frequent backups
+ls -lh /var/backups/postgresql/frequent_*.sql.gz
+
+# Find specific database backups (daily only)
+ls -lh /var/backups/postgresql/daily_*_caom_*.sql.gz
+
+# Show backups from last 7 days
+find /var/backups/postgresql/ -name "*.sql.gz" -mtime -7 -ls
+```
+
+### Swift Backups
+
+From the database server or any system with Swift client access, you can use the backups stored in the OpenStack object store ("Swift").
+
+Firstly, make sure the client can authenticate:
+
+```bash
+# Authenticate and list all backups in the container
+# On the database VM
+sudo -u postgres bash
+source /etc/postgresql/.openstack-backup.rc
+
+# Or on any RAL host with the swift cli tool installed
+
+export OS_AUTH_TYPE="v3applicationcredential" OS_AUTH_URL=[]
+export HISTCONTROL=ignorespace
+ export OS_APPLICATION_CREDENTIAL_ID=[] OS_APPLICATION_CREDENTIAL_SECRET=[]
+```
+
+Then you can query the backups available in the object store:
+
+```bash
+swift list [CONTAINER_NAME]
+```
+
+... and download a backup:
+
+```bash
+swift download [CONTAINER_NAME] [BACKUP_NAME]
+```
+
+## Manually Trigger a Backup
+
+The backup script (`/usr/local/bin/backup-postgres.sh`) performs the following:
+
+- For each database in `backup_databases`:
+  - Creates compressed SQL dump using `pg_dump`
+  - Names file: `{hostname}_{database}_{timestamp}.sql.gz`
+  - Uploads to Swift container
+- Cleans up local backups older than `backup_retention_days`
+
+This should be configured to run every 2 hours, but to trigger this manually:
+
+```bash
+# Trigger daily backup
+sudo systemctl start postgres-backup-daily.service
+
+# Trigger frequent backup
+sudo systemctl start postgres-backup-frequent.service
+```
+
+... or directly run the script:
+
+```bash
+# Run daily backup manually
+sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-daily.sh'
+
+# Run frequent backup manually
+sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-frequent.sh'
+```
+
+## The Ansible Role
+
+This Ansible role configures automated PostgreSQL database backups with upload to OpenStack Swift object storage.
 
 1. Installs required packages:
    - `python3-swiftclient` - OpenStack Swift CLI
@@ -23,17 +137,17 @@ This Ansible role configures automated PostgreSQL database backups with upload t
 
 4. Optionally runs an immediate backup (if `backup_run_now: true`)
 
-## Configuration Variables
+### Configuration Variables
 
 All variables are defined in `ansible/group_vars/all/backup.yml`.
 
-### Required Variables
+#### Required Variables
 
 - `backup_local_dir` - Local directory for backups
 - `backup_databases` - Comma-separated list of databases to backup
 - `swift_container_name` - Swift container name
 
-### OpenStack Authentication
+#### OpenStack Authentication
 
 These should be set via environment variables (in `ansible/.env`), they will be included in the Ansible variables from there:
 
@@ -41,7 +155,7 @@ These should be set via environment variables (in `ansible/.env`), they will be 
 - `OS_APPLICATION_CREDENTIAL_ID` - Application credential ID
 - `OS_APPLICATION_CREDENTIAL_SECRET` - Application credential secret
 
-### Optional Variables
+#### Optional Variables
 
 - `backup_retention_days` - Days to keep local backups
 - `backup_schedule` - Schedule frequency
@@ -49,19 +163,7 @@ These should be set via environment variables (in `ansible/.env`), they will be 
 - `backup_schedule_enabled` - Enable/disable timer
 - `backup_run_now` - Run immediate backup
 
-## Backup Script
-
-The backup script (`/usr/local/bin/backup-postgres.sh`) performs the following:
-
-- For each database in `backup_databases`:
-  - Creates compressed SQL dump using `pg_dump`
-  - Names file: `{hostname}_{database}_{timestamp}.sql.gz`
-  - Uploads to Swift container
-- Cleans up local backups older than `backup_retention_days`
-
-## Usage
-
-### Deploy Backup System
+### Usage
 
 Run via Terraform:
 
@@ -75,26 +177,6 @@ Or run Ansible playbook directly:
 ```bash
 cd ansible
 ansible-playbook -i [HOST_IP], -u [USER] setup_backups.yml
-```
-
-### Manual Backup
-
-```bash
-# Trigger daily backup
-sudo systemctl start postgres-backup-daily.service
-
-# Trigger frequent backup
-sudo systemctl start postgres-backup-frequent.service
-```
-
-... or directly run the script:
-
-```bash
-# Run daily backup manually
-sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-daily.sh'
-
-# Run frequent backup manually
-sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-frequent.sh'
 ```
 
 ### Check Timer Status
@@ -133,148 +215,14 @@ Backups are stored as compressed SQL dumps with a type prefix:
 
 ### Backup Types
 
-- `daily` - Daily backups at 00:00, retained for 7 days (both local and Swift)
-- `frequent` - Backups every 2 hours, retained for 1 day (both local and Swift)
+There are two types of backup created: `daily` and `frequent`.  The idea is that the
+daily back ups are retained for longer.
 
-## Backup Locations
+The retention for the daily and frequent backups is set in the file [`ansible/group_vars/all/backup.yaml`](../../group_vars/all/backup.yml).
 
-### Local Storage
+### Backup Locations
 
-Local backups are stored on the database server:
+Local backups are stored on the database server in the directory `/var/backups/postgresql/`.
 
-- **Directory**: `/var/backups/postgresql/`
-- **Permissions**: `0750`, owned by `postgres:postgres`
-- **Retention**: Files older than `backup_retention_days` (default: 7 days) are automatically deleted
-- **Purpose**: Recent backups for quick local recovery
-
-### Remote Storage (OpenStack Swift)
-
-Backups are uploaded to OpenStack Swift object storage for off-site protection:
-
-- **Container**: `uksrc-backups` (default, configurable via `swift_container_name`)
-- **Object naming**: Same as local filename (e.g., `daily_postgres-vm_caomdb_20260318_020000.sql.gz`)
-- **Retention**: Automatic cleanup based on backup type:
-  - Daily backups: 7 days
-  - Frequent backups: 1 day
-- **Purpose**: Long-term retention and disaster recovery
-
-## Accessing Backups
-
-### Local Backups
-
-On the database server:
-
-```bash
-# As root or with sudo
-ls -lh /var/backups/postgresql/
-
-# As postgres user
-# List daily backups
-ls -lh /var/backups/postgresql/daily_*.sql.gz
-
-# List frequent backups
-ls -lh /var/backups/postgresql/frequent_*.sql.gz
-
-# Find specific database backups (daily only)
-ls -lh /var/backups/postgresql/daily_*_caom_*.sql.gz
-
-# Show backups from last 7 days
-find /var/backups/postgresql/ -name "*.sql.gz" -mtime -7 -ls
-```
-
-### Swift Backups
-
-From the database server or any system with Swift client access, you can use the backups stored in the OpenStack object store ("Swift").
-
-Firstly, make sure the client can authenticate:
-
-```bash
-# Authenticate and list all backups in the container
-# On the database VM
-sudo -u postgres bash
-source /etc/postgresql/.openstack-backup.rc
-
-# Or on any RAL host with the swift cli tool installed
-export HISTCONTROL=ignorespace
- export OS_AUTH_URL=[] OS_APPLICATION_CREDENTIAL_ID=[] OS_APPLICATION_CREDENTIAL_SECRET=[] OS_AUTH_TYPE="v3applicationcredential"
-```
-
-#### List Swift Backups
-
-Then you can query the backups available in the object store:
-
-```bash
-# List all containers
-swift list
-
-# List contents of the backup container
-swift list [CONTAINER_NAME]
-
-# List backups with details (size, date)
-swift list [CONTAINER_NAME] --long
-
-# List daily backups only
-swift list [CONTAINER_NAME] --prefix daily_
-
-# List frequent backups only
-swift list [CONTAINER_NAME] --prefix frequent_
-
-# List daily backups for specific database (e.g. `caom`)
-swift list [CONTAINER_NAME] --prefix daily_postgres-vm_[DATABASE_NAME]_
-
-# List frequent backups from a specific date (e.g. `caom` for 18th March 2026)
-swift list [CONTAINER_NAME] --prefix frequent_postgres-vm_[DATABASE_NAME]_20260318
-```
-
-#### Download Backups from Swift
-
-After setting up the authentication
-
-```bash
-# Download a specific daily backup
-swift download [CONTAINER_NAME] daily_postgres-vm_[DATABASE_NAME]_20260318_000000.sql.gz -o /tmp/backup.sql.gz
-
-# Download a specific frequent backup
-swift download [CONTAINER_NAME] frequent_postgres-vm_[DATABASE_NAME]_20260318_140000.sql.gz -o /tmp/backup.sql.gz
-
-# Download all daily backups for a database
-swift download [CONTAINER_NAME] --prefix daily_postgres-vm_[DATABASE_NAME]_
-
-# Download all frequent backups from today
-swift download [CONTAINER_NAME] --prefix frequent_postgres-vm_[DATABASE_NAME]_$(date +%Y%m%d)
-
-# Download entire container
-swift download [CONTAINER_NAME]
-```
-
-## Database Restoration
-
-1. Download a backup file from Swift or obtain the file from the local files on the DB server, as described above.
-
-2. Restore the database:
-
-   ```bash
-   # Option A: Restore to existing database (overwrites data) - using daily backup
-   gunzip -c /var/backups/postgresql/daily_postgres-vm_[DATABASE_NAME]_20260318_000000.sql.gz | \
-       sudo -u postgres psql [DATABASE_NAME]
-
-   # Option B: Drop and recreate database (clean restore) - using daily backup
-   sudo -u postgres dropdb caomdb
-   sudo -u postgres createdb caomdb -O caomdb_owner
-   gunzip -c /var/backups/postgresql/daily_postgres-vm_[DATABASE_NAME]__20260318_000000.sql.gz | \
-       sudo -u postgres psql caomdb
-
-   # Option C: Restore from recent frequent backup (if daily is too old)
-   gunzip -c /var/backups/postgresql/frequent_postgres-vm_[DATABASE_NAME]__20260318_140000.sql.gz | \
-       sudo -u postgres psql caomdb
-   ```
-
-3. Verify database restoration:
-
-   From RAL Bastion:
-
-   ```bash
-   psql -h 192.168.66.106 -U postgres
-   ```
-
-   ... and check the various databases (e.g. with `\l`, `\c [database]`, `\dt`, `SELECT * FROM [table]`).
+Also, backups are uploaded to OpenStack Swift object storage for off-site protection. The
+container name is set in the file [`ansible/group_vars/all/backup.yml`](../../group_vars/all/backup.yml).
