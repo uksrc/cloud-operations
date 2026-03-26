@@ -2,7 +2,7 @@
 
 ## Database Restoration
 
-The most important aspect of the Ansible role is that it creates backups of the Onyx databases.  Here's how to restore from those backups.
+The most important aspect of the [Ansible role](#the-ansible-role) is that it creates backups of the Onyx databases.  Here's how to restore from those backups.
 
 This can be done from the RAL Bastion host.  The DB VM IP needs to be known (which can be found from a `tofu output`
 command run in the `onyx_database/tf` directory).
@@ -20,7 +20,7 @@ command run in the `onyx_database/tf` directory).
       -c 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables ORDER BY schemaname, n_live_tup DESC;'
     ```
 
-    ... and do any other checking that seems appropriate (e.g. with `\l`, `\c [database]`, `\dt *.*`, `SELECT * FROM [table]`).
+    ... and do any other checking that seems appropriate. (e.g. with `\l`, `\c [database]`, `\dt *.*`, `SELECT * FROM [table]`).
 
     Delete the `test_restore_database` after finishing checks:
 
@@ -43,6 +43,36 @@ command run in the `onyx_database/tf` directory).
    ```
 
    ... and check the various databases (e.g. with `\l`, `\c [database]`, `\dt *.*`, `SELECT * FROM [table]`).
+
+## Manually Trigger a Backup
+
+The backup script (`/usr/local/bin/backup-postgres.sh`) performs the following:
+
+- For each database in `backup_databases`:
+  - Creates compressed SQL dump using `pg_dump`
+  - Names file: `{hostname}_{database}_{timestamp}.sql.gz`
+  - Uploads to Swift container
+- Cleans up local backups older than `backup_retention_days`
+
+This should be configured to run every 2 hours, but to trigger this manually:
+
+```bash
+# Trigger daily backup
+sudo systemctl start postgres-backup-daily.service
+
+# Trigger frequent backup
+sudo systemctl start postgres-backup-frequent.service
+```
+
+... or directly run the script:
+
+```bash
+# Run daily backup manually
+sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-daily.sh'
+
+# Run frequent backup manually
+sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-frequent.sh'
+```
 
 ## Accessing Backups
 
@@ -97,36 +127,6 @@ swift list [CONTAINER_NAME]
 
 ```bash
 swift download [CONTAINER_NAME] [BACKUP_NAME]
-```
-
-## Manually Trigger a Backup
-
-The backup script (`/usr/local/bin/backup-postgres.sh`) performs the following:
-
-- For each database in `backup_databases`:
-  - Creates compressed SQL dump using `pg_dump`
-  - Names file: `{hostname}_{database}_{timestamp}.sql.gz`
-  - Uploads to Swift container
-- Cleans up local backups older than `backup_retention_days`
-
-This should be configured to run every 2 hours, but to trigger this manually:
-
-```bash
-# Trigger daily backup
-sudo systemctl start postgres-backup-daily.service
-
-# Trigger frequent backup
-sudo systemctl start postgres-backup-frequent.service
-```
-
-... or directly run the script:
-
-```bash
-# Run daily backup manually
-sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-daily.sh'
-
-# Run frequent backup manually
-sudo -u postgres bash -c 'cd /tmp && /usr/local/bin/backup-postgres-frequent.sh'
 ```
 
 ## The Ansible Role
