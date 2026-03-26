@@ -7,21 +7,36 @@ The most important aspect of the Ansible role is that it creates backups of the 
 This can be done from the RAL Bastion host.  The DB VM IP needs to be known (which can be found from a `tofu output`
 command run in the `onyx_database/tf` directory).
 
+0. Consider [making a manual backup](#manually-trigger-a-backup) of the databases ahead of restoring from a backup.
+
 1. Download a backup file from Swift or obtain the file from the local files on the DB server, as described [here](#accessing-backups).
 
-2. Restore the database:
+2. Consider restoring the database into a new database to check its integrity:
+
+    ```bash
+    psql -h [DB_VM_IP] -U postgres -c 'CREATE DATABASE test_restore_database;'
+    gunzip -c [BACKUP_FILE_STEM].sql.gz | psql -h [DB_VM_IP] -U postgres -d test_restore_database
+    psql -h [DB_VM_IP] -U postgres -d test_restore_database \
+      -c 'SELECT schemaname, relname AS table_name, n_live_tup AS row_count FROM pg_stat_user_tables ORDER BY schemaname, n_live_tup DESC;'
+    ```
+
+    ... and do any other checking that seems appropriate (e.g. with `\l`, `\c [database]`, `\dt *.*`, `SELECT * FROM [table]`).
+
+    Delete the `test_restore_database` after finishing checks:
+
+    ```base
+    psql -h [DB_VM_IP] -U postgres -c 'DROP DATABASE test_restore_database;'
+    ```
+
+3. Once you're content that the backup is good, restore the database:
 
    ```bash
-   # Option A: Restore to existing database (overwrites data)
-   gunzip -c [BACKUP_FILE_STEM].sql.gz | psql -h [DB_VM_IP] -U postgres -d [DATABASE_NAME]
-
-   # Option B: Drop and recreate database (clean restore)
    sudo -u postgres dropdb [DATABASE_NAME]
    sudo -u postgres createdb [DATABASE_NAME]
    gunzip -c [BACKUP_FILE_STEM].sql.gz | psql -h [DB_VM_IP] -U postgres -d [DATABASE_NAME]
    ```
 
-3. Verify database restoration:
+4. Verify database restoration:
 
    ```bash
    psql -h [DB_VM_IP] -U postgres
