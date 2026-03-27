@@ -1,0 +1,17 @@
+[Unit]
+Description={{ backup_description | default('PostgreSQL Database Backup') }}
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=postgres
+Group=postgres
+ExecStart={{ backup_script | default('/usr/local/bin/backup-postgres.sh') }}
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=postgres-backup
+
+# Security settings
+PrivateTmp=yes
+NoNewPrivileges=yes
