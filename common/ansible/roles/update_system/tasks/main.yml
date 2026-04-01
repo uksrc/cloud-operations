@@ -1,11 +1,15 @@
 ---
+- name: Print all available facts
+  ansible.builtin.debug:
+    var: ansible_facts
+    verbosity: 1
 
 - name: Update Rocky Packages and Configure Unattended Upgrades
   import_tasks: rocky.yml
-  when: ansible_distribution == 'Rocky'
+  when: ansible_facts["distribution"] == "Rocky"
   become: true
 
 - name: Update Ubuntu Packages and Configure Unattended Upgrades
   import_tasks: ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts["distribution"] == "Ubuntu"
   become: true

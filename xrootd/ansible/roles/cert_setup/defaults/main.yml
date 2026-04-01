@@ -1,0 +1,5 @@
+cert_method: self_signed
+cert_email: jdoe@example.com
+cert_servername: www.example.com
+cert_path: ""
+key_path: ""

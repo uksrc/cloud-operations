@@ -6,3 +6,4 @@ packages:
   - cloud-utils-growpart
   - e2fsprogs
   - xfsprogs
+  - python3.12

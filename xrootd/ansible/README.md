@@ -19,7 +19,7 @@ An ansible playbook for installing and configuring xrootd for SKA/UKSRC.
 
 ## Configuring
 Variables are found in `group_vars/all/variables.yml`
-- `site_name`: the name of the xrootd instance (needed for Rucio) (Default: `test-site`)
+- `xrootd_sitename`: the name of the xrootd instance (needed for Rucio) (Default: `test-site`)
 - `cert_path`: path to SSL cert (if left blank will generate self-signed cert)
 - `key_path`: path to cer key (If left blank will generate self-signed cert)
 - `data_path`: path where xrootd data will be stored (Default: `/data` **It is highly recomended that the path is kept at top level like /data**)

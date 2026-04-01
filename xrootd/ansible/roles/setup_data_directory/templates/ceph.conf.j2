@@ -1,0 +1,9 @@
+[global]
+client_reconnect_stale = true
+debug_client = 0/2
+fuse_big_writes = true
+mon_host = {{ manila_host }}
+auth supported = cephx
+auth_client_required=cephx
+auth_cluster_required=cephx
+auth_service_required=cephx

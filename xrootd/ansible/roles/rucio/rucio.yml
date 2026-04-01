@@ -1,5 +1,7 @@
 # https://osg-htc.org/docs/common/ca/
 
+
+
 - name: update crypto policies
   ansible.builtin.shell: update-crypto-policies --set DEFAULT:SHA1
   become: true
@@ -10,6 +12,8 @@
     dest: /etc/grid-security/certificates/cilogon-osg.pem
     mode: '0644'
   become: true
+
+
 
 - name: install fetch-crl
   ansible.builtin.dnf:

@@ -1,7 +1,12 @@
-- name: check {{ data_path }} exists
+- name: Check {{ data_path }} exists
   ansible.builtin.stat:
     path: "{{ data_path }}"
   register: validate_data_path
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: validate_data_path
+    verbosity: 1
 
 - name: Create {{ data_path }}
   ansible.builtin.file:
@@ -10,6 +15,15 @@
     mode: '0755'
     owner: xrootd
     group: xrootd
-  when: validate_data_path.stat.isdir is defined and validate_data_path.stat.isdir
+  when: validate_data_path.stat.exists is defined and not validate_data_path.stat.exists
   become: true
 
+- name: Configure ceph storage
+  import_tasks: ceph.yml
+  when: storage_type == "ceph"
+  become: true
+
+- name: Configure volume storage
+  import_tasks: volume.yml
+  when: storage_type == "volume"
+  become: true

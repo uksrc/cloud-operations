@@ -1,0 +1,28 @@
+# Enable Security
+xrootd.seclib libXrdSec.so
+sec.level all compatible
+
+# Authentication and Authorisation part
+ofs.authorize 1
+ofs.authlib ++ libXrdAccSciTokens.so config=/etc/xrootd/scitokens.cfg
+ofs.authlib ++ libXrdMacaroons.so
+acc.authdb /etc/xrootd/Authfile
+acc.audit deny
+acc.authrefresh 60
+
+# For Macaroons
+http.exthandler xrdmacaroons libXrdMacaroons.so
+macaroons.secretkey /etc/xrootd/macaroon-secret
+
+# Pass the bearer token to the Xrootd authorization framework.
+http.header2cgi Authorization authz
+
+# Only for debugging (comment out after setup is done)
+scitokens.trace all
+ofs.trace all
+pfc.trace all
+xrd.trace all -sched
+pss.setopt DebugLevel 5
+
+# libXrdMacaroons expects all.sitename to be defined
+all.sitename {{ xrootd_sitename }}

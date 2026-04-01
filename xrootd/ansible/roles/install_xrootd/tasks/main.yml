@@ -1,0 +1,30 @@
+- name: Install packages on Rocky
+  import_tasks: rocky.yml
+  when: ansible_facts["distribution"] == "Rocky"
+  become: true
+
+- name: Install packages on Ubuntu
+  import_tasks: ubuntu.yml
+  when: ansible_facts["distribution"] == "Ubuntu"
+  become: true
+
+# tidy up the xrootd example files
+- name: Check if xrootd-http.cfg exists
+  ansible.builtin.stat:
+    path: /etc/xrootd/templates/xrootd-http.cfg
+  register: xrootd_http_cfg_stat
+
+- name: Create a template directory for xrootd example files /etc/xrootd/templates
+  ansible.builtin.file:
+    path: /etc/xrootd/templates
+    state: directory
+    mode: '0755'
+    owner: xrootd
+    group: xrootd
+  become: true
+  when: not xrootd_http_cfg_stat.stat.exists
+
+- name: Move the xrootd example config files to /etc/xrootd/templates
+  ansible.builtin.shell: mv /etc/xrootd/*.cfg /etc/xrootd/templates/
+  become: true
+  when: not xrootd_http_cfg_stat.stat.exists

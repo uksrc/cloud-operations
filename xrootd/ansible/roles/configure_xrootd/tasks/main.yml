@@ -1,7 +1,39 @@
+---
+- name: Enable and start the osg-ca-certs-updater timer
+  ansible.builtin.systemd_service:
+    name: osg-ca-certs-updater.timer
+    state: started
+    enabled: true
+  become: true
+
 - name: Copy xrootd config file
   ansible.builtin.template:
     src: xrootd-http.cfg.j2
     dest: /etc/xrootd/xrootd-http.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy xrootd 98-config.cfg
+  ansible.builtin.copy:
+    src: 98-config.cfg
+    dest: /etc/xrootd/config.d/98-config.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy xrootd 98-security.cfg
+  ansible.builtin.template:
+    src: 98-security.cfg.j2
+    dest: /etc/xrootd/config.d/98-security.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy xrootd 98-tls.cfg
+  ansible.builtin.copy:
+    src: 98-tls.cfg
+    dest: /etc/xrootd/config.d/98-tls.cfg
     owner: xrootd
     group: xrootd
   become: true
@@ -51,14 +83,14 @@
   become: true
 
 - name: start and enable xrootd http socket service
-  ansible.builtin.service: 
+  ansible.builtin.service:
     name: xrdhttp@http.socket
     state: started
     enabled: true
   become: true
 
 - name: start and enable xrootd http service
-  ansible.builtin.service: 
+  ansible.builtin.service:
     name: xrootd@http
     state: started
     enabled: true

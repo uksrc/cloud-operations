@@ -1,6 +1,5 @@
-site_name: "test-site"
+xrootd_sitename: "test-site"
 cert_path:
 key_path:
 data_path: "/data"
 rucio: false
-remote_user: 

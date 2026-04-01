@@ -13,12 +13,6 @@ data "openstack_compute_keypair_v2" "xrootd_keypair" {
 
 # external IP
 
-resource "openstack_blockstorage_volume_v3" "xrootd_storage_volume" {
-  name                 = "${var.environment}-xrootd-storage"
-  enable_online_resize = true
-  size                 = var.volume_size
-}
-
 resource "openstack_compute_instance_v2" "xrootd_instance" {
   name      = "${var.environment}-xrootd"
   image_id  = data.openstack_images_image_v2.xrootd_image.id
@@ -35,9 +29,4 @@ resource "openstack_compute_instance_v2" "xrootd_instance" {
   network {
     name = "uksrc-ska-network"
   }
-}
-
-resource "openstack_compute_volume_attach_v2" "xrootd_storage_attached" {
-  instance_id = openstack_compute_instance_v2.xrootd_instance.id
-  volume_id   = openstack_blockstorage_volume_v3.xrootd_storage_volume.id
 }
