@@ -25,6 +25,12 @@
     state: present
   become: true
 
+- name: Install EPEL repository
+  ansible.builtin.dnf:
+    name: epel-release
+    state: present
+  become: true
+
 - name: Install packages
   ansible.builtin.dnf:
     name:

@@ -1,7 +1,26 @@
 - hosts: all
+  tags: update_system
+  any_errors_fatal: true
   gather_facts: true
   roles:
     - update_system
+
+- hosts: all
+  tags: hardening
+  any_errors_fatal: true
+  gather_facts: true
+  collections:
+    - devsec.hardening
+  roles:
+    - devsec.hardening.os_hardening
+    - devsec.hardening.ssh_hardening
+  become: true
+
+- hosts: all
+  tags: install_xrootd
+  any_errors_fatal: true
+  gather_facts: true
+  roles:
     - install_xrootd
     - setup_data_directory
     - cert_setup

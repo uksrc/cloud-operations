@@ -46,19 +46,10 @@
     group: xrootd
   become: true
 
-- name: create /opt/xrd/etc
-  ansible.builtin.file:
-    path: /opt/xrd/etc
-    state: directory
-    mode: '0755'
-    owner: xrootd
-    group: xrootd
-  become: true
-
 - name: Copy Authfile
   ansible.builtin.template:
     src: Authfile.j2
-    dest: /opt/xrd/etc/Authfile
+    dest: /etc/xrootd/Authfile
     owner: xrootd
     group: xrootd
   become: true
@@ -80,13 +71,6 @@
     path: /etc/xrootd/macaroon-secret
     owner: xrootd
     group: xrootd
-  become: true
-
-- name: start and enable xrootd http socket service
-  ansible.builtin.service:
-    name: xrdhttp@http.socket
-    state: started
-    enabled: true
   become: true
 
 - name: start and enable xrootd http service

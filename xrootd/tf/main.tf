@@ -36,6 +36,17 @@ resource "openstack_networking_secgroup_rule_v2" "ssh_access" {
   description       = "Allow SSH from internal network"
 }
 
+resource "openstack_networking_secgroup_rule_v2" "letsencrypt_access" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 80
+  port_range_max    = 80
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
+  description       = "Allow HTTP for Let's Encrypt HTTP-01 challenge"
+}
+
 resource "openstack_networking_secgroup_rule_v2" "xroot_access" {
   direction         = "ingress"
   ethertype         = "IPv4"

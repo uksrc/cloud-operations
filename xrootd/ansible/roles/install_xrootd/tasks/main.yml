@@ -1,3 +1,18 @@
+- name: Create the XRootD group
+  ansible.builtin.group:
+    name: xrootd
+    gid: 460
+  become: true
+
+- name: Create the XRootD user
+  ansible.builtin.user:
+    name: xrootd
+    uid: 460
+    group: xrootd
+    createhome: false
+    shell: /sbin/nologin
+  become: true
+
 - name: Install packages on Rocky
   import_tasks: rocky.yml
   when: ansible_facts["distribution"] == "Rocky"
