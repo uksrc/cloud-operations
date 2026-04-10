@@ -12,3 +12,18 @@ variable "openstack_flavor" {
   description = "Name of the OpenStack flavor to use for the XRootD instance"
   type        = string
 }
+
+variable "openstack_ska_uksrc_network" {
+  description = "Main network to attach the XRootD instance to"
+  type        = string
+}
+
+variable "openstack_ska_uksrc_subnet" {
+  description = "Main subnet to attach the XRootD instance to"
+  type        = string
+}
+
+variable "openstack_floating_ip" {
+  description = "The OpenStack external IP to associate with the XRootD instance"
+  type        = string
+}
