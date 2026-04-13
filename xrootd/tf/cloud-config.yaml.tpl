@@ -1,4 +1,15 @@
 #cloud-config
+
+# override the default user e.g. rocky
+# gets the openstack keypair
+user:
+  name: uksrc-xrootd
+  lock_passwd: True
+  gecos: UKSRC XRootD Cloud User
+  groups: [adm, systemd-journal]
+  sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+  shell: /bin/bash
+
 package_reboot_if_required: true
 package_update: true
 package_upgrade: true
