@@ -14,16 +14,21 @@
     name: "dnf-automatic"
     state: latest
 
-- name: Change update reboot behavior to "reboot if needed"
+- name: Change update reboot behavior to 'when-needed' e.g. when a kernel update is installed
   ansible.builtin.lineinfile:
     path: /etc/dnf/automatic.conf
     regexp: '^reboot = .*$'
     line: 'reboot = when-needed'
+
+- name: Change automatic updates trigger time to 2am (default is 6am)
+  ansible.builtin.lineinfile:
+    path: /usr/lib/systemd/system/dnf-automatic.timer
+    regexp: '^OnCalendar=.*$'
+    line: 'OnCalendar=*-*-* 02:00:00'
+    state: present
 
 - name: Enable the automatic updates timer
   ansible.builtin.systemd_service:
     name: dnf-automatic.timer
     enabled: yes
     state: started
-
-# Default trigger time for updates is 6am
