@@ -9,7 +9,7 @@ terraform {
 
   backend "s3" {
     endpoint                    = "object.arcus.openstack.hpc.cam.ac.uk"
-    bucket                      = "${var.environment}-xrootd-tfstate"
+    bucket                      = "${var.environment}-tfstate"
     key                         = "environment.tfstate"
     region                      = "dummy"
     skip_region_validation      = true

@@ -1,4 +1,4 @@
-environment                 = "uksrc-cam-dev"
+environment                 = "uksrc-cam-dev-xrootd"
 openstack_flavor            = "vm.ska.cpu.himem.eighth"
 openstack_image             = "Rocky-9-GenericCloud-Base.latest-20251123-UEFI"
 openstack_ska_uksrc_network = "uksrc-ska-network"

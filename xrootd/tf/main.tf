@@ -8,7 +8,7 @@ data "openstack_compute_flavor_v2" "xrootd_flavor" {
 }
 
 data "openstack_compute_keypair_v2" "xrootd_keypair" {
-  name = "${var.environment}-xrootd"
+  name = var.environment
 }
 
 data "openstack_networking_network_v2" "ska_uksrc_network" {
@@ -21,7 +21,7 @@ data "openstack_networking_subnet_v2" "ska_uksrc_subnet" {
 }
 
 resource "openstack_networking_secgroup_v2" "ska_uksrc_xrootd_sg" {
-  name        = "ska-uksrc-xrootd-sg"
+  name        = "${var.environment}-sg"
   description = "XRootD server access at Cambridge"
 }
 
@@ -59,7 +59,7 @@ resource "openstack_networking_secgroup_rule_v2" "xroot_access" {
 }
 
 resource "openstack_compute_instance_v2" "xrootd_instance" {
-  name      = "${var.environment}-xrootd"
+  name      = var.environment
   image_id  = data.openstack_images_image_v2.xrootd_image.id
   flavor_id = data.openstack_compute_flavor_v2.xrootd_flavor.flavor_id
   key_pair  = data.openstack_compute_keypair_v2.xrootd_keypair.name

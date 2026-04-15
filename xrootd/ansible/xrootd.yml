@@ -17,6 +17,16 @@
   become: true
 
 - hosts: all
+  tags: manage_users
+  any_errors_fatal: true
+  gather_facts: true
+  vars_files:
+    - group_vars/all/users.yml
+  roles:
+    - manage_users
+  become: true
+
+- hosts: all
   tags: install_xrootd
   any_errors_fatal: true
   gather_facts: true

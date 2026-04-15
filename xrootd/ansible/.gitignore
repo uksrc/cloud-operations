@@ -1,0 +1,8 @@
+# Environment variables file containing secrets
+.env
+
+# Ansible retry files (already disabled in ansible.cfg)
+*.retry
+
+# User configuration file (use users.yml.example as template)
+group_vars/all/users.yml
