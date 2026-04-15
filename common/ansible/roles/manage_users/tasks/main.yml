@@ -11,7 +11,7 @@
     comment: "{{ item.key }}"
     shell: /bin/bash
     create_home: yes
-    groups: users,admin,wheel,ansible-added
+    groups: " {{ admin_groups }}"
     append: yes
   loop: "{{ additional_users | dict2items }}"
   when: additional_users is defined and additional_users | length > 0
