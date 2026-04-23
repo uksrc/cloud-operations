@@ -1,7 +1,0 @@
-environment                 = "uksrc-cam-dev-xrootd"
-openstack_flavor            = "vm.ska.cpu.himem.eighth"
-openstack_image             = "Rocky-9-GenericCloud-Base.latest-20251123-UEFI"
-openstack_ska_uksrc_network = "uksrc-ska-network"
-openstack_ska_uksrc_subnet  = "uksrc-ska-subnet"
-openstack_floating_ip       = "XXX.XXX.XXX.XXX"
-state_s3_endpoint           = "object.arcus.openstack.hpc.cam.ac.uk"
