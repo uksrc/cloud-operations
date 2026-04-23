@@ -32,3 +32,22 @@
     name: dnf-automatic.timer
     enabled: yes
     state: started
+
+  - name: Install EPEL
+    tags: install
+    dnf:
+      name: epel-release
+      state: present
+
+- name: Install fail2ban
+  ansible.builtin.dnf:
+    name: "fail2ban"
+    state: latest
+
+# change jail.conf defaults
+
+- name: Enable and start fail2ban
+  ansible.builtin.systemd_service:
+    name: fail2ban
+    enabled: yes
+    state: started

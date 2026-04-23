@@ -8,7 +8,7 @@ terraform {
   }
 
   backend "s3" {
-    endpoint                    = "object.arcus.openstack.hpc.cam.ac.uk"
+    endpoint                    = var.state_s3_endpoint
     bucket                      = "${var.environment}-tfstate"
     key                         = "environment.tfstate"
     region                      = "dummy"

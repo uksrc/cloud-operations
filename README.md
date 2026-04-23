@@ -2,6 +2,5 @@
 
 A repo containing infrastructure definitions for:
 
-- xrootd server
 - Metadata DB host server
-
+- xrootd production and development servers at RAL and Cambridge
