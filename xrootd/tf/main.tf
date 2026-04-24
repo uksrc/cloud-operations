@@ -66,7 +66,9 @@ resource "openstack_compute_instance_v2" "xrootd_instance" {
 
   security_groups = [openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.name]
 
-  user_data = templatefile("cloud-config.yaml.tpl", {})
+  user_data = templatefile("cloud-config.yaml.tpl", {
+    default_username = var.default_username
+  })
 
   network {
     name = "iris-ska-src-sriov"

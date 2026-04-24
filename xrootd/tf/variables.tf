@@ -30,5 +30,10 @@ variable "openstack_floating_ip" {
 
 variable "state_s3_endpoint" {
   description = "The S3 endpoint URL for the tofu state"
-  type       = string
+  type        = string
+}
+
+variable "default_username" {
+  description = "The default username to use for the XRootD instance"
+  type        = string
 }

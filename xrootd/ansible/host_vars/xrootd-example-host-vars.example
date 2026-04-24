@@ -1,0 +1,11 @@
+# *** File to be vault encrypted ***
+
+xrootd_sitename: placeholder
+cert_servername: placeholder
+manila_share_name: placeholder
+cert_email: placeholder
+manila_host: placeholder
+manila_share_mnt_opts: placeholder
+manila_share_key: placeholder
+manila_access_to: placeholder
+manila_share_export: placeholder

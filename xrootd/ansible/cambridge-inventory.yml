@@ -1,0 +1,4 @@
+cambridge:
+  hosts:
+    uksrc-cam-prod-xrootd:
+      ansible_host: XXX.XXX.XXX.XXX

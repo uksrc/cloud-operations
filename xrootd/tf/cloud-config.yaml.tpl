@@ -3,7 +3,7 @@
 # override the default user e.g. rocky
 # gets the openstack keypair
 user:
-  name: uksrc-xrootd
+  name: ${default_username}
   lock_passwd: True
   gecos: UKSRC XRootD Cloud User
   groups: [adm, systemd-journal]

@@ -1,4 +1,4 @@
-cert_method: self_signed
+cert_method: letsencrypt
 cert_email: jdoe@example.com
 cert_servername: www.example.com
 cert_path: ""

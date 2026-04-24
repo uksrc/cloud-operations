@@ -62,8 +62,21 @@
     group: xrootd
   become: true
 
-- name: Generate macaroon secret
-  ansible.builtin.shell: openssl rand -base64 -out /etc/xrootd/macaroon-secret 64
+- name: Create the scitokens cache directory
+  ansible.builtin.file:
+    path: /var/cache/xrootd/
+    state: directory
+    owner: xrootd
+    group: xrootd
+  become: true
+
+# Default cache location is $HOME/.cache, but the xrootd@http service runs as our xrootd user and has no
+# home directory, so set an env var to point to the new cache dir
+- name: Set an env var in the xrootd@http service file to point to the scitokens cache dir
+  ansible.builtin.lineinfile:
+    path: /usr/lib/systemd/system/xrootd@.service
+    insertafter: '^\[Service\]$'
+    line: 'Environment=XDG_CACHE_HOME=/var/cache/xrootd'
   become: true
 
 - name: change owner of macaroon secret

@@ -38,7 +38,7 @@ We are using openstack manila shares for XRootD storage. Create a share and add 
 openstack share create CephFS <size in GB> --name <share name> --share-type ceph01_cephfs
 openstack share access create <share name> cephx <rule name>
 
-The share details should be added to the ansible inventory with the share key vault encrypted.
+The share details should be ansible vault encrypted in the host_vars file.
 
 ### VM Base Image
 
@@ -59,7 +59,8 @@ openstack image create --disk-format qcow2 \
 ```
 cd xrootd/tf
 ```
-Create or edit the tfvars file for your server and set the necessary variables.
+Create or edit the tfvars file for your server and set the necessary variables. See the xrootd-server.tfvars.example file. The .gitignore file is set to ignore .tfvars files so they are not checked in
+This file is
 
 You are now ready to create the machine:
 ```
@@ -80,7 +81,7 @@ We use some [dev-sec](https://dev-sec.io/) ansible roles for [OS and SSH hardeni
 ```
 ansible-galaxy collection install devsec.hardening
 ```
-Some variables can be set in group_vars/all/variables.yml but most are set in the inventory file.
+Some variables can be set in group_vars/all/variables.yml or the inventory file but most are set in the vault encrypted host_vars/<xrootd host> file. See the host_vars/xrootd-example-host-vars.example file. Use the group_vars/all/users.yml.example as a template for adding admin users.
 
 Ansible playbook steps:
 

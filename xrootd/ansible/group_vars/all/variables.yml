@@ -1,5 +1,7 @@
+ansible_python_interpreter: /usr/bin/python
+ansible_connection: ssh
+ansible_user: uksrc-xrootd
 xrootd_sitename: "test-site"
-cert_path:
-key_path:
-data_path: "/data"
+data_path: "/skadata"
 rucio: false
+storage_type: ceph
