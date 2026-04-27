@@ -52,8 +52,8 @@
   become: true
 
 - name: Setup auto-renewal/copy of the key and cert
-  ansible.builtin.copy:
-    src: copy-xrootd-certs.sh
+  ansible.builtin.template:
+    src: copy-xrootd-certs.sh.j2
     dest: /etc/letsencrypt/renewal-hooks/deploy/copy-xrootd-certs.sh
     owner: root
     group: root
