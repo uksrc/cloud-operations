@@ -1,0 +1,4 @@
+- name: Configure firewall
+  import_tasks: firewalld.yml
+  when: ansible_facts["distribution"] == "Rocky"
+  become: true

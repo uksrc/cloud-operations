@@ -27,6 +27,14 @@
   become: true
 
 - hosts: all
+  tags: firewall
+  any_errors_fatal: true
+  gather_facts: true
+  roles:
+    - firewall
+  become: true
+
+- hosts: all
   tags: install_xrootd
   any_errors_fatal: true
   gather_facts: true

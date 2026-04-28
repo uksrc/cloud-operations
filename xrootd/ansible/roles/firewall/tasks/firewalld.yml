@@ -1,0 +1,58 @@
+---
+- name: Install firewalld
+  ansible.builtin.package:
+    name: firewalld
+    state: present
+
+- name: Ensure firewalld is running and enabled
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: open xrootd port in firewalld
+  ansible.posix.firewalld:
+    zone: public
+    port: 1094/tcp
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: open port 80 for LetsEncrypt in firewalld
+  ansible.posix.firewalld:
+    zone: public
+    port: 80/tcp
+    permanent: true
+    state: enabled
+    immediate: true
+
+# firewalld ssh config taken from https://docs.rackspace.com/docs/limit-ssh-access-by-ip-address
+
+- name: add the ssh service to the trusted zone in firewalld
+  ansible.posix.firewalld:
+    zone: trusted
+    service: ssh
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: add ssh source network to the trusted zone in firewalld
+  ansible.posix.firewalld:
+    zone: trusted
+    source: "{{ ssh_local_access_cidr }}"
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: remove ssh service from the public zone in firewalld
+  ansible.posix.firewalld:
+    zone: public
+    service: ssh
+    permanent: true
+    state: disabled
+    immediate: true
+
+- name: Restart firewalld service
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted
