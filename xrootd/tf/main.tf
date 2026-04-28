@@ -48,17 +48,19 @@ resource "openstack_networking_secgroup_rule_v2" "letsencrypt_access" {
 }
 
 resource "openstack_networking_secgroup_rule_v2" "xroot_access" {
+  for_each          = toset(var.xrootd_allowed_ip_addresses)
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
   port_range_min    = 1094
   port_range_max    = 1094
-  remote_ip_prefix  = "0.0.0.0/0"
+  remote_ip_prefix  = each.value
   security_group_id = openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
-  description       = "Allow XRootD access from anywhere"
+  description       = "Allow XRootD access from ${each.value}"
 }
 
 resource "openstack_compute_instance_v2" "xrootd_instance" {
+
   name      = var.environment
   image_id  = data.openstack_images_image_v2.xrootd_image.id
   flavor_id = data.openstack_compute_flavor_v2.xrootd_flavor.flavor_id

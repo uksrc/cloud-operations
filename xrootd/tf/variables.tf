@@ -37,3 +37,8 @@ variable "default_username" {
   description = "The default username to use for the XRootD instance"
   type        = string
 }
+
+variable "xrootd_allowed_ip_addresses" {
+  description = "List of IP addresses or CIDR blocks allowed to access XRootD on port 1094"
+  type        = list(string)
+}
