@@ -59,6 +59,17 @@ resource "openstack_networking_secgroup_rule_v2" "xroot_access" {
   description       = "Allow XRootD access from ${each.value}"
 }
 
+resource "openstack_networking_secgroup_rule_v2" "local_xroot_access" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 1094
+  port_range_max    = 1094
+  remote_ip_prefix  = data.openstack_networking_subnet_v2.ska_uksrc_subnet.cidr
+  security_group_id = openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
+  description       = "Allow XRootD access from ${var.openstack_ska_uksrc_network}"
+}
+
 resource "openstack_compute_instance_v2" "xrootd_instance" {
 
   name      = var.environment
