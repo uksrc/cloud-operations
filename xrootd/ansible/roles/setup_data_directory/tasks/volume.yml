@@ -1,0 +1,22 @@
+- name: Create the data partition at {{ data_device }}
+  community.general.parted:
+    device: "{{ data_device }}"
+    number: 1
+    flags: [ lvm ]
+    state: present
+  become: true
+
+- name: Format {{ data_partition }} with ext4
+  ansible.builtin.filesystem:
+    fstype: ext4
+    dev: "{{ data_partition }}"
+  become: true
+
+- name: Mount {{ data_partition }} at {{ data_path }}
+  ansible.builtin.mount:
+    path: "{{ data_path }}"
+    src: "{{ data_partition }}"
+    fstype: ext4
+    state: mounted
+    opts: defaults
+  become: true

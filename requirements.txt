@@ -1,0 +1,9 @@
+python-blazarclient
+python-cinderclient
+python-keystoneclient
+python-manilaclient
+python-neutronclient
+python-octaviaclient
+python-openstackclient
+ansible
+ansible-core

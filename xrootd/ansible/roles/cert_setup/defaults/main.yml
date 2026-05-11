@@ -1,0 +1,6 @@
+cert_method: letsencrypt
+cert_email: jdoe@example.com
+cert_servername: www.example.com
+cert_path: ""
+key_path: ""
+use_letsencrypt_staging: false

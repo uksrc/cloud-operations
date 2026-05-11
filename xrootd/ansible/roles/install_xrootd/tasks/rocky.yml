@@ -1,0 +1,47 @@
+  #https://xrootd.org/dload.html#official-rpm-repositories
+
+- name: printing debug
+  debug:
+    msg: "You are in the Rocky Block Zone"
+
+- name: Download the OSG RPM GPG key
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/osg-htc/docs/master/docs/release/RPM-GPG-KEY-OSG-25-developer
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-OSG-25-developer
+    mode: '0400'
+  become: true
+
+- name: Import the OSG RPM GPG key
+  ansible.builtin.rpm_key:
+    state: present
+    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-OSG-25-developer
+    fingerprint: 962A 9BCD D330 245F 2703 C88B 74E5 BE22 D4E9 B1FC
+  become: true
+
+- name: Install OSG repository
+  ansible.builtin.dnf:
+    name:
+      - https://repo.osg-htc.org/osg/25-main/osg-25-main-el9-release-latest.rpm
+    state: present
+  become: true
+
+- name: Install EPEL repository
+  ansible.builtin.dnf:
+    name: epel-release
+    state: present
+  become: true
+
+- name: Install packages
+  ansible.builtin.dnf:
+    name:
+      - xrootd-client
+      - xrootd-server
+      - python3-xrootd
+      - xrootd-scitokens
+      - osg-ca-certs
+      - osg-ca-certs-updater
+      - certbot
+      - python3-certbot-apache
+      - python3-certbot-nginx
+    state: present
+  become: true
