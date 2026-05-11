@@ -1,0 +1,9 @@
+- name: Install certs for xrootd - Let's Encrypt
+  import_tasks: letsencrypt.yml
+  when: cert_method == "letsencrypt"
+  become: true
+
+- name: Install certs for xrootd - self-signed
+  import_tasks: self.yml
+  when: cert_method == "self_signed"
+  become: true

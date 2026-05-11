@@ -1,0 +1,44 @@
+# https://osg-htc.org/docs/common/ca/
+
+- name: update crypto policies
+  ansible.builtin.shell: update-crypto-policies --set DEFAULT:SHA1
+  become: true
+
+- name: Get osg .pem file
+  ansible.builtin.get_url:
+    url: https://osg-htc.org/security/cilogonosgca/cilogon-osg.pem
+    dest: /etc/grid-security/certificates/cilogon-osg.pem
+    mode: '0644'
+  become: true
+
+- name: install fetch-crl
+  ansible.builtin.dnf:
+    name: fetch-crl
+    state: present
+  become: true
+
+- name: fetch crls
+  ansible.builtin.shell: fetch-crl
+  become: true
+  ignore_errors: true
+
+# yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+# yum install https://repo.osg-htc.org/osg/25-main/osg-25-main-el9-release-latest.rpm
+
+# yum install osg-ca-certs
+
+#curl --cacert /etc/grid-security/certificates/cilogon-osg.pem \
+#              --capath /etc/grid-security/certificates/ \
+#              -o /dev/null \
+#              https://gracc.opensciencegrid.org \
+#              && echo "CA certificate installation verified"
+
+# yum install fetch-crl
+
+# update-crypto-policies --set DEFAULT:SHA1
+
+# sudo wget https://osg-htc.org/security/cilogonosgca/cilogon-osg.pem
+# move to grid certs?
+
+# sudo fetch-crl

@@ -27,7 +27,8 @@ terraform.rc
 *.env
 brew
 brew/*
-
+.venv/
+.venv/*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

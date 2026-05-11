@@ -1,0 +1,94 @@
+---
+- name: Enable and start the osg-ca-certs-updater timer
+  ansible.builtin.systemd_service:
+    name: osg-ca-certs-updater.timer
+    state: started
+    enabled: true
+  become: true
+
+- name: Copy xrootd config file
+  ansible.builtin.template:
+    src: xrootd-http.cfg.j2
+    dest: /etc/xrootd/xrootd-http.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy xrootd 98-config.cfg
+  ansible.builtin.copy:
+    src: 98-config.cfg
+    dest: /etc/xrootd/config.d/98-config.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy xrootd 98-security.cfg
+  ansible.builtin.template:
+    src: 98-security.cfg.j2
+    dest: /etc/xrootd/config.d/98-security.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy xrootd 98-tls.cfg
+  ansible.builtin.copy:
+    src: 98-tls.cfg
+    dest: /etc/xrootd/config.d/98-tls.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy robots.txt
+  ansible.builtin.copy:
+    src: robots.txt
+    dest: /etc/xrootd/robots.txt
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy Authfile
+  ansible.builtin.template:
+    src: Authfile.j2
+    dest: /etc/xrootd/Authfile
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy scitokens.cfg
+  ansible.builtin.copy:
+    src: scitokens.cfg
+    dest: /etc/xrootd/scitokens.cfg
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Create the scitokens cache directory
+  ansible.builtin.file:
+    path: /var/cache/xrootd/
+    state: directory
+    owner: xrootd
+    group: xrootd
+  become: true
+
+# Default cache location is $HOME/.cache, but the xrootd@http service runs as our xrootd user and has no
+# home directory, so set an env var to point to the new cache dir
+- name: Set an env var in the xrootd@http service file to point to the scitokens cache dir
+  ansible.builtin.lineinfile:
+    path: /usr/lib/systemd/system/xrootd@.service
+    insertafter: '^\[Service\]$'
+    line: 'Environment=XDG_CACHE_HOME=/var/cache/xrootd'
+  become: true
+
+- name: change owner of macaroon secret
+  ansible.builtin.file:
+    path: /etc/xrootd/macaroon-secret
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: start and enable xrootd http service
+  ansible.builtin.service:
+    name: xrootd@http
+    state: started
+    enabled: true
+  become: true

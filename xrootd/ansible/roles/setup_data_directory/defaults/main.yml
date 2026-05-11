@@ -1,0 +1,4 @@
+storage_type: volume
+data_volume: ""
+data_device: "" # e.g. /dev/sdb
+data_partition: "" # e.g. /dev/sdb1

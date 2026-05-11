@@ -1,0 +1,61 @@
+- block:
+  - name: Install EPEL
+    tags: install
+    dnf:
+      name: epel-release
+      state: present
+    become: true
+
+  - name: Install certbot
+    tags: install
+    dnf:
+      name:
+        - certbot
+        - python3-certbot-apache
+      state: present
+    become: true
+
+- name: Generate Let's Encrypt certificate
+  ansible.builtin.command: sudo certbot certonly --standalone -d {{ cert_servername }} -n -m {{ cert_email }} --agree-tos
+  become: true
+  when: use_letsencrypt_staging != true
+
+- name: Generate Let's Encrypt certificate (staging)
+  ansible.builtin.command: sudo certbot certonly --test-cert --standalone -d {{ cert_servername }} -n -m {{ cert_email }} --agree-tos
+  become: true
+  when: use_letsencrypt_staging == true
+
+- name: Create /etc/grid-security/xrootd dir
+  ansible.builtin.file:
+    path: /etc/grid-security/xrootd
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Copy cert
+  ansible.builtin.copy:
+    src: "/etc/letsencrypt/live/{{ cert_servername }}/fullchain.pem"
+    dest: /etc/grid-security/xrootd/hostcert.pem
+    remote_src: true
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Copy key
+  ansible.builtin.copy:
+    src: "/etc/letsencrypt/live/{{ cert_servername }}/privkey.pem"
+    dest: /etc/grid-security/xrootd/hostkey.pem
+    mode: '0600'
+    remote_src: true
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: Setup auto-renewal/copy of the key and cert
+  ansible.builtin.template:
+    src: copy-xrootd-certs.sh.j2
+    dest: /etc/letsencrypt/renewal-hooks/deploy/copy-xrootd-certs.sh
+    owner: root
+    group: root
+    mode: '0755'
+  become: true

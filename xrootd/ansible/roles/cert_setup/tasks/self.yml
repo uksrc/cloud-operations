@@ -1,0 +1,50 @@
+- name: generate cert
+  shell: openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365 -nodes -subj '/CN=www.example.com'
+  when: cert_path != "" and key_path != ""
+
+- name: set cert/key path
+  ansible.builtin.set_fact:
+    cert_path: "cert.pem"
+    key_path: "key.pem"
+    self_signed: true
+  when: cert_path != "" and key_path != ""
+
+- name: Create xrootd certificate directory
+  ansible.builtin.file:
+    path: /etc/grid-security/xrootd
+    state: directory
+    mode: '0755'
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: move cert
+  ansible.builtin.copy:
+    src: "{{ cert_path }}"
+    dest: /etc/grid-security/xrootd/hostcert.pem
+    remote_src: true
+    owner: xrootd
+    group: xrootd
+  become: true
+
+- name: remove old cert
+  ansible.builtin.file:
+    path: cert.pem
+    state: absent
+  when: self_signed == true
+
+- name: move key
+  ansible.builtin.copy:
+    src: "{{ key_path }}"
+    dest: /etc/grid-security/xrootd/hostkey.pem
+    mode: '0600'
+    owner: xrootd
+    group: xrootd
+    remote_src: true
+  become: true
+
+- name: remove old key file
+  ansible.builtin.file:
+    path: key.pem
+    state: absent
+  when: self_signed == true

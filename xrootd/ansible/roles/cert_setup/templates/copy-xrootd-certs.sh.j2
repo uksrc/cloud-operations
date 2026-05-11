@@ -1,0 +1,4 @@
+#!/bin/bash
+cp /etc/letsencrypt/live/{{ cert_servername }}/fullchain.pem /etc/grid-security/xrootd/hostcert.pem
+cp /etc/letsencrypt/live/{{ cert_servername }}/privkey.pem /etc/grid-security/xrootd/hostkey.pem
+systemctl restart xrootd@http
