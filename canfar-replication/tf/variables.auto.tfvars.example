@@ -1,0 +1,9 @@
+# Define Harbor User , Password and URL
+
+primary_user = "user"
+
+primary_user_password = "password"
+
+harbor_dest_url = "https://harbor.localhost:8443"
+
+remote_harbor_url = "https://remote-harbor.com"
