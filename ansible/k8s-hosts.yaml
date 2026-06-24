@@ -1,0 +1,64 @@
+all:
+  vars:
+    ansible_user: ubuntu
+
+cam-dev:
+  hosts:
+    uksrc-cam-dev-workers-6g6xt-p4rx5:
+      ansible_host: 192.168.100.54
+    uksrc-cam-dev-workers-6g6xt-fmkv5:
+      ansible_host: 192.168.100.57
+    uksrc-cam-dev-workers-6g6xt-ztvbn:
+      ansible_host: 192.168.100.152
+    uksrc-cam-dev-control-plane-h7hkf:
+      ansible_host: 192.168.100.148
+    uksrc-cam-dev-control-plane-fwbrb:
+      ansible_host: 192.168.100.105
+    uksrc-cam-dev-control-plane-wkkqr:
+      ansible_host: 192.168.100.69
+
+cam-preprod:
+  hosts:
+    uksrc-cam-preprod-workers-wfrj2-ddnnz:
+      ansible_host: 192.168.100.245
+    uksrc-cam-preprod-workers-wfrj2-qqdkv:
+      ansible_host: 192.168.100.67
+    uksrc-cam-preprod-workers-wfrj2-gm98d:
+      ansible_host: 192.168.100.101
+    uksrc-cam-preprod-control-plane-zpncr:
+      ansible_host: 192.168.100.252
+    uksrc-cam-preprod-control-plane-m72lh:
+      ansible_host: 192.168.100.154
+    uksrc-cam-preprod-control-plane-zzc7v:
+      ansible_host: 192.168.100.104
+
+cam-prod:
+  hosts:
+    uksrc-cam-prod-workers-4x-a100-quarter-m7fc2-clnt6:
+      ansible_host: 192.168.100.128
+    uksrc-cam-prod-workers-4x-a100-quarter-m7fc2-rsjxl:
+      ansible_host: 192.168.100.9
+    uksrc-cam-prod-workers-general-v2-full-8dtxt-ksqqt:
+      ansible_host: 192.168.100.145
+    uksrc-cam-prod-workers-4x-a100-quarter-m7fc2-bkcw6:
+      ansible_host: 192.168.100.123
+    uksrc-cam-prod-workers-g7229-l89dv:
+      ansible_host: 192.168.100.86
+    uksrc-cam-prod-workers-g7229-2ddjx:
+      ansible_host: 192.168.100.68
+    uksrc-cam-prod-workers-4x-a100-quarter-m7fc2-grg7h:
+      ansible_host: 192.168.100.87
+    uksrc-cam-prod-services-rvj7m-rgsg6:
+      ansible_host: 192.168.100.47
+    uksrc-cam-prod-workers-g7229-lhpnh:
+      ansible_host: 192.168.100.200
+    uksrc-cam-prod-services-rvj7m-w8t2k:
+      ansible_host: 192.168.100.177
+    uksrc-cam-prod-control-plane-qc84m:
+      ansible_host: 192.168.100.20
+    uksrc-cam-prod-control-plane-fdvf4:
+      ansible_host: 192.168.100.85
+    uksrc-cam-prod-control-plane-b5b6g:
+      ansible_host: 192.168.100.147
+    uksrc-cam-prod-xrootd:
+      ansible_host: 192.168.100.99

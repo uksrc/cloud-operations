@@ -1,0 +1,46 @@
+all:
+  vars:
+    ansible_user: rocky
+
+slurm-prod:
+  hosts:
+    login-0:
+      ansible_host: 10.8.2.176
+    standard-0:
+      ansible_host: 10.8.3.78
+    a100-0:
+      ansible_host: 10.8.3.147
+    standard-2:
+      ansible_host: 10.8.2.211
+    standard-1:
+      ansible_host: 10.8.0.133
+    control:
+      ansible_host: 10.8.2.194
+    squid-0:
+      ansible_host: 10.8.1.16
+
+slurm-staging:
+  hosts:
+    stg-login-0:
+      ansible_host: 10.8.1.225
+    stg-standard-0:
+      ansible_host: 10.8.3.21
+    stg-standard-1:
+      ansible_host: 10.8.3.145
+    stg-control:
+      ansible_host: 10.8.3.30
+    jumphost:
+      ansible_host: 10.8.3.135
+
+slurm-steveb:
+  hosts:
+    steveb-control:
+      ansible_host: 10.8.0.112
+    steveb-standard-1:
+      ansible_host: 10.8.2.38
+    steveb-standard-0:
+      ansible_host: 10.8.3.141
+    steveb-login-0:
+      ansible_host: 10.8.1.227
+
+
