@@ -1,1 +1,1 @@
-PROJECTS = ["cadc", "skaha", "srcnet", "astroai", "castor", "edps", "neloura", "new-new-earth", "canucs", "chimefrb-public", "cirada", "crispasa", "dragonflypol", "lsst", "unions", "uvickbos"]
+PROJECTS = ["astroai", "cadc", "skaha", "srcnet", "astroai", "castor", "edps", "neloura", "new-new-earth", "canucs", "chimefrb-public", "cirada", "crispasa", "dragonflypol", "lsst", "unions", "uvickbos"]
