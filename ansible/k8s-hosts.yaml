@@ -62,3 +62,111 @@ cam-prod:
       ansible_host: 192.168.100.147
     uksrc-cam-prod-xrootd:
       ansible_host: 192.168.100.99
+ral-dev:
+  vars:
+    ansible_user: ubuntu
+  hosts:
+    uksrc-ral-dev-2-workers-wtjdd-pxknz:
+      ansible_host: 192.168.64.151
+    uksrc-ral-dev-2-control-plane-spz7c:
+      ansible_host: 192.168.65.70
+    uksrc-ral-dev-2-control-plane-kjmbs:
+      ansible_host: 192.168.67.55
+    uksrc-ral-dev-2-workers-wtjdd-9h54c:
+      ansible_host: 192.168.64.170
+    uksrc-ral-dev-2-workers-wtjdd-gh4vf:
+      ansible_host: 192.168.67.253
+    uksrc-ral-dev-2-control-plane-62gbx:
+      ansible_host: 192.168.67.99
+    uksrc-ral-dev-control-plane-c24bg:
+      ansible_host: 192.168.67.221
+    uksrc-ral-dev-control-plane-pthg7:
+      ansible_host: 192.168.64.63
+    uksrc-ral-dev-control-plane-nbpsk:
+      ansible_host: 192.168.67.203
+    uksrc-ral-dev-workers-fn49v-f2f27:
+      ansible_host: 192.168.64.138
+    uksrc-ral-dev-workers-fn49v-ps9nx:
+      ansible_host: 192.168.67.10
+    uksrc-ral-dev-workers-fn49v-n42kb:
+      ansible_host: 192.168.64.25
+
+ral-preprod:
+  hosts:
+    uksrc-ral-preprod-workers-4s5kh-4frgz:
+      ansible_host: 192.168.64.82
+    uksrc-ral-preprod-workers-4s5kh-d6fsr:
+      ansible_host: 192.168.65.150
+    uksrc-ral-preprod-workers-4s5kh-wzprg:
+      ansible_host: 192.168.65.46
+    uksrc-ral-preprod-workers-4s5kh-kb4l8:
+      ansible_host: 192.168.65.233
+    uksrc-ral-preprod-workers-4s5kh-zz89g:
+      ansible_host: 192.168.65.138
+    uksrc-ral-preprod-workers-4s5kh-cv9lc:
+      ansible_host: 192.168.64.144
+    uksrc-ral-preprod-control-plane-8gdsn:
+      ansible_host: 192.168.65.99
+    uksrc-ral-preprod-control-plane-c5w94:
+      ansible_host: 192.168.66.100
+    uksrc-ral-preprod-control-plane-5962t:
+      ansible_host: 192.168.65.149
+
+ral-prod:
+  hosts:
+    uksrc-ral-prod-workers-l6c-32-qqlwf-tjf5j:
+      ansible_host: 192.168.66.219
+    uksrc-ral-prod-workers-l6c-32-qqlwf-mn9gs:
+      ansible_host: 192.168.65.107
+    uksrc-ral-prod-workers-l6c-32-qqlwf-kfk8r:
+      ansible_host: 192.168.64.78
+    uksrc-ral-prod-workers-small-nbbx9-qm4dz:
+      ansible_host: 192.168.65.24
+    uksrc-ral-prod-workers-l6c-32-qqlwf-w2kx4:
+      ansible_host: 192.168.67.71
+    uksrc-ral-prod-workers-small-nbbx9-x2zmc:
+      ansible_host: 192.168.67.169
+    uksrc-ral-prod-workers-l6c-32-qqlwf-vjbpk:
+      ansible_host: 192.168.65.94
+    uksrc-ral-prod-workers-small-nbbx9-shpv2:
+      ansible_host: 192.168.64.136
+    uksrc-ral-prod-workers-l6c-32-qqlwf-jjqtn:
+      ansible_host: 192.168.66.116
+    uksrc-ral-prod-workers-small-nbbx9-xkjjd:
+      ansible_host: 192.168.66.98
+    uksrc-ral-prod-workers-l6c-32-qqlwf-6pss6:
+      ansible_host: 192.168.65.36
+    uksrc-ral-prod-workers-small-nbbx9-tgbbz:
+      ansible_host: 192.168.67.153
+    uksrc-ral-prod-workers-l6-c252-xttwf-9dtfw:
+      ansible_host: 192.168.67.245
+    uksrc-ral-prod-workers-small-nbbx9-shdcf:
+      ansible_host: 192.168.67.187
+    uksrc-ral-prod-workers-small-nbbx9-dlpnn:
+      ansible_host: 192.168.64.48
+    uksrc-ral-prod-workers-l6c-32-qqlwf-dk6rd:
+      ansible_host: 192.168.64.201
+    uksrc-ral-prod-workers-small-nbbx9-j8v98:
+      ansible_host: 192.168.64.204
+    uksrc-ral-prod-control-plane-z4sfg:
+      ansible_host: 192.168.64.194
+    uksrc-ral-prod-control-plane-b8jzw:
+      ansible_host: 192.168.67.176
+    uksrc-ral-prod-control-plane-tx6v4:
+      ansible_host: 192.168.65.31
+
+infra-cluster:
+  hosts:
+    uksrc-infra-cluster-workers-micro-zkht6-zzh7z:
+      ansible_host: 192.168.66.48
+    uksrc-infra-cluster-control-plane-6zcc2:
+      ansible_host: 192.168.65.61
+    uksrc-infra-cluster-workers-micro-zkht6-j2p6k:
+      ansible_host: 192.168.66.226
+    uksrc-infra-cluster-control-plane-xn64s:
+      ansible_host: 192.168.67.7
+    uksrc-infra-cluster-workers-micro-zkht6-jjjhp:
+      ansible_host: 192.168.64.176
+    uksrc-infra-cluster-control-plane-vz6nd:
+      ansible_host: 192.168.66.13
+
