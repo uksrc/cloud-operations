@@ -3,6 +3,8 @@ all:
     ansible_user: ubuntu
 
 cam-dev:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/uksrc-cam-dev-keypair
   hosts:
     uksrc-cam-dev-workers-6g6xt-p4rx5:
       ansible_host: 192.168.100.54
@@ -18,6 +20,8 @@ cam-dev:
       ansible_host: 192.168.100.69
 
 cam-preprod:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/uksrc-cam-preprod-keypair
   hosts:
     uksrc-cam-preprod-workers-wfrj2-ddnnz:
       ansible_host: 192.168.100.245
@@ -33,6 +37,8 @@ cam-preprod:
       ansible_host: 192.168.100.104
 
 cam-prod:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/uksrc-cam-prod-keypair
   hosts:
     uksrc-cam-prod-workers-4x-a100-quarter-m7fc2-clnt6:
       ansible_host: 192.168.100.128
@@ -64,7 +70,7 @@ cam-prod:
       ansible_host: 192.168.100.99
 ral-dev:
   vars:
-    ansible_user: ubuntu
+    ansible_ssh_private_key_file: ~/.ssh/uksrc-ral-keypair
   hosts:
     uksrc-ral-dev-2-workers-wtjdd-pxknz:
       ansible_host: 192.168.64.151
@@ -92,6 +98,8 @@ ral-dev:
       ansible_host: 192.168.64.25
 
 ral-preprod:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/uksrc-ral-preprod-keypair
   hosts:
     uksrc-ral-preprod-workers-4s5kh-4frgz:
       ansible_host: 192.168.64.82
@@ -113,6 +121,8 @@ ral-preprod:
       ansible_host: 192.168.65.149
 
 ral-prod:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/uksrc-ral-prod-keypair
   hosts:
     uksrc-ral-prod-workers-l6c-32-qqlwf-tjf5j:
       ansible_host: 192.168.66.219
@@ -156,6 +166,8 @@ ral-prod:
       ansible_host: 192.168.65.31
 
 infra-cluster:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/uksrc-infra-cluster-keypair
   hosts:
     uksrc-infra-cluster-workers-micro-zkht6-zzh7z:
       ansible_host: 192.168.66.48
