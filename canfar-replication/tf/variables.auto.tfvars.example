@@ -1,8 +1,8 @@
 # Define Harbor User , Password and URL
 
-primary_user = "user"
+primary_user = "user" # Destination Harbor Username
 
-primary_user_password = "password"
+primary_user_password = "password" # Destination Harbor Password
 
 harbor_dest_url = "https://harbor.localhost:8443"
 
