@@ -38,8 +38,30 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Export the environment variables
+
+```
+export HARBOR_DEST_URL=https://<dest_url>
+export HARBOR_USER=<username>
+export HARBOR_PASS=<password>
+export HARBOR_REMOTE_URL=https://<remote_url>
+```
+
 Execute the script
 
 ```
-python label_artifacts.py
+python main.py
 ```
+
+#### Run python in container
+
+You can also create a docker image to run the python script in a container.
+
+```
+cd canfar-replication/python
+docker build --platform linux/amd64,linux/arm64 -t <registry-url>/harbor/harbor-labeler:1.0.0 .
+docker push <registry-url>/harbor/harbor-labeler:1.0.
+```
+
+Make sure to login into registry if it is a secure one.
+And in harbor you also need to set the project as public.

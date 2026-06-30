@@ -1,7 +1,7 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/goharbor/harbor" {
+provider "registry.opentofu.org/goharbor/harbor" {
   version     = "3.12.0"
   constraints = "~> 3.12.0"
   hashes = [

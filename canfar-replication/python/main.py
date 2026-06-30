@@ -11,22 +11,16 @@ from dataclasses import dataclass, field
 from typing import Optional
 from urllib.parse import quote
 from http.cookiejar import CookieJar
-import hcl2
 import requests
+import os
 from requests.auth import HTTPBasicAuth
 
 from config import PROJECTS
 
-def load_tfvars(path: str) -> dict:
-    with open(path) as f:
-        return hcl2.load(f)
-
-TFVARS = load_tfvars("../tf/variables.auto.tfvars")
-
-HARBOR_URL = TFVARS["harbor_dest_url"].strip('"')
-HARBOR_USER = TFVARS["primary_user"].strip('"')
-HARBOR_PASS = TFVARS["primary_user_password"].strip('"')
-HARBOR_REMOTE_URL = TFVARS["remote_harbor_url"].strip('"')
+HARBOR_URL = os.environ["HARBOR_DEST_URL"]
+HARBOR_USER = os.environ["HARBOR_USER"]
+HARBOR_PASS = os.environ["HARBOR_PASS"]
+HARBOR_REMOTE_URL = os.environ["HARBOR_REMOTE_URL"]
 
 PAGE_SIZE = 100
 VERIFY_SSL = False
