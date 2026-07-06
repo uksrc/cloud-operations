@@ -1,0 +1,22 @@
+---
+# PostgreSQL Backup Configuration
+
+# Common settings
+backup_local_dir: "/var/backups/postgresql"
+backup_databases: "postgres,caom,caom_preprod,software_discovery,software_discovery_preprod"
+swift_container_name: "uksrc-backups"
+
+# Long-lived backup (daily, 28-day retention)
+backup_daily_enabled: true
+backup_daily_schedule_time: "00:00"
+backup_daily_retention_days: 28
+
+# Short-lived backup (every 2 hours, 1-day retention)
+backup_frequent_enabled: true
+backup_frequent_schedule_time: "*-*-* 02,04,06,08,10,12,14,16,18,20,22:00:00"
+backup_frequent_retention_days: 1
+
+# OpenStack Swift credentials (Application Credentials only)
+openstack_auth_url: "{{ lookup('env', 'OS_AUTH_URL') | default('', true) }}"
+openstack_application_credential_id: "{{ lookup('env', 'OS_APPLICATION_CREDENTIAL_ID') | default('', true) }}"
+openstack_application_credential_secret: "{{ lookup('env', 'OS_APPLICATION_CREDENTIAL_SECRET') | default('', true) }}"
