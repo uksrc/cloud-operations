@@ -42,3 +42,13 @@ variable "xrootd_allowed_ip_addresses" {
   description = "List of IP addresses or CIDR blocks allowed to access XRootD on port 1094"
   type        = list(string)
 }
+
+variable "openstack_wcdc_dirac_network" {
+  description = "100Gbps network to attach the XRootD instance to"
+  type        = string
+}
+
+variable "openstack_wcdc_dirac_subnet" {
+  description = "100Gbps subnet to attach the XRootD instance to"
+  type        = string
+}
