@@ -1,0 +1,17 @@
+---
+- name: Block to check idrac to be reachable
+  block:
+    - name: Wait for LC to be ready
+      dellemc.openmanage.idrac_lifecycle_controller_status_info:
+        idrac_ip: "{{ hostname }}"
+        idrac_user: "{{ username }}"
+        idrac_password: "{{ password }}"
+        validate_certs: false
+      register: result_lc
+      until:
+        - result_lc is defined
+        - result_lc.lc_status_info is defined
+        - result_lc.lc_status_info.LCStatus is defined
+        - result_lc.lc_status_info.LCStatus == 'Ready'
+      retries: 200
+      delay: 30

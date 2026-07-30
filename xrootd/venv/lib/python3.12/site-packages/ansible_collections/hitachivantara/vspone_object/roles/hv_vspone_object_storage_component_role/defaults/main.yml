@@ -1,0 +1,11 @@
+---
+####################################################################
+# Default variables for hv_vspone_object_storage_component_role
+####################################################################
+
+# Optional list of storage component IDs to activate.
+hv_vspone_object_storage_component_role_ids: null
+
+# Optional capacity threshold in bytes; components with used_bytes above this
+# value are listed in hv_vspone_object_storage_component_role_warned_capacities.
+hv_vspone_object_storage_component_role_warn_threshold: null

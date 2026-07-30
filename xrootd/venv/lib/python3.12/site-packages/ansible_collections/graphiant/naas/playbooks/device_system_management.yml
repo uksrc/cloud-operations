@@ -1,0 +1,115 @@
+---
+# Device System Settings Management Playbook
+# ==========================================
+#
+# This playbook configures device name, region display string, and site on the
+# Edge or Core branch of PUT /v1/devices/{id}/config (graphiant_device_system).
+#
+# Features:
+# - Bulk settings from a YAML file (device_system list), or inline module parameters
+# - Idempotent merge; dry-run with --check; preview with --diff
+#
+# Usage (controlled via tags):
+#   # From YAML (default sample file; override with -e config_file=...)
+#   ansible-playbook playbooks/device_system_management.yml \
+#     --tags configure \
+#     -e "graphiant_host=https://your-portal.graphiant.com" \
+#     -e "graphiant_username=your-username" \
+#     -e "graphiant_password=your-password"
+#
+#   ansible-playbook playbooks/device_system_management.yml \
+#     --tags configure \
+#     -e "config_file=sample_device_system.yaml" \
+#     -e "graphiant_host=https://your-portal.graphiant.com"
+#
+#   # From module parameters only (no YAML file)
+#   ansible-playbook playbooks/device_system_management.yml \
+#     --tags configure_params \
+#     -e "portal_device_hostname=edge-hostname-in-portal" \
+#     -e "device_system_name=my-edge-name" \
+#     -e "device_system_region_name=us-west-2 (San Jose)" \
+#     -e "device_system_site_name=Manchester-1" \
+#     -e "graphiant_host=https://your-portal.graphiant.com"
+#
+#   # Dry-run / diff (combine with configure or configure_params tags)
+#   ansible-playbook playbooks/device_system_management.yml --tags configure --check
+#   ansible-playbook playbooks/device_system_management.yml --tags configure --check --diff
+#
+# Available tags:
+#   - configure: Apply settings from config_file (system_config_file on the module)
+#   - configure_params: Apply settings from module parameters only (no config file)
+#   - info: Display defaults and paths only
+#
+
+- name: Device System Settings Management
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # Default YAML (override with -e config_file=...), same idea as device_config_management.yml
+    config_file: "sample_device_system.yaml"
+
+    # Example values for configure_params (override with -e); portal device hostname vs API name
+    portal_device_hostname: "edge-1-gsdktest"
+    device_system_name: "edge-1-sdktest"
+    device_system_region_name: "eu-central-1 (London)"
+    device_system_site_name: "Manchester-1"
+
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+
+  tasks:
+    - name: Display operation info
+      ansible.builtin.debug:
+        msg: |
+          Device System Settings Management
+          ===================================
+          Config file (YAML): {{ config_file }}
+          Portal: {{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}
+          Tags: configure (from file), configure_params (name/region/site via -e), info
+      tags: ['always', 'info']
+
+    - name: Configure device system settings from YAML
+      graphiant.naas.graphiant_device_system:
+        <<: *graphiant_client_params
+        operation: configure
+        system_config_file: "{{ config_file }}"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure']
+
+    - name: Display configure result (from YAML)
+      ansible.builtin.debug:
+        # Use one string (not a list) so newlines in msg / detailed_logs render as line breaks, not \n
+        msg: |
+          {{ configure_result.msg | trim }}
+          configured_devices={{ configure_result.configured_devices | default([]) }}
+          skipped_devices={{ configure_result.skipped_devices | default([]) }}
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure']
+
+    - name: Configure device system settings from module parameters (no config file)
+      graphiant.naas.graphiant_device_system:
+        <<: *graphiant_client_params
+        operation: configure
+        device: "{{ portal_device_hostname }}"
+        name: "{{ device_system_name }}"
+        regionName: "{{ device_system_region_name }}"
+        site:
+          name: "{{ device_system_site_name }}"
+        detailed_logs: true
+        state: present
+      register: configure_params_result
+      tags: ['configure_params']
+
+    - name: Display configure result (from parameters)
+      ansible.builtin.debug:
+        msg: |
+          {{ configure_params_result.msg | trim }}
+          configured_devices={{ configure_params_result.configured_devices | default([]) }}
+          skipped_devices={{ configure_params_result.skipped_devices | default([]) }}
+      when: configure_params_result is defined and configure_params_result.msg is defined
+      tags: ['configure_params']

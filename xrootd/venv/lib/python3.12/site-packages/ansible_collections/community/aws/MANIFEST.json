@@ -1,0 +1,35 @@
+{
+ "collection_info": {
+  "namespace": "community",
+  "name": "aws",
+  "version": "11.1.0",
+  "authors": [
+   "Ansible (https://github.com/ansible)"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "community",
+   "aws",
+   "cloud",
+   "amazon"
+  ],
+  "description": "A variety of Ansible content to help automate the management of AWS services.",
+  "license": [],
+  "license_file": "COPYING",
+  "dependencies": {
+   "amazon.aws": ">=11.0.0"
+  },
+  "repository": "https://github.com/ansible-collections/community.aws",
+  "documentation": "https://ansible-collections.github.io/community.aws/branch/stable-11/collections/community/aws/index.html",
+  "homepage": "https://github.com/ansible-collections/community.aws",
+  "issues": "https://github.com/ansible-collections/community.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "7ae8cbe4096d2badd7b0a5f383f382b54ca1404ea44a89c83cad106b7e42a557",
+  "format": 1
+ },
+ "format": 1
+}

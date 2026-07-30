@@ -1,0 +1,19 @@
+# yamllint disable-file
+# Sample Data Exchange Customers Configuration - Scale Test (50 Financial Customers)
+# This file demonstrates how to configure Data Exchange customers at scale
+#
+# The system will:
+# 1. Read customer configuration from the 'data_exchange_customers' list
+# 2. Check if customer already exists (idempotent operation)
+# 3. POST to v1/extranets-b2b-peering/customer with the payload
+
+data_exchange_customers:
+  {% for i in range(1, 51) %}
+  - name: "FinanceBank-{{ 100 + i }}"
+    type: "non_graphiant_peer"
+    invite:
+      adminEmail: 
+        - "admin{{ 100 + i }}@financebank.com"
+        - "support{{ 100 + i }}@financebank.com"
+      maximumNumberOfSites: 4
+  {% endfor %}

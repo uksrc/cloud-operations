@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  role_name: hv_vspone_object_kmip_server_role
+  author: Hitachi Vantara Infrastructure Team
+  description: Update HTTPS ciphers for one or more KMIP servers on Hitachi VSP One Object
+  company: Hitachi Vantara
+  license: Apache-2.0
+  min_ansible_version: "2.9"
+
+  galaxy_tags:
+    - hitachi
+    - vsp
+    - oneobject
+    - kmip
+    - ciphers
+
+dependencies: []

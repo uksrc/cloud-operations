@@ -1,0 +1,55 @@
+---
+- name: Manage Graphiant circuits with static routes
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # graphiant_host: "https://api.graphiant.com"
+    # graphiant_username: "{{ vault_graphiant_username }}"
+    # graphiant_password: "{{ vault_graphiant_password }}"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+      # host: "{{ graphiant_host | default(lookup('ini', 'url file=/absolute/path/credentials.ini section=host')) }}"
+      # username: "{{ graphiant_username | default(lookup('ini', 'username file=/absolute/path/credentials.ini section=credentials')) }}"
+      # password: "{{ graphiant_password | default(lookup('ini', 'password file=/absolute/path/credentials.ini section=credentials')) }}"
+
+  tasks:
+    - name: Configure circuits only (Circuit configuration and static routes)
+      graphiant.naas.graphiant_interfaces:
+        <<: *graphiant_client_params
+        interface_config_file: "sample_interface_config.yaml"
+        circuit_config_file: "sample_circuit_config.yaml"
+        operation: "configure_circuits"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure', 'static_routes']
+
+    - name: Display circuits configuration results
+      ansible.builtin.debug:
+        msg: "{{ configure_result.msg }}"
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure', 'static_routes']
+
+    - name: Deconfigure circuits (i.e removes static routes only)
+      graphiant.naas.graphiant_interfaces:
+        <<: *graphiant_client_params
+        interface_config_file: "sample_interface_config.yaml"
+        circuit_config_file: "sample_circuit_config.yaml"
+        operation: "deconfigure_circuits"
+        detailed_logs: true
+        state: absent
+      register: deconfigure_result
+      tags: ['deconfigure']
+
+    - name: Display circuits static routes deconfiguration results
+      ansible.builtin.debug:
+        msg: "{{ deconfigure_result.msg }}"
+      when: deconfigure_result is defined and deconfigure_result.msg is defined
+      tags: ['deconfigure']

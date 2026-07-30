@@ -1,0 +1,38 @@
+---
+release_summary: |
+  Release 2.0.0 of the pcg.alpaca_operator collection addresses all feedback from the Ansible Collection Steering Committee review,
+  bringing the collection into full compliance with Ansible documentation standards and best practices.
+
+breaking_changes:
+  - "Convert all Ansible module parameters from camelCase to snake_case to comply with Python and Ansible naming conventions. This is a breaking change that requires updating existing playbooks. API payload keys remain in camelCase as required by the ALPACA REST API."
+
+major_changes:
+  - "All module parameters/arguments now follow snake_case naming (e.g., 'apiConnection' is now 'api_connection', 'magicNumber' is now 'magic_number')."
+  - "Updated all module documentation, examples, and playbooks to reflect the new snake_case parameter names."
+
+minor_changes:
+  - "Add requirements section to module documentation indicating minimum supported ALPACA Operator version."
+  - "Merge QUICK_START.md into index.md for consolidated getting started documentation."
+  - "Document non-idempotent behavior of alpaca_system module when rfc_connection.password is specified."
+  - "Add best practices section for managing RFC passwords to maintain idempotency."
+  - "Introduce changelog fragment system using antsibull-changelog for automatic changelog generation from structured fragment files."
+  - "Add comprehensive documentation in changelogs/fragments/README.md explaining how to create and manage changelog fragments."
+  - "Add manual changelog generation script .dev/scripts/generate_changelog.sh for local testing and verification."
+
+bugfixes:
+  - "Add missing periods to argument descriptions in module documentation to comply with Ansible documentation standards."
+  - "Remove periods from return value descriptions in RETURN sections to comply with Ansible documentation standards."
+  - "Add semantic markup (V(), O(), M()) to module documentation descriptions for better readability and compliance with Ansible standards."
+  - "Replace 'Ansible' with 'ansible-core' in requirements fields and documentation to accurately reflect the dependency."
+  - "Remove maximum version cap from requires_ansible field in meta/runtime.yml."
+  - "Add check_mode support documentation in attributes section and remove unsupported 'supports_check_mode' field from module documentation."
+  - "Ensure Fully Qualified Collection Names (FQCNs) are used for all plugins and modules, including ansible.builtin modules, in all documentation, examples, and return sections."
+  - "Fix invalid documentation markup by using full paths for nested options in O() directives (e.g., O(command.agent_id))."
+  - "alpaca_system - Fix TypeError by adding missing 'desired_vars' argument to build_variable_payload() function call."
+
+trivial:
+  - "Add ansible-core 2.19 to the CI/CD test matrix."
+  - "Remove forbidden sanity ignore entries from tests/sanity/ignore-2.12.txt through ignore-2.19.txt."
+  - "Move templates folder into .dev directory as the example playbooks are only for testing purposes."
+  - "Add GitHub workflow to automatically generate CHANGELOG.rst when fragments are merged to main branch."
+  - "Add GitHub workflow to check for changelog fragments in pull requests and provide helpful guidance to contributors."

@@ -1,0 +1,123 @@
+# yamllint disable-file
+{
+    {% if route_policies and action == "add" %}
+        "routePolicies": {
+            {% for policy_name in route_policies %}
+                "{{ policy_name }}": {
+                    "policy": {
+                        "globalId": {{ global_ids.get(policy_name, 0) }},
+                        "isGlobalSync": true
+                    }
+                },
+            {% endfor %}
+        },
+    {% endif %}
+    "segments": {
+        {% for entry in segments %}
+            "{{ entry.lan_segment }}": {
+                "bgpNeighbors": {
+                    {% for neighbor in entry.neighbors %}
+                        "{{ neighbor.remote_ipv4_address }}": {
+                            {% if action != "delete" %}
+                                "neighbor": {
+                                    {% if neighbor.peer_as %}
+                                    "peerAsn": {{ neighbor.peer_as }},
+                                    {% endif %}
+                                    {% if neighbor.local_interface %}
+                                    "localInterface": {
+                                        "interface": "{{ neighbor.local_interface }}"
+                                    },
+                                    {% endif %}
+                                    "remoteAddress": "{{ neighbor.remote_ipv4_address }}",
+                                    "enabled": true,
+                                    "state": "UnknownBGPNeighborState",
+                                    "holdTimerValue": {
+                                        "timer": {{ neighbor.hold_timer | default(90) }}
+                                    },
+                                    "keepaliveTimerValue": {
+                                        "timer": {{ neighbor.keepalive_timer | default(30) }}
+                                    },
+                                    "ebgpMultihopTtl": {
+                                        "multiHop": {{ neighbor.ebgp_multi_hop | default(1) }}
+                                    },
+                                    "maxPrefixValue": {},
+                                    "bfd": {
+                                        "bfd": {
+                                            "enabled": {{ neighbor.bfd | default('false') }}{% if neighbor.minimum_interval or neighbor.local_multiplier %},{% endif %}
+                                            {% if neighbor.minimum_interval %}
+                                            "minimumInterval": {{ neighbor.minimum_interval }}{% if neighbor.local_multiplier %},{% endif %}
+                                            {% endif %}
+                                            {% if neighbor.local_multiplier %}
+                                            "localMultiplier": {{ neighbor.local_multiplier }}
+                                            {% endif %}
+                                        }
+                                    },
+                                    "md5Password": {
+                                        {% if neighbor.md5_password %}
+                                            "md5Password": "{{ neighbor.md5_password }}"
+                                        {% else %}
+                                            "md5Password": null
+                                        {% endif %}
+                                    },
+                                    "addressFamilies": {
+                                        "ipv4": {
+                                            "family": {
+                                                "addressFamily": "ipv4",
+                                                {% if neighbor.ipv4_inbound_filter %}
+                                                    "inboundPolicy": {
+                                                        {% if action == "unlink" %}
+                                                            "policy": null
+                                                        {% else %}
+                                                            "policy": "{{ neighbor.ipv4_inbound_filter }}"
+                                                        {% endif %}
+                                                    },
+                                                {% endif %}
+                                                {% if neighbor.ipv4_outbound_filter %}
+                                                    "outboundPolicy": {
+                                                        {% if action == "unlink" %}
+                                                            "policy": null
+                                                        {% else %}
+                                                            "policy": "{{ neighbor.ipv4_outbound_filter }}"
+                                                        {% endif %}
+                                                    }
+                                                {% endif %}
+                                            }
+                                        },
+                                        "ipv6": {
+                                            "family": {
+                                                "addressFamily": "ipv6",
+                                                {% if neighbor.ipv6_inbound_filter %}
+                                                    "inboundPolicy": {
+                                                        "policy": "{{ neighbor.ipv6_inbound_filter }}"
+                                                    },
+                                                {% endif %}
+                                                {% if neighbor.ipv6_outbound_filter %}
+                                                    "outboundPolicy": {
+                                                        "policy": "{{ neighbor.ipv6_outbound_filter }}"
+                                                    }
+                                                {% endif %}
+                                            }
+                                        }
+                                    },
+                                    "bgpType": "EBGP",
+                                    "sendCommunity": {{ neighbor.send_community | default('true') }},
+                                    "asOverride": {{ neighbor.as_override | default('false') }},
+                                    "removePrivateAs": {{ neighbor.remote_private_as | default('false') }},
+                                    "allowAsIn": {
+                                        {% if neighbor.allow_as_in %}
+                                            "count": {{ neighbor.allow_as_in }}
+                                        {% else %}
+                                            "count": null
+                                        {% endif %}
+                                    }
+                                }
+                            {% else %}
+                                "neighbor": null
+                            {% endif %}
+                        },
+                    {% endfor %}
+                }
+            },
+        {% endfor %}
+    }
+}

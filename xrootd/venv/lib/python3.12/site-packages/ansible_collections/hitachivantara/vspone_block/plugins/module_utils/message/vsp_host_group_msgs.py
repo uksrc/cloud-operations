@@ -1,0 +1,85 @@
+from enum import Enum
+from ..common.hv_constants import LdevConstants
+
+
+class VSPHostGroupMessage(Enum):
+    IGNORE_WWNS = "The parameter wwns is ignored."
+    IGNORE_LUNS = "The parameter ldevs is ignored."
+    PORT_TYPE_INVALID = "The port type is not valid for this operation."
+    PORTS_PARAMETER_INVALID = (
+        "Host group does not exist; cannot create host groups without port parameter."
+    )
+    HG_HAS_BEEN_DELETED = "Host group not found. (Perhaps it has already been deleted)"
+    LUN_IS_NOT_IN_HG = "The LDEV is not in the host group."
+    SPEC_STATE_INVALID = "The spec state parameter is invalid."
+    LDEVS_PRESENT = "Hostgroup has ldevs presented. Make sure to unpresent all ldev prior deleting hostgroup."
+    PORT_NOT_IN_SYSTEM = "Port {} is not in the storage system."
+    WWNS_INVALID = "Input wwns is invalid. It must be an array."
+    DELETE_SUCCESSFULLY = "Hostgroup {} is deleted successfully."
+    HG_NAME_EMPTY = "The host group name parameter cannot be empty."
+    HG_CREATE_FAILED = "Host group create failed. "
+    HG_IN_META_NOT_AVAILABLE = "Host group in meta resource not available."
+    PRIORITY_LEVEL_SET_FOR_ALUA = (
+        "Asymmetric access priority level is set for ALUA host group. "
+    )
+    FAILED_TO_SET_PRIORITY_LEVEL = (
+        "Failed to set asymmetric access priority level for ALUA host group."
+    )
+    RELEASE_HOST_RESERVE_SUCCESS = "Host reservation released successfully."
+    RELEASE_HOST_RESERVE_SUCCESS_FOR_LU = (
+        "Host reservation released successfully for LU path {}."
+    )
+    RELEASE_HOST_RESERVE_FAILED = "Failed to release host reservation."
+    WWN_NICKNAME_SET = "WWN nickname set successfully for host group {} with wwn {}."
+    WWN_NICKNAME_SET_FAILED = (
+        "Failed to set wwn nickname for host group {} with wwn {} error: {}"
+    )
+    ADD_WWN_SUCCESS = "WWN {} added successfully to host group {}."
+    REMOVE_WWN_SUCCESS = "WWN {} removed successfully from host group {}."
+    REMOVE_WWN_FAILED = "Failed to remove wwn {} from host group {} error: {}"
+    ADD_LUN_SUCCESS = (
+        "LUN {} was successfully added to the host group {}. It may take a few minutes for the LDEV to appear in the lun_path."
+        "If it doesn't show up immediately, wait a bit and then run host group facts to check again."
+    )
+    REMOVE_LUN_SUCCESS = "LUN {} removed successfully from host group {}."
+    REMOVE_LUN_PORT_SUCCESS = (
+        "LUN {} removed successfully from host group {} and port {}."
+    )
+    ADD_LUN_FAILED = "Failed to add LUN {} to host group {} error: {}"
+    REMOVE_LUN_FAILED = "Failed to remove LUN {} from host group {} error: {}"
+    HG_NUMBER_REQUIRED = "Host group number is required when multi ldev and multi port are used to present."
+    HOST_MODE_OPTION_NOT_SUPPORTED = (
+        "Host mode option is not supported on this storage system."
+    )
+    HG_NOT_FOUND_FOR_UPDATE = (
+        "Host group with name {} or number {} not found on port {} for update."
+    )
+
+
+class VSPHostGroupValidationMsg(Enum):
+    HG_NAME_OUT_OF_RANGE = "The host group name is out of range. Specify a value in the range from 1 to 64."
+    LUN_OUT_OF_RANGE = f"The lun is out of range. Specify a value in the range from 1 to {LdevConstants.MAX_VALID_LDEV_ID}."
+    PORT_OUT_OF_RANGE = (
+        "The port is out of range. Specify a value in the range from 1 to 256."
+    )
+    HOST_MODE_OUT_OF_RANGE = (
+        "The host mode is out of range. Specify a value in the range from 1 to 256."
+    )
+    HOST_MODE_OPTION_OUT_OF_RANGE = "The host mode option is out of range. Specify a value in the range from 0 to 999."
+    WWN_OUT_OF_RANGE = (
+        "The wwn is out of range. Specify a value in the range from 1 to 256."
+    )
+    INVALID_PARAM_LDEVS = (
+        "The ldevs input parameter is incorrect, please correct and try again."
+    )
+    LDEVS_OR_LUN_PATHS_NOT_BOTH = "Specify either 'ldevs' or 'lun_paths', not both."
+    PORT_OR_PORTS_NOT_BOTH = "Specify either 'port' or 'ports', not both."
+    PORT_ID_OR_PORT_IDS_NOT_BOTH = "Specify either 'port_id' or 'port_ids', not both."
+    PORT_IDS_LIST_RANGE = (
+        "Port IDs list must contain between 1 and MAX_BULK_PAIRS entries."
+    )
+    PORT_OR_PORT_ID_REQUIRED = (
+        "'port' or 'port_id' must be specified for hostgroup operation."
+    )
+    PORTS_LIST_MAX_EXCEEDED = "Ports list cannot contain more than 6 entries."
+    PORT_IDS_LIST_MAX_EXCEEDED = "Port IDs list cannot contain more than 6 entries."

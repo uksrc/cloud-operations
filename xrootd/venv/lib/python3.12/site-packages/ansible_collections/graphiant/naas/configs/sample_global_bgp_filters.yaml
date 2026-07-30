@@ -1,0 +1,51 @@
+routing_policies:
+  # Global BGP Routing Inbound and Outbound IPv4 filters configuration with Global prefix set
+  - name: demo_bgp_inbound_filter
+    description: For_testing_inbound_filter
+    direction: inbound
+    implicit_rule: Accept
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: demo_prefix_list_1
+        match_community:
+          - NO_EXPORT
+          - NO_ADVERTISE
+        action_permit: accept
+        action_set_local_preference: 100
+  - name: demo_bgp_outbound_filter
+    description: For_testing_outbound_filter
+    direction: outbound
+    implicit_rule: Accept
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: demo_prefix_list_2
+        action_permit: accept
+        action_set_local_preference: 300
+
+  - name: demo_bgp_filter_multiple_sets
+    description: For_testing_multiple_sets
+    direction: inbound
+    implicit_rule: Reject
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: demo_prefix_list_1
+        action_permit: accept
+        action_set_local_preference: 105
+        action_set_med: 100
+        action_set_weight: 32768
+        action_set_community_list:
+        - 1111:2222
+        - 1234:5678
+      - sequence_number: 20
+        match_prefix_list: demo_prefix_list_2
+        action_permit: accept
+        action_set_local_preference: 105
+
+  - name: demo_bgp_filter_without_action_sets
+    description: For_testing_multiple_sets
+    direction: inbound
+    implicit_rule: Accept
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: demo_prefix_list_1
+        action_permit: reject

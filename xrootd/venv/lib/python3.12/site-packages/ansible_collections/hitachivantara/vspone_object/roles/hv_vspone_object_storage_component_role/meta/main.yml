@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  role_name: hv_vspone_object_storage_component_role
+  author: Hitachi Vantara Infrastructure Team
+  description: Activate one or more storage components in Hitachi VSP One Object
+  company: Hitachi Vantara
+  license: Apache-2.0
+  min_ansible_version: "2.9"
+
+  galaxy_tags:
+    - hitachi
+    - vsp
+    - oneobject
+    - storage
+    - component
+
+dependencies: []

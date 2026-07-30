@@ -1,0 +1,15 @@
+# Sample Data Exchange Customers Configuration
+# This file demonstrates how to configure Data Exchange customers
+#
+# The system will:
+# 1. Read customer configuration from the 'data_exchange_customers' list
+# 2. Check if customer already exists (idempotent operation)
+# 3. POST to v1/extranets-b2b-peering/customer with the payload
+
+data_exchange_customers:
+  - name: "FinanceInc"
+    type: "non_graphiant_peer"
+    invite:
+      adminEmail: 
+        - "finance@financeinc.com"
+      maximumNumberOfSites: 2

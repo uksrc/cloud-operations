@@ -1,0 +1,65 @@
+---
+- name: Test Graphiant Ansible Collection
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # graphiant_host: "https://api.graphiant.com"
+    # graphiant_username: "{{ vault_graphiant_username }}"
+    # graphiant_password: "{{ vault_graphiant_password }}"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+      # host: "{{ graphiant_host | default(lookup('ini', 'url file=/absolute/path/credentials.ini section=host')) }}"
+      # username: "{{ graphiant_username | default(lookup('ini', 'username file=/absolute/path/credentials.ini section=credentials')) }}"
+      # password: "{{ graphiant_password | default(lookup('ini', 'password file=/absolute/path/credentials.ini section=credentials')) }}"
+
+  tasks:
+    - name: Test Graphiant Global Config module parameter validation with check_mode
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "sample_global_prefix_lists.yaml"
+        operation: "configure_prefix_sets"
+        state: present
+      check_mode: true
+      ignore_errors: false
+      register: test_result_check_mode
+
+    - name: Display test result
+      ansible.builtin.debug:
+        msg:
+          - "✅ Graphiant Ansible Collection is working!"
+          - "Module loaded: {{ test_result_check_mode is defined }}"
+          - "Full result: {{ test_result_check_mode }}"
+
+    - name: Test Graphiant Global Config module parameter validation
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "sample_global_prefix_lists.yaml"
+        operation: "configure_prefix_sets"
+        detailed_logs: true
+        state: present
+      ignore_errors: false
+      register: test_result
+
+    - name: Display test result
+      ansible.builtin.debug:
+        msg: "✅ Graphiant portal connection and Global Config module is working!"
+
+    - name: Display detailed logs
+      ansible.builtin.debug:
+        msg: "{{ test_result.msg }}"
+      when: test_result.msg is defined
+
+    - name: Check ANSIBLE_STDOUT_CALLBACK environment variable
+      ansible.builtin.debug:
+        msg: |
+          ⚠️  For prettier output with detailed_logs, set:
+             export ANSIBLE_STDOUT_CALLBACK=debug
+          This will render newlines properly in the log output.
+      when: lookup('env', 'ANSIBLE_STDOUT_CALLBACK') != 'debug'

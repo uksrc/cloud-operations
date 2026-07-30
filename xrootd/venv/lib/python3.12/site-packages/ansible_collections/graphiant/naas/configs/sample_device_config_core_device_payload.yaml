@@ -1,0 +1,72 @@
+# Sample Core Device Configuration File
+# =====================================================
+#
+# This configuration file demonstrates how to push raw device configurations
+# to Graphiant Core devices using the graphiant_device_config module.
+#
+# Core devices use the "core" key in the payload (unlike edge/gateway which use "edge").
+#
+# The payload structure follows the PUT /v1/devices/{device_id}/config API schema.
+# You can capture payloads directly from the Graphiant Portal UI developer tools
+# and use them in this configuration file.
+#
+# API Reference:
+# https://gitlab.com/graphiant/oss/gap/-/blob/dev/docs/swagger_output.json
+# Check: PUT /v1/devices/{deviceId}/config
+#
+# Key Features:
+# - Jinja2 templating support for dynamic value substitution
+# - Multiple core devices can be configured in a single file
+# - Each device entry has a payload field containing the JSON configuration
+#
+# Usage:
+#   ansible-playbook playbooks/device_config_management.yml \
+#     -e "config_file=sample_device_config_core_device_payload.yaml" \
+#     -e "graphiant_host=https://your-portal.graphiant.com" \
+#     -e "graphiant_username=your-username" \
+#     -e "graphiant_password=your-password"
+#
+# Configuration Format:
+# device_config:
+#   - core-device-name:
+#       payload: |
+#         { "core": { ... }, "description": "...", "configurationMetadata": { ... } }
+#
+
+# ==============================================================================
+# CORE DEVICE EXAMPLES
+# ==============================================================================
+# Example: Configure core devices with region override
+
+device_config:
+  # Core Device 1
+  - core-api-test-core-01:
+      payload: |
+        {
+          "core": {
+            "name": "core-api-test-core-01",
+            "regionName": "us-east-1 (N. Virginia)"
+          },
+          "description": "Override region for core device 1",
+          "configurationMetadata": {
+            "name": "core_region_override_v1"
+          }
+        }
+
+  # Core Device 2
+  - core-api-test-core-02:
+      payload: |
+        {
+          "core": {
+            "name": "core-api-test-core-02",
+            "regionName": "us-east-1 (N. Virginia)"
+          },
+          "description": "Override region for core device 2",
+          "configurationMetadata": {
+            "name": "core_region_override_v1"
+          }
+        }
+
+# Note: regionName overrides the auto-discovered region for the core device.
+# Use this when you need to assign a core device to a specific region
+# different from its discovered location.

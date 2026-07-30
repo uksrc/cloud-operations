@@ -1,0 +1,107 @@
+objects: {}
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  httpapi:
+    splunk:
+      description: HttpApi Plugin for Splunk
+      name: splunk
+      version_added: 1.0.0
+  inventory: {}
+  lookup: {}
+  module:
+    splunk_adaptive_response_notable_events:
+      description: Manage Adaptive Responses notable events resource module
+      name: splunk_adaptive_response_notable_events
+      namespace: ''
+      version_added: 2.1.0
+    splunk_correlation_search_info:
+      description: Gather information about Splunk Enterprise Security Correlation
+        Searches
+      name: splunk_correlation_search_info
+      namespace: ''
+      version_added: 3.0.0
+    splunk_correlation_searches:
+      description: Splunk Enterprise Security Correlation searches resource module
+      name: splunk_correlation_searches
+      namespace: ''
+      version_added: 2.1.0
+    splunk_data_inputs_monitor:
+      description: Splunk Data Inputs of type Monitor resource module
+      name: splunk_data_inputs_monitor
+      namespace: ''
+      version_added: 2.1.0
+    splunk_data_inputs_network:
+      description: Manage Splunk Data Inputs of type TCP or UDP resource module
+      name: splunk_data_inputs_network
+      namespace: ''
+      version_added: 2.1.0
+    splunk_finding:
+      description: Manage Splunk Enterprise Security findings
+      name: splunk_finding
+      namespace: ''
+      version_added: 5.1.0
+    splunk_finding_info:
+      description: Gather information about Splunk Enterprise Security Findings
+      name: splunk_finding_info
+      namespace: ''
+      version_added: 5.1.0
+    splunk_investigation:
+      description: Manage Splunk Enterprise Security investigations
+      name: splunk_investigation
+      namespace: ''
+      version_added: 5.1.0
+    splunk_investigation_info:
+      description: Gather information about Splunk Enterprise Security Investigations
+      name: splunk_investigation_info
+      namespace: ''
+      version_added: 5.1.0
+    splunk_investigation_type:
+      description: Manage Splunk Enterprise Security investigation types
+      name: splunk_investigation_type
+      namespace: ''
+      version_added: 5.1.0
+    splunk_investigation_type_info:
+      description: Gather information about Splunk Enterprise Security investigation
+        types
+      name: splunk_investigation_type_info
+      namespace: ''
+      version_added: 5.1.0
+    splunk_notes:
+      description: Manage notes for findings, investigations, and response plan tasks
+      name: splunk_notes
+      namespace: ''
+      version_added: 5.1.0
+    splunk_notes_info:
+      description: Gather information about notes in Splunk Enterprise Security
+      name: splunk_notes_info
+      namespace: ''
+      version_added: 5.1.0
+    splunk_response_plan:
+      description: Manage Splunk Enterprise Security response plans
+      name: splunk_response_plan
+      namespace: ''
+      version_added: 5.1.0
+    splunk_response_plan_execution:
+      description: Apply response plans to investigations and manage tasks
+      name: splunk_response_plan_execution
+      namespace: ''
+      version_added: 5.1.0
+    splunk_response_plan_execution_info:
+      description: Gather information about applied response plans on an investigation
+      name: splunk_response_plan_execution_info
+      namespace: ''
+      version_added: 5.1.0
+    splunk_response_plan_info:
+      description: Gather information about Splunk Enterprise Security response plans
+      name: splunk_response_plan_info
+      namespace: ''
+      version_added: 5.1.0
+  netconf: {}
+  shell: {}
+  strategy: {}
+  vars: {}
+version: 6.0.1

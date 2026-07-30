@@ -1,0 +1,7 @@
+ntpGlobalObject:
+  - edge-1-sdktest:
+      ntps:
+        - name: testing_local
+          domains:
+            - time.windows.com
+            - time.google.com

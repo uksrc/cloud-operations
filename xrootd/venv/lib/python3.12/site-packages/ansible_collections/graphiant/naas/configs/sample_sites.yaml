@@ -1,0 +1,61 @@
+---
+# Comprehensive Site Configuration for Graphiant Playbooks
+# This file demonstrates both site creation and global object attachment
+
+# Site definitions - sites to be created
+sites:
+  - name: "UAT-Site1"
+    location:
+      addressLine1: "Zanker Rd, San Jose, CA, USA"
+      latitude: 37.3997071
+      longitude: -121.9325338
+      city: "San Jose"
+      state: "California"
+      stateCode: "CA"
+      country: "United States"
+      countryCode: "US"
+      addressLine2: null
+
+  - name: "UAT-Site2"
+    location:
+      addressLine1: "Main St, San Francisco, CA 94105, USA"
+      latitude: 37.7749
+      longitude: -122.4194
+      city: "San Francisco"
+      state: "California"
+      stateCode: "CA"
+      country: "United States"
+      countryCode: "US"
+      postalCode: "94105"
+      addressLine2: null
+
+  - name: "UAT-Site3"
+    location:
+      addressLine1: "123 Main St, San Francisco, CA 94105, USA"
+      latitude: 37.7749
+      longitude: -122.4194
+      city: "San Francisco"
+      state: "California"
+      stateCode: "CA"
+      country: "United States"
+      countryCode: "US"
+      postalCode: "94105"
+      addressLine2: null
+
+# Global object attachments - objects to be attached to sites
+site_attachments:
+  - UAT-Site1:
+      syslog_servers: []
+      snmps:
+        - snmp-global-test-authnopriv
+      ipfix_exporters: []
+  - UAT-Site2:
+      syslog_servers: []
+      snmps:
+        - snmp-global-test-authpriv
+      ipfix_exporters: []
+  - UAT-Site3:
+      syslog_servers: []
+      snmps:
+        - snmp-global-test-v2c
+      ipfix_exporters: []

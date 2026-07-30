@@ -1,0 +1,84 @@
+---
+requires_ansible: '>=2.9.10'
+
+action_groups:
+  all:
+    - metadata:
+        extend_group:
+          - ansible.mysql.all
+
+plugin_routing:
+  modules:
+    mysql_db:
+      redirect: ansible.mysql.mysql_db
+      deprecation:
+        removal_version: 6.0.0
+        warning_text: Use ansible.mysql.mysql_db instead.
+
+    mysql_info:
+      redirect: ansible.mysql.mysql_info
+      deprecation:
+        removal_version: 6.0.0
+        warning_text: Use ansible.mysql.mysql_info instead.
+
+    mysql_query:
+      redirect: ansible.mysql.mysql_query
+      deprecation:
+        removal_version: 6.0.0
+        warning_text: Use ansible.mysql.mysql_query instead.
+
+    mysql_replication:
+      redirect: ansible.mysql.mysql_replication
+      deprecation:
+        removal_version: 6.0.0
+        warning_text: Use ansible.mysql.mysql_replication instead.
+
+    mysql_role:
+      redirect: ansible.mysql.mysql_role
+      deprecation:
+        removal_version: 6.0.0
+        warning_text: Use ansible.mysql.mysql_role instead.
+
+    mysql_user:
+      redirect: ansible.mysql.mysql_user
+      deprecation:
+        removal_version: 6.0.0
+        warning_text: Use ansible.mysql.mysql_user instead.
+
+    mysql_variables:
+      redirect: ansible.mysql.mysql_variables
+      deprecation:
+        removal_version: 6.0.0
+        warning_text: Use ansible.mysql.mysql_variables instead.
+
+  doc_fragments:
+    mysql:
+      redirect: ansible.mysql.mysql
+
+  module_utils:
+    mysql:
+      redirect: ansible.mysql.mysql
+    database:
+      redirect: ansible.mysql.database
+    user:
+      redirect: ansible.mysql.user
+    version:
+      redirect: ansible.mysql.version
+    _version:
+      redirect: ansible.mysql._version
+    command_resolver:
+      redirect: ansible.mysql.command_resolver
+    implementations.mariadb.replication:
+      redirect: ansible.mysql.implementations.mariadb.replication
+    implementations.mariadb.role:
+      redirect: ansible.mysql.implementations.mariadb.role
+    implementations.mariadb.user:
+      redirect: ansible.mysql.implementations.mariadb.user
+    implementations.mysql.hash:
+      redirect: ansible.mysql.implementations.mysql.hash
+    implementations.mysql.replication:
+      redirect: ansible.mysql.implementations.mysql.replication
+    implementations.mysql.role:
+      redirect: ansible.mysql.implementations.mysql.role
+    implementations.mysql.user:
+      redirect: ansible.mysql.implementations.mysql.user

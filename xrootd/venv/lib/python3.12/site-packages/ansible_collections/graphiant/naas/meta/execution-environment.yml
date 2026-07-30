@@ -1,0 +1,7 @@
+---
+# Execution Environment configuration for ansible-builder
+# See https://docs.ansible.com/projects/ansible/devel/community/collection_contributors/collection_requirements.html#meta-execution-environment-yml
+
+# Python requirements file for Execution Environment
+# This file should contain only runtime dependencies without version pins
+requirements_file: requirements-ee.txt

@@ -1,0 +1,132 @@
+# yamllint disable-file
+{
+    "{{ name }}": {
+        "config": {
+            "engineEnabled": true,
+            {% if snmp_version == "v2c" or v2cEnabled %}
+            "v2cEnabled": true,
+            "v3Enabled": false,
+            {% endif %}
+            {% if snmp_version == "v3" or v3Enabled %}
+            "v3Enabled": true,
+            "v2cEnabled": false,
+            {% endif %}
+            "engineEndpoints": {
+                {% for endpoint in engineEndpoints %}
+                "{{ endpoint.lanSegment }}": {
+                    "engineEndpoint": {
+                        "autoIpv4": true,
+                        "lanSegment": "{{ endpoint.lanSegment }}",
+                        "name": "{{ endpoint.lanSegment }}"
+                        {% if endpoint.id %}
+                        ,"id": {{ endpoint.id }}
+                        {% endif %}
+                    }
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            }
+            {% if snmp_version == "v2c" or communities %}
+            ,"communities": {
+                {% for community in communities %}
+                "{{ community.communityString }}": {
+                    "name": "{{ community.communityString }}"
+                    {% if community.id %}
+                    ,"id": {{ community.id }}
+                    {% endif %}
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            }
+            {% endif %}
+            {% if snmp_version == "v3" or usmLocalUsers %}
+            ,"usmLocalUsers": {
+                {% for user in usmLocalUsers %}
+                "{{ user.name }}": {
+                    "localUser": {
+                        "name": "{{ user.name }}"
+                        {% if user.authProtocol and user.authProtocol != "null" and user.authProtocol != "~" %}
+                        ,"authProtocol": "{{ user.authProtocol }}"
+                        ,"authPassphrase": "{{ user.authPassphrase }}"
+                        {% else %}
+                        ,"authProtocol": null
+                        ,"authPassphrase": null
+                        {% endif %}
+                        {% if user.encryptionProtocol and user.encryptionProtocol != "null" and user.encryptionProtocol != "~" %}
+                        ,"encryptionProtocol": "{{ user.encryptionProtocol }}"
+                        ,"encryptionPassphrase": "{{ user.encryptionPassphrase }}"
+                        {% else %}
+                        ,"encryptionProtocol": null
+                        ,"encryptionPassphrase": null
+                        {% endif %}
+                        {% if user.id %}
+                        ,"id": {{ user.id }}
+                        {% endif %}
+                    }
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            }
+            {% endif %}
+            ,"vacmGroups": {
+                {% if snmp_version == "v2c" or v2cEnabled %}
+                "graphiant": {
+                {% else %}
+                "graphiantV3": {
+                {% endif %}
+                    "group": {
+                        {% if vacmGroups.accesses %}
+                        "accesses": {
+                            {% for access in vacmGroups.accesses %}
+                            "{{ access.name }}": {
+                                "access": {
+                                    "securityLevel": "{{ access.securityLevel }}"
+                                    {% if access.id %}
+                                    ,"id": {{ access.id }}
+                                    {% endif %}
+                                }
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        },
+                        {% endif %}
+                        "members": {
+                            {% if snmp_version == "v2c" or v2cEnabled %}
+                            {% for community in communities %}
+                            "{{ community.communityString }}": {
+                                "member": {
+                                    "securityName": "{{ community.communityString }}"
+                                    ,"securityModel": "SnmpVersionV2c"
+                                    ,"type": "SnmpMemberTypeCommunity"
+                                    {% if community.id %}
+                                    ,"id": {{ community.id }}
+                                    {% endif %}
+                                }
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                            {% else %}
+                            {% for user in usmLocalUsers %}
+                            "{{ user.name }}": {
+                                "member": {
+                                    "securityName": "{{ user.name }}"
+                                    ,"securityModel": "SnmpVersionV3"
+                                    ,"type": "SnmpMemberTypeLocalUser"
+                                    {% if user.id %}
+                                    ,"id": {{ user.id }}
+                                    {% endif %}
+                                }
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                            {% endif %}
+                        }
+                        {% if vacmGroups.id %}
+                        ,"id": {{ vacmGroups.id }}
+                        {% endif %}
+                    }
+                }
+            }
+            {% if id %}
+            ,"id": {{ id }}
+            {% endif %}
+            {% if globalId %}
+            ,"globalId": {{ globalId }}
+            {% endif %}
+        }
+    }
+}

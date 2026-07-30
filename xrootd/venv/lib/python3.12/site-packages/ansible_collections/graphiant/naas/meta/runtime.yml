@@ -1,0 +1,5 @@
+---
+# Collection runtime metadata
+# See https://docs.ansible.com/ansible-core/devel/dev_guide/developing_collections_structure.html#meta-runtime-yml
+# Galaxy requires 'requires_ansible' field for collection import/publishing
+requires_ansible: '>=2.17.0'

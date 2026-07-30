@@ -1,0 +1,99 @@
+# LAG Interface Configuration Parameters:
+# ==============================
+# Below are the examples for each operation:
+# when operation: configure or deconfigure or add_lag_members or remove_lag_members or update_lacp_configs or delete_lag_subinterfaces
+lagInterfaces:
+  - edge-1-sdktest:
+    - name: LAG1
+      alias: LAG1
+      adminStatus: true
+      segment: lag-test
+      mtu: 1500
+      ipv4: 10.1.0.1/24
+      ipv6: 2001:10:1:0::1/64
+      lacpMode: ACTIVE
+      lacpTimer: FAST
+      lagMembers:
+        - GigabitEthernet6/0/0
+    - name: LAG2
+      alias: LAG2
+      segment: lag-test-2
+      mtu: 1500
+      ipv4: 10.1.2.1/24
+      ipv6: 2001:10:1:2::1/64
+      lacpMode: PASSIVE
+      lacpTimer: FAST
+      lagMembers:
+        - GigabitEthernet8/0/0
+
+  - edge-2-sdktest:
+    - name: LAG1
+      alias: LAG1
+      segment: lag-test
+      mtu: 1500
+      ipv4: 10.2.0.1/24
+      ipv6: 2001:10:2:0::1/64
+      lacpMode: PASSIVE
+      lacpTimer: SLOW
+      lagMembers:
+        - GigabitEthernet6/0/0
+        - GigabitEthernet7/0/0
+      subinterfaces:
+        - vlan: 101
+          segment: lag-test-101
+          alias: LAG1-101
+          description: Segment lag-test-101 interface
+          ipv4: 10.2.1.1/24
+          ipv6: 2001:10:2:1::1/64
+        - vlan: 102
+          segment: lag-test-102
+          alias: LAG1-102
+          description: Segment lag-test-102 interface
+          ipv4: 10.2.2.1/24
+          ipv6: 2001:10:2:2::1/64
+
+#
+# When operation: add_lag_members or remove_lag_members
+# lagInterfaces:
+#   - gw-2-sdktest:
+#     - name: LAG1
+#       lagMembers:
+#         - GigabitEthernet7/0/0
+#         - GigabitEthernet8/0/0
+#   - gw-4-sdktest:
+#     - name: LAG1
+#       lagMembers:
+#         - GigabitEthernet8/0/0
+
+# When operation: update_lacp_configs
+# lagInterfaces:
+#   - gw-2-sdktest:
+#     - name: LAG1
+#       lacpMode: PASSIVE  # Supported values: "ACTIVE" or "PASSIVE"
+#       lacpTimer: SLOW   # Supported values: "FAST" or "SLOW"
+#   - gw-4-sdktest:
+#     - name: LAG1
+#       lacpMode: ACTIVE  # Supported values: "ACTIVE" or "PASSIVE"
+#       lacpTimer: FAST   # Supported values: "FAST" or "SLOW"
+#
+# When operation: delete_lag_subinterfaces
+# Note: To add/configure LAG subinterfaces, use "configure" operation with subinterfaces in the config file.
+# lagInterfaces:
+#   - gw-2-sdktest:
+#     - name: LAG1
+#       subinterfaces:
+#         - vlan: 101
+#           segment: lag-test-101
+#           alias: LAG1-101
+#           description: Segment lag-test-101 interface
+#           ipv4: 10.1.1.1/24
+#           ipv6: 2001:10:1:1::1/64
+#   - gw-4-sdktest:
+#     - name: LAG1
+#       subinterfaces:
+#         - vlan: 103
+#           segment: lag-test-103
+#           alias: LAG1-103
+#           description: Segment lag-test-103 interface
+#           ipv4: 10.3.1.1/24
+#           ipv6: 2001:10:3:1::1/64

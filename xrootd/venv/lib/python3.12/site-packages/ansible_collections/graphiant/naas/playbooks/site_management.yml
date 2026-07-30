@@ -1,0 +1,230 @@
+---
+# Site Management Playbook
+# =========================
+#
+# This playbook demonstrates site management operations using
+# the graphiant_sites and graphiant_global_config modules.
+#
+# Features:
+# - Create/configure sites (idempotent - skips existing)
+# - Attach/detach objects to/from sites
+# - Delete/deconfigure sites
+# - Configure global LAN segments and SNMP services
+#
+# Usage (controlled via tags):
+#   # Configure sites only - use --tags configure_sites
+#   ansible-playbook playbooks/site_management.yml \
+#     --tags configure_sites
+#
+#   # Full configure (sites + attachments) - use --tags configure
+#   ansible-playbook playbooks/site_management.yml \
+#     --tags configure
+#
+#   # Delete sites only (idempotent) - use --tags deconfigure_sites
+#   ansible-playbook playbooks/site_management.yml \
+#     --tags deconfigure_sites
+#
+#   # Full deconfigure (detach + delete) - use --tags deconfigure
+#   ansible-playbook playbooks/site_management.yml \
+#     --tags deconfigure
+#
+#   # Configure global objects - use --tags global_config
+#   ansible-playbook playbooks/site_management.yml \
+#     --tags global_config
+#
+# Available tags:
+#   - configure_sites: Create sites only (idempotent)
+#   - attach_objects: Attach objects to sites (idempotent)
+#   - configure: Full configure (sites + attachments)
+#   - detach_objects: Detach objects from sites (idempotent)
+#   - deconfigure_sites: Delete sites only (idempotent)
+#   - deconfigure: Full deconfigure (detach + delete)
+#   - configure_lan_segments: Configure global LAN segments (idempotent)
+#   - configure_snmp: Configure global SNMP services
+#   - deconfigure_snmp: Deconfigure global SNMP services
+#   - global_config: All global configuration tasks
+#   - info: Display operation info only
+#
+
+- name: Site Management Operations
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    # Default configuration files (can be overridden with -e)
+    site_config_file: "sample_sites.yaml"
+    lan_segments_config_file: "sample_global_lan_segments.yaml"
+    snmp_config_file: "sample_global_snmp_services.yaml"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+      # host: "{{ graphiant_host | default(lookup('ini', 'url file=/absolute/path/credentials.ini section=host')) }}"
+      # username: "{{ graphiant_username | default(lookup('ini', 'username file=/absolute/path/credentials.ini section=credentials')) }}"
+      # password: "{{ graphiant_password | default(lookup('ini', 'password file=/absolute/path/credentials.ini section=credentials')) }}"
+
+  tasks:
+    - name: Display operation info
+      ansible.builtin.debug:
+        msg: |
+          Site Management Operations
+          ==========================
+          Site Config: {{ site_config_file }}
+          LAN Segments Config: {{ lan_segments_config_file }}
+          SNMP Config: {{ snmp_config_file }}
+          Portal: {{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}
+      tags: ['always', 'info']
+
+    # ==================== Site Operations ====================
+
+    - name: Configure Sites (Create Sites)
+      graphiant.naas.graphiant_sites:
+        <<: *graphiant_client_params
+        site_config_file: "{{ site_config_file }}"
+        operation: "configure_sites"
+        detailed_logs: true
+        state: present
+      register: configure_sites_result
+      tags: ['configure_sites']
+
+    - name: Display Configure Sites Result
+      ansible.builtin.debug:
+        msg: "{{ configure_sites_result.msg }}"
+      when: configure_sites_result is defined and configure_sites_result.msg is defined
+      tags: ['configure_sites']
+
+    - name: Attach Objects to Sites
+      graphiant.naas.graphiant_sites:
+        <<: *graphiant_client_params
+        site_config_file: "{{ site_config_file }}"
+        operation: "attach_objects"
+        detailed_logs: true
+        state: present
+      register: attach_result
+      tags: ['attach_objects']
+
+    - name: Display Attach Result
+      ansible.builtin.debug:
+        msg: "{{ attach_result.msg }}"
+      when: attach_result is defined and attach_result.msg is defined
+      tags: ['attach_objects']
+
+    - name: Configure Sites (Create Sites + Attach Objects)
+      graphiant.naas.graphiant_sites:
+        <<: *graphiant_client_params
+        site_config_file: "{{ site_config_file }}"
+        operation: "configure"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure']
+
+    - name: Display Configure Result
+      ansible.builtin.debug:
+        msg: "{{ configure_result.msg }}"
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure']
+
+    - name: Detach Objects from Sites
+      graphiant.naas.graphiant_sites:
+        <<: *graphiant_client_params
+        site_config_file: "{{ site_config_file }}"
+        operation: "detach_objects"
+        detailed_logs: true
+        state: present
+      register: detach_result
+      tags: ['detach_objects']
+
+    - name: Display Detach Result
+      ansible.builtin.debug:
+        msg: "{{ detach_result.msg }}"
+      when: detach_result is defined and detach_result.msg is defined
+      tags: ['detach_objects']
+
+    - name: Deconfigure Sites (Detach Objects + Delete Sites)
+      graphiant.naas.graphiant_sites:
+        <<: *graphiant_client_params
+        site_config_file: "{{ site_config_file }}"
+        operation: "deconfigure"
+        detailed_logs: true
+        state: absent
+      register: deconfigure_result
+      tags: ['deconfigure']
+
+    - name: Display Deconfigure Result
+      ansible.builtin.debug:
+        msg: "{{ deconfigure_result.msg }}"
+      when: deconfigure_result is defined and deconfigure_result.msg is defined
+      tags: ['deconfigure']
+
+
+    - name: Deconfigure Sites (Delete Sites Only)
+      graphiant.naas.graphiant_sites:
+        <<: *graphiant_client_params
+        site_config_file: "{{ site_config_file }}"
+        operation: "deconfigure_sites"
+        detailed_logs: true
+        state: absent
+      register: deconfigure_sites_result
+      tags: ['deconfigure_sites']
+
+    - name: Display Deconfigure Sites Result
+      ansible.builtin.debug:
+        msg: "{{ deconfigure_sites_result.msg }}"
+      when: deconfigure_sites_result is defined and deconfigure_sites_result.msg is defined
+      tags: ['deconfigure_sites']
+
+    # ==================== Global Configuration ====================
+
+    - name: Configure Global LAN Segments
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "{{ lan_segments_config_file }}"
+        operation: "configure_lan_segments"
+        detailed_logs: true
+        state: present
+      register: lan_segments_result
+      tags: ['configure_lan_segments', 'global_config']
+
+    - name: Display LAN Segments Configuration Results
+      ansible.builtin.debug:
+        msg: "{{ lan_segments_result.msg }}"
+      when: lan_segments_result is defined and lan_segments_result.msg is defined
+      tags: ['configure_lan_segments', 'global_config']
+
+    - name: Configure Global SNMP Services
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "{{ snmp_config_file }}"
+        operation: "configure_snmp_services"
+        detailed_logs: true
+        state: present
+      register: snmp_result
+      tags: ['configure_snmp', 'global_config']
+
+    - name: Display SNMP Configuration Results
+      ansible.builtin.debug:
+        msg: "{{ snmp_result.msg }}"
+      when: snmp_result is defined and snmp_result.msg is defined
+      tags: ['configure_snmp', 'global_config']
+
+    - name: Deconfigure Global SNMP Services
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "{{ snmp_config_file }}"
+        operation: "deconfigure_snmp_services"
+        detailed_logs: true
+        state: absent
+      register: deconfigure_snmp_result
+      tags: ['deconfigure_snmp']
+
+    - name: Display SNMP Deconfiguration Results
+      ansible.builtin.debug:
+        msg: "{{ deconfigure_snmp_result.msg }}"
+      when: deconfigure_snmp_result is defined and deconfigure_snmp_result.msg is defined
+      tags: ['deconfigure_snmp']

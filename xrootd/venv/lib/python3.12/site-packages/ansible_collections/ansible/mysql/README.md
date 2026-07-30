@@ -1,0 +1,183 @@
+# MySQL and MariaDB collection for Ansible
+[![Plugins CI](https://github.com/ansible-collections/ansible.mysql/actions/workflows/ansible-test-plugins.yml/badge.svg?event=push)](https://github.com/ansible-collections/ansible.mysql/actions?query=workflow%3A"Plugins+CI") [![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/ansible.mysql)](https://codecov.io/gh/ansible-collections/ansible.mysql) [![Discuss on Matrix at #mysql:ansible.com](https://img.shields.io/matrix/mysql:ansible.com.svg?server_fqdn=matrix.org&label=Discuss%20on%20Matrix%20at%20%23mysql:ansible.com&logo=matrix)](https://matrix.to/#/#mysql:ansible.com)
+
+This collection is a part of the Ansible package.
+
+## Our mission
+
+The Ansible `ansible.mysql` collection goals are to produce and maintain simple,
+flexible, and powerful open-source software for automating MySQL and MariaDB related tasks
+providing good documentation for easy deployment and use.
+
+## Community standards
+
+This project abides by the following policies:
+
+* [Ansible Code of Conduct](https://docs.ansible.com/projects/ansible/devel/community/code_of_conduct.html)
+* [Ansible Community Policy for AI-Assisted Contributions](https://docs.ansible.com/projects/ansible/devel/community/ai_policy.html)
+
+## Communication
+
+* Join the Ansible forum:
+  * [Get Help](https://forum.ansible.com/c/help/6): get help or help others.
+  * [Posts tagged with 'mysql'](https://forum.ansible.com/tag/mysql): leverage tags to narrow the scope.
+  * [MySQL Team](https://forum.ansible.com/g/MySQLTeam): by joining the team you will automatically get subscribed to the posts tagged with [mysql](https://forum.ansible.com/tag/mysql).
+  * [Social Spaces](https://forum.ansible.com/c/chat/4): gather and interact with fellow enthusiasts.
+  * [News & Announcements](https://forum.ansible.com/c/news/5): track project-wide announcements including social events.
+
+* The Ansible [Bullhorn newsletter](https://docs.ansible.com/ansible/devel/community/communication.html#the-bullhorn): used to announce releases and important changes.
+
+* Matrix chat:
+  * [#mysql:ansible.com](https://matrix.to/#/#mysql:ansible.com) room: questions on how to contribute to this collection.
+
+For more information about communication, see the [Ansible communication guide](https://docs.ansible.com/ansible/devel/community/communication.html).
+
+## Contributing
+
+The content of this collection is made by [people](https://github.com/ansible-collections/ansible.mysql/blob/main/CONTRIBUTORS) just like you, a community of individuals collaborating on making the world better through developing automation software.
+
+We are actively accepting new contributors.
+
+Any kind of contribution is very welcome.
+
+You don't know how to start? Refer to our [contribution guide](https://github.com/ansible-collections/ansible.mysql/blob/main/CONTRIBUTING.md) or ask us in the [#mysql:ansible.com room](https://matrix.to/#/#mysql:ansible.com) on [Matrix](https://docs.ansible.com/ansible/devel/community/communication.html#ansible-community-on-matrix)!
+
+## Collection maintenance
+
+The current maintainers (contributors with `write` or higher access) are listed in the [MAINTAINERS](https://github.com/ansible-collections/ansible.mysql/blob/main/MAINTAINERS) file. If you have questions or need help, feel free to mention them in the proposals.
+
+To learn how to maintain / become a maintainer of this collection, refer to the [Maintainer guidelines](https://github.com/ansible-collections/ansible.mysql/blob/main/MAINTAINING.md).
+
+It is necessary for maintainers of this collection to be subscribed to:
+
+* The collection itself (the `Watch` button -> `All Activity` in the upper right corner of the repository's homepage).
+* The "Changes Impacting Collection Contributors and Maintainers" [issue](https://github.com/ansible-collections/overview/issues/45).
+
+They also should be subscribed to Ansible's [The Bullhorn newsletter](https://docs.ansible.com/ansible/devel/community/communication.html#the-bullhorn).
+
+## Governance
+
+We, [the MySQL team](https://forum.ansible.com/g/MySQLTeam), use [the forum](https://forum.ansible.com/tag/mysql) posts tagged with `mysql` for general announcements and discussions.
+
+The process of decision making in this collection is based on discussing and finding consensus among participants.
+
+Every voice is important and every idea is valuable. If you have something on your mind, create an issue or dedicated forum [discussion](https://forum.ansible.com/new-topic?title=topic%20title&body=topic%20body&category=project&tags=mysql) and let's discuss it!
+
+## Included content
+
+- **Modules**:
+  - [mysql_clone](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_clone_module.html)
+  - [mysql_db](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_db_module.html)
+  - [mysql_info](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_info_module.html)
+  - [mysql_perf_schema](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_perf_schema_module.html)
+  - [mysql_query](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_query_module.html)
+  - [mysql_replication](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_replication_module.html)
+  - [mysql_resource_group](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_resource_group_module.html)
+  - [mysql_resource_group_info](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_resource_group_info_module.html)
+  - [mysql_role](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_role_module.html)
+  - [mysql_slow_log](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_slow_log_module.html)
+  - [mysql_user](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_user_module.html)
+  - [mysql_variables](https://docs.ansible.com/ansible/devel/collections/ansible/mysql/mysql_variables_module.html)
+
+
+## Releases Support Timeline
+
+We maintain each major release (1.x.y, 2.x.y, ...) for two years after the next major version is released.
+
+Here is the table for the support timeline:
+
+- 1.x.y: released 2020-08-17, EOL
+- 2.x.y: released 2021-04-15, EOL
+- 3.x.y: released 2021-12-01, EOL
+- 4.x.y: released 2025-09-15, EOL 2028-05-05
+- 5.x.y: released 2026-05-05, current
+
+## Tested with
+
+### ansible-core
+
+- stable-2.16 (RHEL8 context only)
+- stable-2.17
+- stable-2.18
+- stable-2.19
+- stable-2.20
+- stable-2.21
+- current development version
+
+### Python
+
+- 3.8 (Unit tests only)
+- 3.9 (Unit tests only)
+- 3.10 (Sanity, Units and integrations tests)
+- 3.11 (Unit tests only, collection version >= 3.10.0)
+
+### Databases
+
+For MariaDB, only Long Term releases are tested. When multiple LTS are available, we test the oldest and the newest only. Usually breaking changes introduced in the versions in between are also present in the latest version.
+
+- mysql 8.4.9
+- mysql 9.7.0
+- mariadb:10.11 (collection version >= 3.10.0)
+- mariadb:11.8  (collection version >= 4.0.1)
+
+### Database connectors
+
+- pymysql 0.10.1
+- pymysql 1.1.1
+- pymysql 1.2.0
+
+## External requirements
+
+The MySQL modules rely on a [PyMySQL](https://github.com/PyMySQL/PyMySQL) connector.
+
+The `mysqlclient` connector support has been [deprecated](https://github.com/ansible-collections/ansible.mysql/issues/654) - use `PyMySQL` connector instead! We will stop testing against it in collection version 4.0.0 and remove the related code in 5.0.0.
+
+## Using this collection
+
+### Installing the Collection from Ansible Galaxy
+
+Before using the MySQL collection, you need to install it with the Ansible Galaxy CLI:
+
+```bash
+ansible-galaxy collection install ansible.mysql
+```
+
+You can also include it in a `requirements.yml` file and install it via `ansible-galaxy collection install -r requirements.yml`, using the format:
+
+```yaml
+---
+collections:
+  - name: ansible.mysql
+```
+
+Note that if you install the collection from Ansible Galaxy, it will not be upgraded automatically if you upgrade the Ansible package. To upgrade the collection to the latest available version, run the following command:
+
+```bash
+ansible-galaxy collection install ansible.mysql --upgrade
+```
+
+You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version (please report an issue in this repository). Use the following syntax:
+
+```bash
+ansible-galaxy collection install ansible.mysql:==5.0.0
+```
+
+See [Ansible Using collections](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html) for more details.
+
+## Support
+
+If you obtained this collection from:
+- Ansible community package, Ansible Galaxy, or GitHub: open an issue in this repository or start a forum topic. See the [Communication section](https://github.com/ansible-collections/ansible.mysql#communication) for details.
+- Automation Hub: as Red Hat Ansible Certified Content, this collection is entitled to support through the Ansible Automation Platform (AAP) using the **Create issue** button on the top right corner.
+
+## Release notes
+
+See the [CHANGELOG.rst](https://github.com/ansible-collections/ansible.mysql/blob/main/CHANGELOG.rst) for all changes.
+
+## Licensing
+
+<!-- Include the appropriate license information here and a pointer to the full licensing details. If the collection contains modules migrated from the ansible/ansible repo, you must use the same license that existed in the ansible/ansible repo. See the GNU license example below. -->
+
+GNU General Public License v3.0 or later.
+
+See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.

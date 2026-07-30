@@ -1,0 +1,171 @@
+# yamllint disable-file
+# Sample Data Exchange Matches Configuration - Scale Test (300 Matches)
+# This file demonstrates how to match Data Exchange services to customers at scale
+# Each service is matched to 50 customers (6 services × 50 customers = 300 matches)
+# Updated to match the new service prefixes from sample_data_exchange_services_scale.yaml
+#
+# The system will:
+# 1. Read match configuration from the 'data_exchange_matches' list
+# 2. Resolve customer and service names to IDs
+# 3. Use the specified servicePrefixes (user-selected, not all service prefixes)
+# 4. POST to v1/extranets-b2b-peering/match/service-to-customer with the payload
+#
+# Note: You can select specific service prefixes to include in the match.
+# This allows fine-grained control over which service prefixes are available to each customer.
+
+data_exchange_matches:
+  # Service 1 matches (50 customers)
+  {% for i in range(1, 51) %}
+  - customerName: "FinanceBank-{{ 100 + i }}"
+    serviceName: "de-service-scale-101"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.0/28"
+        tag: "s-scale-101-prefix1"
+      - prefix: "10.1.1.16/28"
+        tag: "s-scale-101-prefix2"
+      - prefix: "10.1.1.32/28"
+        tag: "s-scale-101-prefix3"
+      - prefix: "10.1.1.48/28"
+        tag: "s-scale-101-prefix4"
+      - prefix: "10.1.1.64/28"
+        tag: "s-scale-101-prefix5"
+      - prefix: "10.1.1.80/28"
+        tag: "s-scale-101-prefix6"
+      - prefix: "10.1.1.96/28"
+        tag: "s-scale-101-prefix7"
+      - prefix: "10.1.1.112/28"
+        tag: "s-scale-101-prefix8"
+    nat:
+      - prefix: "10.{{ 100 + i }}.0.0/24"
+        outsideNatPrefix: "170.{{ 100 + i }}.0.0/24"
+  {% endfor %}
+
+  # Service 2 matches (50 customers)
+  {% for i in range(1, 51) %}
+  - customerName: "FinanceBank-{{ 100 + i }}"
+    serviceName: "de-service-scale-102"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.128/28"
+        tag: "s-scale-102-prefix1"
+      - prefix: "10.1.1.144/28"
+        tag: "s-scale-102-prefix2"
+      - prefix: "10.1.1.160/28"
+        tag: "s-scale-102-prefix3"
+      - prefix: "10.1.1.176/28"
+        tag: "s-scale-102-prefix4"
+      - prefix: "10.1.1.192/28"
+        tag: "s-scale-102-prefix5"
+      - prefix: "10.1.1.208/28"
+        tag: "s-scale-102-prefix6"
+      - prefix: "10.1.1.224/28"
+        tag: "s-scale-102-prefix7"
+      - prefix: "10.1.1.240/28"
+        tag: "s-scale-102-prefix8"
+    nat:
+      - prefix: "10.{{ 100 + i }}.0.0/24" 
+        outsideNatPrefix: "170.{{ 100 + i }}.0.0/24"
+  {% endfor %}
+
+  # Service 3 matches (50 customers)
+  {% for i in range(1, 51) %}
+  - customerName: "FinanceBank-{{ 100 + i }}"
+    serviceName: "de-service-scale-103"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.0/28"
+        tag: "s-scale-103-prefix1"
+      - prefix: "10.1.2.16/28"
+        tag: "s-scale-103-prefix2"
+      - prefix: "10.1.2.32/28"
+        tag: "s-scale-103-prefix3"
+      - prefix: "10.1.2.48/28"
+        tag: "s-scale-103-prefix4"
+      - prefix: "10.1.2.64/28"
+        tag: "s-scale-103-prefix5"
+      - prefix: "10.1.2.80/28"
+        tag: "s-scale-103-prefix6"
+      - prefix: "10.1.2.96/28"
+        tag: "s-scale-103-prefix7"
+      - prefix: "10.1.2.112/28"
+        tag: "s-scale-103-prefix8"  
+    nat:
+      - prefix: "10.{{ 100 + i }}.0.0/24"
+        outsideNatPrefix: "170.{{ 100 + i }}.0.0/24"
+  {% endfor %}
+
+  # Service 4 matches (50 customers)
+  {% for i in range(1, 51) %}
+  - customerName: "FinanceBank-{{ 100 + i }}"
+    serviceName: "de-service-scale-104"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.128/28"
+        tag: "s-scale-104-prefix1"
+      - prefix: "10.1.2.144/28"
+        tag: "s-scale-104-prefix2"
+      - prefix: "10.1.2.160/28"
+        tag: "s-scale-104-prefix3"
+      - prefix: "10.1.2.176/28"
+        tag: "s-scale-104-prefix4"
+      - prefix: "10.1.2.192/28"
+        tag: "s-scale-104-prefix5"
+      - prefix: "10.1.2.208/28"
+        tag: "s-scale-104-prefix6"
+      - prefix: "10.1.2.224/28"
+        tag: "s-scale-104-prefix7"
+      - prefix: "10.1.2.240/28"
+        tag: "s-scale-104-prefix8"
+    nat:
+      - prefix: "10.{{ 100 + i }}.0.0/24"
+        outsideNatPrefix: "170.{{ 100 + i }}.0.0/24"
+  {% endfor %}
+
+  # Service 5 matches (50 customers)
+  {% for i in range(1, 51) %}
+  - customerName: "FinanceBank-{{ 100 + i }}"
+    serviceName: "de-service-scale-105"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.0/28"
+        tag: "s-scale-105-prefix1"
+      - prefix: "10.1.3.16/28"
+        tag: "s-scale-105-prefix2"
+      - prefix: "10.1.3.32/28"
+        tag: "s-scale-105-prefix3"
+      - prefix: "10.1.3.48/28"
+        tag: "s-scale-105-prefix4"
+      - prefix: "10.1.3.64/28"
+        tag: "s-scale-105-prefix5" 
+      - prefix: "10.1.3.80/28"
+        tag: "s-scale-105-prefix6"
+      - prefix: "10.1.3.96/28"
+        tag: "s-scale-105-prefix7"
+      - prefix: "10.1.3.112/28"
+        tag: "s-scale-105-prefix8"
+    nat:
+      - prefix: "10.{{ 100 + i }}.0.0/24"
+        outsideNatPrefix: "170.{{ 100 + i }}.0.0/24"
+  {% endfor %}
+
+  # Service 6 matches (50 customers)
+  {% for i in range(1, 51) %}
+  - customerName: "FinanceBank-{{ 100 + i }}"
+    serviceName: "de-service-scale-106"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.128/28"
+        tag: "s-scale-106-prefix1"  
+      - prefix: "10.1.3.144/28"
+        tag: "s-scale-106-prefix2"
+      - prefix: "10.1.3.160/28"
+        tag: "s-scale-106-prefix3"
+      - prefix: "10.1.3.176/28"
+        tag: "s-scale-106-prefix4"
+      - prefix: "10.1.3.192/28"
+        tag: "s-scale-106-prefix5"
+      - prefix: "10.1.3.208/28"
+        tag: "s-scale-106-prefix6"
+      - prefix: "10.1.3.224/28"
+        tag: "s-scale-106-prefix7"
+      - prefix: "10.1.3.240/28"
+        tag: "s-scale-106-prefix8"
+    nat:
+      - prefix: "10.{{ 100 + i }}.0.0/24"
+        outsideNatPrefix: "170.{{ 100 + i }}.0.0/24"
+  {% endfor %}

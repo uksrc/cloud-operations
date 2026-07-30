@@ -1,0 +1,60 @@
+---
+# Data Exchange - Create Services Playbook (Workflow 1)
+# Creates new Data Exchange peering services from a YAML configuration file.
+# If a service already exists it is skipped (idempotent).
+# With --diff, shows prefixTags drift on existing services and full config for new ones.
+#
+# Usage:
+#   Preview changes (dry run + diff):
+#     ansible-playbook ansible_collections/graphiant/naas/playbooks/de_workflows/01_dataex_create_services.yml --check --diff
+#
+#   Apply changes:
+#     ansible-playbook ansible_collections/graphiant/naas/playbooks/de_workflows/01_dataex_create_services.yml
+#
+#   Custom config file:
+#     ansible-playbook ... -e config_file=de_workflows_configs/sample_data_exchange_services.yaml
+
+- name: Data Exchange - Create Services
+  hosts: localhost
+  gather_facts: false
+  vars:
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+
+  tasks:
+    - name: Get current Data Exchange services summary
+      graphiant.naas.graphiant_data_exchange_info:
+        <<: *graphiant_client_params
+        query: services_summary
+        detailed_logs: true
+      register: services_summary_before
+
+    - name: Display current services summary
+      ansible.builtin.debug:
+        msg: "{{ services_summary_before.msg }}"
+
+    - name: Create Data Exchange services
+      graphiant.naas.graphiant_data_exchange:
+        <<: *graphiant_client_params
+        operation: create_services
+        config_file: "{{ config_file | default('de_workflows_configs/sample_data_exchange_services.yaml') }}"
+        detailed_logs: true
+      register: create_services_result
+
+    - name: Display services creation result
+      ansible.builtin.debug:
+        msg: "{{ create_services_result.msg }}"
+
+    - name: Get updated Data Exchange services summary
+      graphiant.naas.graphiant_data_exchange_info:
+        <<: *graphiant_client_params
+        query: services_summary
+        detailed_logs: true
+      register: services_summary_after
+
+    - name: Display updated services summary
+      ansible.builtin.debug:
+        msg: "{{ services_summary_after.msg }}"

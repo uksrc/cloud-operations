@@ -1,0 +1,34 @@
+---
+# tasks file for ansible_collections/netapp/ontap/roles/na_ontap_vserver_delete
+
+- name: Collect NVMe subsystems for vserver
+  tags: gather
+  netapp.ontap.na_ontap_rest_info:
+    gather_subset:
+      - protocols/nvme/subsystems
+    parameters:
+      svm.name: "{{ vserver_name }}"
+      fields: name
+    hostname: "{{ netapp_hostname }}"
+    username: "{{ netapp_username }}"
+    password: "{{ netapp_password }}"
+    https: "{{ https }}"
+    validate_certs: "{{ validate_certs }}"
+  register: ontap
+
+- name: Debug
+  ansible.builtin.debug:
+    var: ontap
+  when: debug_level > 1
+
+- name: Extract NVMe subsystems
+  ansible.builtin.set_fact:
+    nvme_subsystems: "{{ ontap.ontap_info | json_query(get_attrs) }}"
+  vars:
+    # double quotes around protocols/nvme/subsystems to escape the /
+    get_attrs: '"protocols/nvme/subsystems".records[].name'
+
+- name: Debug
+  ansible.builtin.debug:
+    var: nvme_subsystems
+  when: debug_level > 0

@@ -1,0 +1,14 @@
+# yamllint disable-file
+# Data Exchange Service Template
+# This template is not used to generate the API payload for Data Exchange service creation
+
+serviceName: "{{ service_name }}"
+type: "{{ service_type }}"  # Example: "peering_service"
+policy:
+  serviceLanSegment: {{ lan_segment_id }}
+  type: "{{ service_type }}"
+  site:
+    - sites: {{ site_ids }}
+      siteLists: []
+  description: "{{ service_description }}"
+  prefixTags: {{ prefix_tags }}

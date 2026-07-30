@@ -1,0 +1,294 @@
+---
+- name: Map flashsystem host with inventory hostname
+  vars_files:
+    - vars.yml
+  hosts: "{{hosts_name}}"
+  gather_facts: true
+  serial: 1
+  tasks:
+
+    - name: Gather facts for all hosts.
+      ansible.builtin.setup:
+      register: system_info
+
+    - name: Print WWPN.
+      ansible.builtin.debug:
+        var: file_name
+
+    - name: Linux tasks
+      when: system_info.ansible_facts.ansible_system == "Linux"
+      block:
+
+        - name: Check if FC directory exists
+          ansible.builtin.stat:
+            path: /sys/class/fc_host
+          register: fc_host_dir
+
+        - name: Fetching WWPNs data
+          when: fc_host_dir.stat.exists
+          block:
+
+            - name: Read FC WWPNs from host.
+              ansible.builtin.shell: cat /sys/class/fc_host/host*/port_name
+              register: fc_host_wwpns_output
+              changed_when: false
+
+            - name: Normalize FC WWPNs to uppercase.
+              ansible.builtin.set_fact:
+                fc_host_wwpns_upper: "{{ fc_host_wwpns_output.stdout_lines | map('upper') | list }}"
+
+            - name: Remove the 0x prefix from the list.
+              ansible.builtin.set_fact:
+                fc_host_wwpns_upper_clean: "{{ fc_host_wwpns_upper | map('regex_replace', '^0X', '') | list }}"
+
+        - name: Extract FC WWPNs.
+          ansible.builtin.set_fact:
+            fc_host_wwpns: "{{ fc_host_wwpns_upper_clean | default([]) }}"
+
+        - name: Print WWPN.
+          ansible.builtin.debug:
+            var: fc_host_wwpns
+
+        - name: Initialize iscsi_host_iqn_output_list
+          ansible.builtin.set_fact:
+            iscsi_host_iqn_output_list: []
+
+        - name: Check if FC directory exists
+          ansible.builtin.stat:
+            path: /etc/iscsi/initiatorname.iscsi
+          register: iscsi_host_dir
+
+        - name: Fetching WWPNs data
+          when: iscsi_host_dir.stat.exists
+          block:
+
+            - name: Read FC WWPNs from host.       # noqa: risky-shell-pipe
+              ansible.builtin.shell: grep '^InitiatorName=' /etc/iscsi/initiatorname.iscsi | cut -d= -f2
+              register: iscsi_host_iqn_output
+              changed_when: false
+
+            - name: Convert to list.
+              ansible.builtin.set_fact:
+                iscsi_host_iqn_output_list: ["{{ iscsi_host_iqn_output.stdout }}"]
+
+            - name: Print iqn.
+              ansible.builtin.debug:
+                var: iscsi_host_iqn_output_list
+
+
+    - name: Windows tasks
+      when: system_info.ansible_facts.ansible_system == "Win32NT"
+      block:
+
+        - name: Read FC WWPNs from Windows host.
+          ansible.windows.win_shell: |
+            $wwpns = Get-InitiatorPort | Where-Object { $_.PortAddress } |
+                    ForEach-Object { ($_.PortAddress | ForEach-Object { "{0:X}" -f $_ }) -join "" }
+            $wwpns -join "`n"
+          register: fc_host_wwpns_output
+          changed_when: false
+
+        - name: Normalize FC WWPNs to uppercase.
+          ansible.builtin.set_fact:
+            fc_host_wwpns_upper: "{{ fc_host_wwpns_output.stdout_lines | map('upper') | list }}"
+
+        - name: Extract FC WWPNs.
+          ansible.builtin.set_fact:
+            fc_host_wwpns: "{{ fc_host_wwpns_upper | default([]) }}"
+
+        - name: Print WWPN
+          ansible.builtin.debug:
+            var: fc_host_wwpns
+
+        - name: Read FC iqn from Windows host.
+          ansible.windows.win_shell: |
+            (Get-WmiObject -Namespace root\wmi -Class MSiSCSIInitiator_MethodClass).iSCSINodeName
+          register: iscsi_host_iqn_output
+          changed_when: false
+
+        - name: Rename it
+          ansible.builtin.set_fact:
+            iscsi_host_iqn_output_list: "{{ iscsi_host_iqn_output.stdout_lines }}"
+
+        - name: Print iqn.
+          ansible.builtin.debug:
+            var: iscsi_host_iqn_output_list
+
+    - name: Esxi tasks
+      when: system_info.ansible_facts.ansible_system == "VMkernel"
+      block:
+
+        - name: Read FC WWPNs from Esxi host.
+          ansible.builtin.shell: |
+            set -o pipefail
+            esxcli storage san fc list | grep  'Port Name' |awk '{print $3}' |awk -F':' '{gsub(":", "", $0); print}' "$input_file" | sort -u
+          register: fc_host_wwpns_output
+          changed_when: false
+          failed_when: false
+
+        - name: Print WWPN
+          ansible.builtin.debug:
+            var: fc_host_wwpns_output
+
+        - name: Normalize FC WWPNs to uppercase.
+          ansible.builtin.set_fact:
+            fc_host_wwpns_upper: "{{ fc_host_wwpns_output.stdout_lines | map('upper') | list }}"
+
+        - name: Extract FC WWPNs.
+          ansible.builtin.set_fact:
+            fc_host_wwpns: "{{ fc_host_wwpns_upper | default([]) }}"
+
+        - name: Print WWPN
+          ansible.builtin.debug:
+            var: fc_host_wwpns
+
+        - name: Get iSCSI adapter name    # noqa: risky-shell-pipe
+          ansible.builtin.shell: |
+            esxcli iscsi adapter list | awk '$1 ~ /^[-]+$/ { next } NR > 1 { print $1 }'
+          register: iscsi_adapter_output
+          changed_when: false
+
+        - name: Store iSCSI adapter in a variable
+          ansible.builtin.set_fact:
+            iscsi_adapter: "{{ iscsi_adapter_output.stdout }}"
+
+        - name: Read FC iqn from esxi host.    # noqa: risky-shell-pipe
+          ansible.builtin.shell: |
+            esxcli iscsi adapter get -A "{{ iscsi_adapter }}" | grep "^   Name:" | sed 's/^   Name: //'
+          register: iscsi_host_iqn_output
+          changed_when: false
+
+        - name: Rename it
+          ansible.builtin.set_fact:
+            iscsi_host_iqn_output_list: "{{ iscsi_host_iqn_output.stdout_lines }}"
+
+        - name: Print iqn.
+          ansible.builtin.debug:
+            var: iscsi_host_iqn_output_list
+
+- name: Load Output from File on Localhost
+  hosts: localhost
+  gather_facts: false
+  serial: 1
+  tasks:
+
+    - name: Read data provided by main.yml playbook from file.
+      ansible.builtin.slurp:
+        src: "{{ file_name }}/{{ json_file }}"
+      register: vmd_output_file
+
+    - name: Parse Output to read content.
+      ansible.builtin.set_fact:
+        vmd_output: "{{ vmd_output_file['content'] | b64decode | from_json }}"
+
+
+- name: Match and Store Host Details
+  vars_files:
+    - vars.yml
+  hosts: "{{ hosts_name }}"
+  gather_facts: false
+  serial: 1
+  tasks:
+    - name: Ensure vmd_output is available on all hosts.
+      ansible.builtin.set_fact:
+        vmd_output: "{{ hostvars['localhost'].vmd_output }}"
+      delegate_to: localhost
+
+
+    - name: Initialize matched_hosts list.
+      ansible.builtin.set_fact:
+        matched_hosts: []
+
+    - name: Initialize an empty list.
+      ansible.builtin.set_fact:
+        matched_inventory_hosts: []
+
+    - name: Map inventory_hostname with flash_systems host name based on WWPN
+      ansible.builtin.set_fact:
+        matched_hosts: >-
+          {{
+            matched_hosts + [{
+              'inventory_hostname': inventory_hostname,
+              'fs_host_name': item.value.name,
+              'host_type': system_info.ansible_facts.ansible_system,
+              'connection': item.value.type
+            }]
+          }}
+      loop: "{{ vmd_output | dict2items }}"
+      when:
+        - item.value is mapping
+        - "'wwpns' in item.value"
+        - "(item.value.wwpns | intersect(fc_host_wwpns) | length) > 0"
+        - item.value.type == 'FC'
+
+    - name: Map inventory_hostname with flash_systems host name based on iqn.
+      ansible.builtin.set_fact:
+        matched_hosts: >-
+          {{
+            matched_hosts + [{
+              'inventory_hostname': inventory_hostname,
+              'iscsi_host_name': item.value.name,
+              'host_type': system_info.ansible_facts.ansible_system,
+              'connection': item.value.type,
+              'iscsi_ips': item.value.iscsi_ips
+              }]
+          }}
+      loop: "{{ vmd_output | dict2items }}"
+      when:
+        - item.value is mapping
+        - "'iscsi_name' in item.value"
+        - "(item.value.iscsi_name | intersect(iscsi_host_iqn_output_list) | length) > 0"
+        - item.value.type == 'iscsi'
+        - iscsi_host_iqn_output_list is defined
+
+    - name: Print Filter matched hosts.
+      ansible.builtin.debug:
+        var: matched_hosts
+
+    # Appending data in files
+    - name: Append matched hosts to a JSON file if found.
+      when: matched_hosts != []
+      delegate_to: localhost
+      block:
+
+        - name: Set file name if location is target
+          ansible.builtin.set_fact:
+            matched_hosts_file: matched_hosts.json
+          when: location_flag == 'target'
+
+        - name: Set file name if location is source
+          ansible.builtin.set_fact:
+            matched_hosts_file: matched_hosts_source.json
+          when: location_flag == 'source'
+
+        - name: Check if the file exists
+          ansible.builtin.stat:
+            path: "{{ file_name }}/{{ matched_hosts_file }}"
+          register: file_stat
+
+        - name: Read the current content of the file if it exists.
+          ansible.builtin.slurp:
+            src: "{{ file_name }}/{{ matched_hosts_file }}"
+          register: current_content
+          when: file_stat.stat.exists
+          failed_when: false
+
+        - name: Decode the current JSON content if the file exists.
+          ansible.builtin.set_fact:
+            existing_data: "{{ current_content.content | b64decode | from_json if current_content.content | length > 0 else [] }}"
+          when: file_stat.stat.exists
+
+        - name: Initialize existing_data if the file doesn't exist.
+          ansible.builtin.set_fact:
+            existing_data: []
+          when: not file_stat.stat.exists
+
+        - name: Append new matched hosts to existing data.
+          ansible.builtin.set_fact:
+            updated_data: "{{ existing_data + matched_hosts }}"
+
+        - name: Write the updated data to the file.
+          ansible.builtin.copy:
+            content: "{{ updated_data | to_nice_json }}"
+            dest: "{{ file_name }}/{{ matched_hosts_file }}"
+            mode: '0644'

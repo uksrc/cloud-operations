@@ -1,0 +1,146 @@
+# yamllint disable-file
+# Template supports both API-aligned params (preferred) and legacy snake_case params for backward compatibility:
+#   - subinterfaces (API) / sub_interfaces (legacy)
+#   - maxTransmissionUnit (API) / mtu (legacy)
+#   - adminStatus (API) / enabled (legacy)
+#   - v4TcpMss (API) / v4_tcp_mss (legacy)
+#   - v6TcpMss (API) / v6_tcp_mss (legacy)
+{
+    "interfaces": {
+        "{{ name }}": {
+            "interface": {
+                {# Resolve backward-compatible aliases at top level #}
+                {% set _subinterfaces = subinterfaces | default(sub_interfaces) | default(none) %}
+                {% set _mtu = maxTransmissionUnit | default(mtu) | default(none) %}
+                {% set _adminStatus = adminStatus | default(enabled) | default('true') %}
+                {% set _v4TcpMss = v4TcpMss | default(v4_tcp_mss) | default(none) %}
+                {% set _v6TcpMss = v6TcpMss | default(v6_tcp_mss) | default(none) %}
+                {% if action == "default_lan" or action == "delete" %}
+                    {% if lan or circuit %}
+                        "lan": "{{ default_lan }}",
+                        "circuit": null,
+                        "description": "",
+                        "alias": "{{ name }}"{% if _subinterfaces %},{% endif %}
+                    {% endif %}
+                {% elif action == "add" %}
+                    {% if circuit or lan %}
+                        "adminStatus": {{ _adminStatus }},
+                        "loopback": {{ loopback | default(null) }},
+                        {% if _mtu is not none %}
+                            "maxTransmissionUnit": {{ _mtu }},
+                        {% endif %}
+                        {% if circuit %}
+                            "circuit": "{{ circuit }}",
+                            "description": "{{ description | default(circuit) }}",
+                            "alias": "{{ alias | default(circuit) }}",
+                        {% elif lan %}
+                            "lan": "{{ lan }}",
+                            "description": "{{ description | default(lan) }}",
+                            "alias": "{{ alias | default(lan) }}",
+                            {% if _v4TcpMss is not none %}
+                                "v4TcpMss": {
+                                    "tcpMssV4": {{ _v4TcpMss }}
+                                },
+                            {% endif %}
+                            {% if _v6TcpMss is not none %}
+                                "v6TcpMss": {
+                                    "tcpMssV6": {{ _v6TcpMss }}
+                                },
+                            {% endif %}
+                        {% endif %}
+                        "ipv4": {
+                            {% if ipv4 %}
+                                "address": {
+                                    "address": "{{ ipv4 }}"
+                                }
+                            {% else %}
+                                "dhcp": {
+                                    "dhcpClient": {{ dhcp | default(true) }}
+                                }
+                            {% endif %}
+                        },
+                        "ipv6": {
+                            {% if ipv6 %}
+                                "address": {
+                                    "address": "{{ ipv6 }}"
+                                }
+                            {% else %}
+                                "dhcp": {
+                                    "dhcpClient": {{ dhcp | default(true) }}
+                                }
+                            {% endif %}
+                        }{% if _subinterfaces %},{% endif %}
+                    {% endif %}
+                {% endif %}
+                {% if _subinterfaces and (action == "default_lan" or action == "add" or action == "delete") %}
+                    "subinterfaces": {
+                            {% for sub_interface in _subinterfaces %}
+                                {# Resolve backward-compatible aliases for subinterface #}
+                                {% set _sub_adminStatus = sub_interface.adminStatus | default(sub_interface.enabled) | default('true') %}
+                                {% set _sub_v4TcpMss = sub_interface.v4TcpMss | default(sub_interface.v4_tcp_mss) | default(none) %}
+                                {% set _sub_v6TcpMss = sub_interface.v6TcpMss | default(sub_interface.v6_tcp_mss) | default(none) %}
+                                "{{ sub_interface.vlan }}": {
+                                    {% if action == "default_lan" %}
+                                        "interface": {
+                                            "lan": "{{ default_lan }}",
+                                            "vlan": {{ sub_interface.vlan }},
+                                            "circuit": null,
+                                            "description": "",
+                                            "alias": "{{ name ~ '.' ~ sub_interface.vlan }}",
+                                        }
+                                    {% elif action == "delete" %}
+                                        "interface": null
+                                    {% elif action == "add" %}
+                                        "interface": {
+                                            {% if sub_interface.circuit %}
+                                                "circuit": "{{ sub_interface.circuit | default(null) }}",
+                                            {% elif sub_interface.lan %}
+                                                "lan": "{{ sub_interface.lan | default(null) }}",
+                                            {% endif %}
+                                            "vlan": {{ sub_interface.vlan }},
+                                            "description": "{{ sub_interface.description | default(sub_interface.vlan ~ '_' ~ sub_interface.lan, true) }}",
+                                            "alias": "{{ sub_interface.alias | default(sub_interface.vlan ~ '_' ~ sub_interface.lan, true) }}",
+                                            "adminStatus": {{ _sub_adminStatus }},
+                                            "loopback": {{ sub_interface.loopback | default(null) }},
+                                            {% if _sub_v4TcpMss is not none %}
+                                                "v4TcpMss": {
+                                                    "tcpMssV4": {{ _sub_v4TcpMss }}
+                                                },
+                                            {% endif %}
+                                            {% if _sub_v6TcpMss is not none %}
+                                                "v6TcpMss": {
+                                                    "tcpMssV6": {{ _sub_v6TcpMss }}
+                                                },
+                                            {% endif %}
+                                            "ipv4": {
+                                                {% if sub_interface.ipv4 %}
+                                                    "address": {
+                                                        "address": "{{ sub_interface.ipv4 }}"
+                                                    }
+                                                {% else %}
+                                                    "dhcp": {
+                                                        "dhcpClient": {{ sub_interface.dhcp | default(true) }}
+                                                    }
+                                                {% endif %}
+                                            },
+                                            "ipv6": {
+                                                {% if sub_interface.ipv6 %}
+                                                    "address": {
+                                                        "address": "{{ sub_interface.ipv6 }}"
+                                                    }
+                                                {% else %}
+                                                    "dhcp": {
+                                                        "dhcpClient": {{ sub_interface.dhcp | default(true) }}
+                                                    }
+                                                {% endif %}
+                                            }
+                                        }
+                                    {% endif %}
+                                },
+                            {% endfor %}
+                        }
+                    {% endif %}
+            }
+        }
+    }
+}

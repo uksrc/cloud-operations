@@ -1,0 +1,101 @@
+---
+####################################################################
+# Role: hv_vspone_object_kmip_server_role
+# Description: Update HTTPS ciphers for one or more KMIP servers in VSP One Object.
+####################################################################
+
+- name: Validate required connection information
+  ansible.builtin.assert:
+    that:
+      - connection_info is defined
+    fail_msg: "connection_info is required for hv_vspone_object_kmip_server_role"
+
+- name: Validate KMIP server names input
+  ansible.builtin.assert:
+    that:
+      - hv_vspone_object_kmip_server_role_names is defined
+      - hv_vspone_object_kmip_server_role_names | type_debug == 'list'
+      - hv_vspone_object_kmip_server_role_names | length > 0
+    fail_msg: "hv_vspone_object_kmip_server_role_names must be a non-empty list"
+
+- name: Validate HTTPS ciphers input
+  ansible.builtin.assert:
+    that:
+      - hv_vspone_object_kmip_server_role_https_ciphers is defined
+      - hv_vspone_object_kmip_server_role_https_ciphers | string | length > 0
+    fail_msg: "hv_vspone_object_kmip_server_role_https_ciphers must be a non-empty string"
+
+- name: Initialize KMIP role counters and accumulators
+  ansible.builtin.set_fact:
+    hv_vspone_object_kmip_server_role_fetch_failed_count: 0
+    hv_vspone_object_kmip_server_role_fetch_success_count: 0
+    hv_vspone_object_kmip_server_role_update_failed_count: 0
+    hv_vspone_object_kmip_server_role_update_success_count: 0
+    hv_vspone_object_kmip_server_role_fetch_failures: []
+    hv_vspone_object_kmip_server_role_update_failures: []
+    hv_vspone_object_kmip_server_role_update_specs: []
+
+- name: Fetch KMIP server details by name
+  hitachivantara.vspone_object.oneobject_node.hv_kmip_server_facts:
+    connection_info: "{{ connection_info }}"
+    spec:
+      name: "{{ item }}"
+  loop: "{{ hv_vspone_object_kmip_server_role_names }}"
+  register: hv_vspone_object_kmip_server_role_fetch_result
+  ignore_errors: true
+
+- name: Build update specs from successful fetches
+  ansible.builtin.set_fact:
+    hv_vspone_object_kmip_server_role_fetch_failed_count: "{{ (hv_vspone_object_kmip_server_role_fetch_failed_count | int) + (1 if (item.failed | default(false)) else 0) }}"
+    hv_vspone_object_kmip_server_role_fetch_success_count: "{{ (hv_vspone_object_kmip_server_role_fetch_success_count | int) + (0 if (item.failed | default(false)) else 1) }}"
+    hv_vspone_object_kmip_server_role_fetch_failures: "{{ hv_vspone_object_kmip_server_role_fetch_failures + [{'name': item.item, 'reason': (item.msg | default(item.stderr | default('Unknown error')))}] if (item.failed | default(false)) else hv_vspone_object_kmip_server_role_fetch_failures }}"
+    hv_vspone_object_kmip_server_role_update_specs: "{{ hv_vspone_object_kmip_server_role_update_specs + [{'name': (hv_vspone_object_kmip_server_role_details.name | default(item.item)), 'host': (hv_vspone_object_kmip_server_role_details.host | default(None)), 'port': (hv_vspone_object_kmip_server_role_details.port | default(None)), 'is_tls12_enabled': (hv_vspone_object_kmip_server_role_details.is_tls12_enabled | default(None)), 'kmip_protocol': (hv_vspone_object_kmip_server_role_details.kmip_protocol | default(None)), 'uuid': (hv_vspone_object_kmip_server_role_details.uuid | default(None)), 'https_ciphers': hv_vspone_object_kmip_server_role_https_ciphers}] if (not (item.failed | default(false)) and (hv_vspone_object_kmip_server_role_details | length > 0)) else hv_vspone_object_kmip_server_role_update_specs }}"
+  loop: "{{ hv_vspone_object_kmip_server_role_fetch_result.results | default([]) }}"
+  vars:
+    hv_vspone_object_kmip_server_role_details: "{{ (((item.ansible_facts | default({})).kmip_servers | default({})).servers | default({}) | dict2items | map(attribute='value') | list | first | default({})) }}"
+
+- name: Show KMIP server fetch failure reasons
+  ansible.builtin.debug:
+    msg: "Fetching KMIP server failed for {{ item.name }}. Reason: {{ item.reason }}"
+  loop: "{{ hv_vspone_object_kmip_server_role_fetch_failures }}"
+  when: hv_vspone_object_kmip_server_role_fetch_failed_count | int > 0
+
+- name: Update HTTPS ciphers for fetched KMIP servers
+  hitachivantara.vspone_object.oneobject_node.hv_kmip:
+    connection_info: "{{ connection_info }}"
+    state: "modify"
+    spec: "{{ item }}"
+  loop: "{{ hv_vspone_object_kmip_server_role_update_specs }}"
+  register: hv_vspone_object_kmip_server_role_update_result
+  ignore_errors: true
+  when: hv_vspone_object_kmip_server_role_update_specs | length > 0
+
+- name: Build KMIP server update summary
+  ansible.builtin.set_fact:
+    hv_vspone_object_kmip_server_role_update_failed_count: "{{ (hv_vspone_object_kmip_server_role_update_failed_count | int) + (1 if (item.failed | default(false)) else 0) }}"
+    hv_vspone_object_kmip_server_role_update_success_count: "{{ (hv_vspone_object_kmip_server_role_update_success_count | int) + (0 if (item.failed | default(false)) else 1) }}"
+    hv_vspone_object_kmip_server_role_update_failures: "{{ hv_vspone_object_kmip_server_role_update_failures + [{'name': (item.item.name | default('unknown')), 'reason': (item.msg | default(item.stderr | default('Unknown error')))}] if (item.failed | default(false)) else hv_vspone_object_kmip_server_role_update_failures }}"
+  loop: "{{ hv_vspone_object_kmip_server_role_update_result.results | default([]) }}"
+  when: hv_vspone_object_kmip_server_role_update_specs | length > 0
+
+- name: Expose KMIP server role summary
+  ansible.builtin.set_fact:
+    hv_vspone_object_kmip_server_role_summary:
+      requested: "{{ hv_vspone_object_kmip_server_role_names | length }}"
+      fetch_success: "{{ hv_vspone_object_kmip_server_role_fetch_success_count }}"
+      fetch_failed: "{{ hv_vspone_object_kmip_server_role_fetch_failed_count }}"
+      update_attempted: "{{ hv_vspone_object_kmip_server_role_update_specs | length }}"
+      update_success: "{{ hv_vspone_object_kmip_server_role_update_success_count }}"
+      update_failed: "{{ hv_vspone_object_kmip_server_role_update_failed_count }}"
+      fetch_failures: "{{ hv_vspone_object_kmip_server_role_fetch_failures }}"
+      update_failures: "{{ hv_vspone_object_kmip_server_role_update_failures }}"
+
+- name: Show KMIP server update failure reasons
+  ansible.builtin.debug:
+    msg: "Updating KMIP server failed for {{ item.name }}. Reason: {{ item.reason }}"
+  loop: "{{ hv_vspone_object_kmip_server_role_update_failures }}"
+  when: hv_vspone_object_kmip_server_role_update_failed_count | int > 0
+
+- name: Show KMIP server role summary
+  ansible.builtin.debug:
+    msg: "KMIP server role summary: requested={{ hv_vspone_object_kmip_server_role_names | length }}, fetch_success={{ hv_vspone_object_kmip_server_role_fetch_success_count }}, fetch_failed={{ hv_vspone_object_kmip_server_role_fetch_failed_count }}, update_attempted={{ hv_vspone_object_kmip_server_role_update_specs | length }}, update_success={{ hv_vspone_object_kmip_server_role_update_success_count }}, update_failed={{ hv_vspone_object_kmip_server_role_update_failed_count }}"

@@ -1,0 +1,6 @@
+bugfixes:
+  - purefa_hg - Default an empty context to the local array name to avoid an internal error on newer Purity (https://github.com/Pure-Storage-Ansible/FlashArray-Collection/issues/1005)
+  - purefa_pg - Default an empty context to the local array name to avoid an internal error on newer Purity (https://github.com/Pure-Storage-Ansible/FlashArray-Collection/issues/1005)
+  - purefa_pgsnap - Default an empty context to the local array name to avoid an internal error on newer Purity (https://github.com/Pure-Storage-Ansible/FlashArray-Collection/issues/1005)
+  - purefa_snap - Default an empty context to the local array name to avoid an internal error on newer Purity (https://github.com/Pure-Storage-Ansible/FlashArray-Collection/issues/1005)
+  - purefa_vg - Default an empty context to the local array name to avoid an internal error on newer Purity (https://github.com/Pure-Storage-Ansible/FlashArray-Collection/issues/1005)

@@ -1,0 +1,8 @@
+# yamllint disable-file
+# Sample Global LAN Segments Configuration
+lan_segments:
+  {% for i in range(1, 51) %}
+  - name: "FinanceBank-{{ 100 + i }}-lan-segment"
+    description: "LAN segment for customer FinanceBank-{{ 100 + i }}"
+  {% endfor %}
+  

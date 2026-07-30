@@ -1,0 +1,32 @@
+# Sample LAN Segments Configuration
+lan_segments:
+  - name: "lan-segment-1"
+    description: "Primary LAN segment for production"
+  
+  - name: "lan-segment-2"
+    description: "Secondary LAN segment for staging environment"
+  
+  - name: "lan-segment-3"
+    description: "Development LAN segment"
+
+# LAN segments for interface management testing
+  - name: "lan-1-test"
+    description: "LAN segment for testing"
+
+  - name: "lan-7-test"
+    description: "LAN segment for testing"
+
+  - name: "lan-8-test"
+    description: "LAN segment for testing"
+
+  - name: "lag-test"
+    description: "LAN segment for testing lag interface"
+
+  - name: "lag-test-2"
+    description: "LAN segment for testing lag interface"
+
+  - name: "lag-test-101"
+    description: "LAN segment for testing lag interface"
+
+  - name: "lag-test-102"
+    description: "LAN segment for testing lag interface"

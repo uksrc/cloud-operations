@@ -1,0 +1,26 @@
+---
+- name: Converge
+  hosts: sdc
+  vars_files:
+    - ../../../../playbooks/roles/vars_files/connection.yml
+  gather_facts: true
+  tasks:
+    - name: "Uninstall powerflex SDC"
+      register: powerflex_sdc_uninstall_outputs
+      ansible.builtin.import_role:
+        name: "powerflex_sdc"
+      vars:
+        powerflex_sdc_state: 'absent'
+
+    - name: "Verifying uninstall package in check mode"
+      ansible.builtin.assert:
+        that:
+          - 'powerflex_sdc_uninstall_output.results[0].rc == 0'
+          - 'powerflex_sdc_uninstall_output.changed is true'
+      when: ansible_check_mode
+
+    - name: "Verifying remove the sdc"
+      ansible.builtin.assert:
+        that:
+          - 'powerflex_sdc_remove_output.sdc_details is none'
+      when: not ansible_check_mode and powerflex_sdc_remove_output.changed

@@ -1,0 +1,39 @@
+# Sample Data Exchange Services Configuration
+# This file demonstrates how to configure Data Exchange services
+#
+# The system will:
+# 1. Read service configuration from the 'data_exchange_services' list
+# 2. Resolve LAN segment names to IDs
+# 3. Resolve site names to site IDs
+# 4. Resolve device names to device IDs in policy.globalObjectOps (for attaching Graphiant filters)
+# 5. POST to v1/extranets-b2b-peering/producer with the payload
+#
+# Optional policy.globalObjectOps: attach Graphiant routing policies per device.
+# Keys are device names (resolved to device IDs) or device IDs; values can include
+# routingPolicyOps, e.g. "Policy-DC1-Primary": "Attach". Configure Graphiant filters
+# first (e.g. graphiant_global_config with sample_global_graphiant_filters.yaml).
+
+data_exchange_services:
+  - serviceName: "de-service-1"
+    type: "peering_service"
+    policy:
+      serviceLanSegment: "lan-segment-3"  # Will be resolved to ID
+      type: "peering_service"
+      site:
+        - sites: ["San Jose-sdktest", "New York-sdktest"]  # Will be resolved to IDs
+          siteLists: []
+      description: "de_service_1_description"
+      prefixTags:
+        - prefix: "10.1.1.0/24"
+          tag: "s-1-prefix1"
+
+      globalObjectOps: # Optional: attach Graphiant filters to specific devices
+        "edge-1-sdktest":   # Device name will be resolved to device ID
+          routingPolicyOps:
+            "Policy-Edge1-Primary": "Attach"
+        "edge-2-sdktest":   # Device name will be resolved to device ID
+          routingPolicyOps:
+            "Policy-Edge2-Primary": "Attach"
+        "edge-3-sdktest":   # Device name will be resolved to device ID
+          routingPolicyOps:
+            "Policy-Edge3-Primary": "Attach"

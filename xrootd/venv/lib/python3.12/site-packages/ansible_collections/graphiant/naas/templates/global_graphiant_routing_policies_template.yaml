@@ -1,0 +1,111 @@
+# yamllint disable-file
+# Graphiant filter: Inbound match (Community, Prefix List, Policy Tag L0/L1/L2, Stale)
+#                  Inbound action (Local Preference, Community)
+#                  Outbound match (Community, Prefix List, Source Route Protocol)
+#                  Outbound action (Local Preference, Community)
+{
+    "{{ name }}": {
+        {% if action != "delete" %}
+            "policy": {
+                {% if direction == "inbound" %}
+                    "attachPoint": "GraphiantIn",
+                {% elif direction == "outbound" %}
+                    "attachPoint": "GraphiantOut",
+                {% endif %}
+                "name": "{{ name }}",
+                "description": "{{ description | default('') }}",
+                "defaultAction": "{{ implicit_rule }}",
+                "statements": {
+                    {% for policy in policy_statements %}
+                        "{{ policy.sequence_number }}": {
+                            "statement": {
+                                "seq": {{ policy.sequence_number }},
+                                "seqOld": null,
+                                "matches": {
+                                    "1": {
+                                        "match": {
+                                            "seq": 1,
+                                            "prefixSet": {
+                                                {% if policy.match_prefix_list %}
+                                                    "prefixSet": "{{ policy.match_prefix_list }}"
+                                                {% endif %}
+                                            },
+                                            "community": {
+                                                {% if policy.match_community %}
+                                                    "community": {
+                                                        "community": [
+                                                            {% for value in policy.match_community %}
+                                                                "{{ value }}"{% if not loop.last %},{% endif %}
+                                                            {% endfor %}
+                                                        ]
+                                                    }
+                                                {% endif %}
+                                            },
+                                            {% if direction == "inbound" %}
+                                            {% if policy.match_policy_tag_level_0 or policy.match_policy_tag_level_1 or policy.match_policy_tag_level_2 %}
+                                            "routeTag": {
+                                                "entry": {
+                                                    {% if policy.match_policy_tag_level_0 %}
+                                                    "levelZero": "{{ policy.match_policy_tag_level_0 }}"{% if policy.match_policy_tag_level_1 or policy.match_policy_tag_level_2 %},{% endif %}
+                                                    {% endif %}
+                                                    {% if policy.match_policy_tag_level_1 %}
+                                                    "levelOne": "{{ policy.match_policy_tag_level_1 }}"{% if policy.match_policy_tag_level_2 %},{% endif %}
+                                                    {% endif %}
+                                                    {% if policy.match_policy_tag_level_2 %}
+                                                    "levelTwo": "{{ policy.match_policy_tag_level_2 }}"
+                                                    {% endif %}
+                                                }
+                                            },
+                                            {% endif %}
+                                            {% if policy.match_stale %}
+                                            "stale": {"stale": true},
+                                            {% endif %}
+                                            {% elif direction == "outbound" %}
+                                            {% if policy.match_source_route_protocol %}
+                                            "sourceProtocol": {"protocol": "{{ policy.match_source_route_protocol | lower }}"},
+                                            {% endif %}
+                                            {% endif %}
+                                            "delete": false
+                                        }
+                                    }
+                                },
+                                "actions": {
+                                    "1": {
+                                        "action": {
+                                            "seq": 1,
+                                            "callPolicy": {
+                                                "policy": null
+                                            },
+                                            "result": "{{ policy.action_permit }}",
+                                            "localPref": {
+                                                {% if policy.action_set_local_preference %}
+                                                "localPref": {{ policy.action_set_local_preference }}
+                                                {% else %}
+                                                "localPref": null
+                                                {% endif %}
+                                            },
+                                            "communities": {
+                                                {% if policy.action_set_community_list %}
+                                                "community": {
+                                                    "communityList": [
+                                                        {% for value in policy.action_set_community_list %}
+                                                        "{{ value }}"{% if not loop.last %},{% endif %}
+                                                        {% endfor %}
+                                                    ],
+                                                    "additive": {{ policy.action_set_community_additive | default(false) }}
+                                                }
+                                                {% else %}
+                                                "community": null
+                                                {% endif %}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    {% endfor %}
+                }
+            }
+        {% endif %}
+    }
+}

@@ -1,0 +1,56 @@
+# Sample device_system (Edge or Core) — keys match API branch fields
+# ================================================================
+# PUT /v1/devices/{device_id}/config — see V1DevicesDeviceIdConfigPutRequest
+#
+# device_system: list of single-key dicts (portal device name → settings)
+# IMPORTANT: Each list entry key must be the device's current hostname in the portal
+# (used for get_device_id). It is not the desired "name" after a rename — if you change
+# hostname via the API or portal, update this key to match or lookups will fail.
+# Per device:
+#   device_type: optional edge | core — if omitted, inferred from GET /v1/devices/{id} role
+#                (core → core branch, cpe → edge branch). Must match inference when set.
+#   name:         optional — same as API edge.name / core.name (hostname)
+#   regionName:   optional — API regionName
+#   site:         optional — API site, e.g. { name: "MySite" }
+#
+# Only listed keys are merged onto current device state.
+
+device_system:
+  - edge-1-sdktest:
+      name: "edge-1-sdktest"
+      site:
+        name: "San Jose-sdktest"
+
+  - edge-2-sdktest:
+      name: "edge-2-sdktest"
+      site:
+        name: "New York-sdktest"
+
+  - edge-3-sdktest:
+      name: "edge-3-sdktest"
+      regionName: "us-east-2 (Atlanta)"
+      site:
+        name: "New York-sdktest"
+
+# Site definitions - prereq for device system settings if not already created
+sites:
+  - name: "New York-sdktest"
+    location:
+      addressLine1: "8th avenue"
+      latitude: 40.74153
+      longitude: -74.00324
+      city: "New York"
+      state: "New York"
+      stateCode: "NY"
+      postalCode: "10011"
+
+  - name: "San Jose-sdktest"
+    location:
+      addressLine1: "1940 zanker rd"
+      addressLine2: "Suite 50"
+      latitude: 37.37616
+      longitude: -121.91035
+      city: "San Jose"
+      state: "California"
+      stateCode: "CA"
+      postalCode: "95112"

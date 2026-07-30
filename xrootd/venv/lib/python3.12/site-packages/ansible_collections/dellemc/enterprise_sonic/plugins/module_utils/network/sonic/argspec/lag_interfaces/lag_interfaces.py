@@ -1,0 +1,104 @@
+#
+# -*- coding: utf-8 -*-
+# Copyright 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+"""
+The arg spec for the sonic_lag_interfaces module
+"""
+
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+
+class Lag_interfacesArgs(object):  # pylint: disable=R0903
+
+    """The arg spec for the sonic_lag_interfaces module
+    """
+
+    def __init__(self, **kwargs):
+        pass
+
+    argument_spec = {
+        "config": {
+            "elements": "dict",
+            "mutually_exclusive": [["adv_speed", "speed"]],
+            "options": {
+                "fallback": {"type": "bool"},
+                "fast_rate": {"type": "bool"},
+                "graceful_shutdown": {"type": "bool"},
+                "lacp_individual": {
+                    "options": {
+                        "enable": {"type": "bool"},
+                        "timeout": {"type": "int"}
+                    },
+                    "type": "dict"
+                },
+                "members": {
+                    "options": {
+                        "interfaces": {
+                            "elements": "dict",
+                            "options": {
+                                "member": {"type": "str"}
+                            },
+                            "type": "list"
+                        }
+                    },
+                    "type": "dict"
+                },
+                "min_links": {"type": "int"},
+                "name": {"required": True, "type": "str"},
+                "mode": {"type": "str", "choices": ["static", "lacp"]},
+                "system_mac": {"type": "str"},
+                "ethernet_segment": {
+                    "options": {
+                        "esi_type": {"required": True,
+                                     "choices": ["auto_lacp",
+                                                 "auto_system_mac",
+                                                 "ethernet_segment_id"],
+                                     "type": "str"},
+                        "esi": {"type": "str"},
+                        "df_preference": {"type": "int"},
+                    },
+                    "type": "dict"
+                },
+                "speed": {"type": "int",
+                          "choices": [10,
+                                      100,
+                                      1000,
+                                      2500,
+                                      5000,
+                                      10000,
+                                      20000,
+                                      25000,
+                                      40000,
+                                      50000,
+                                      100000,
+                                      200000,
+                                      400000,
+                                      800000]},
+                "adv_speed": {"type": "int",
+                              "choices": [10,
+                                          100,
+                                          1000,
+                                          2500,
+                                          5000,
+                                          10000,
+                                          20000,
+                                          25000,
+                                          40000,
+                                          50000,
+                                          100000,
+                                          200000,
+                                          400000,
+                                          800000]},
+            },
+            "type": "list"
+        },
+        "state": {
+            "choices": ["merged", "replaced", "overridden", "deleted"],
+            "default": "merged",
+            "type": "str"
+        }
+    }  # pylint: disable=C0301

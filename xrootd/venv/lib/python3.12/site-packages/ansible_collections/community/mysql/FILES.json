@@ -1,0 +1,145 @@
+{
+ "files": [
+  {
+   "name": ".",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": ".gitignore",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ccca45309c57b7a20fe8b4731780361ff876c51517f6bac585145986146635bd",
+   "format": 1
+  },
+  {
+   "name": "COPYING",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+   "format": 1
+  },
+  {
+   "name": "PSF-license.txt",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "83b042fc7d6aca0f10d68e45efa56b9bc0a1496608e7e7728fe09d1a534a054a",
+   "format": 1
+  },
+  {
+   "name": "changelogs",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "changelogs/fragments",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "changelogs/fragments/.keep",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "format": 1
+  },
+  {
+   "name": "changelogs/.plugin-cache.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e5a414b3e60c611b86fbcfb561eab3d6078d2986bb2b0e82708bf1953e04384d",
+   "format": 1
+  },
+  {
+   "name": "changelogs/config.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "666d2b99d43955f076a7648bb8b7875564f199b7192018a96c364dac59105bfd",
+   "format": 1
+  },
+  {
+   "name": "changelogs/changelog.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "a5af43741faf7ce00e28df8e14a3d8ce162c88f0bb5f531512cd91037d5875e4",
+   "format": 1
+  },
+  {
+   "name": "meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "meta/runtime.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "4b377577a4a361d1070deed544ed9913998351f55f0d684f5a457c88a988c832",
+   "format": 1
+  },
+  {
+   "name": "plugins",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/doc_fragments",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/modules",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "simplified_bsd.txt",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "f11e51ed1eec39ad21d458ba44d805807a301c17ee9fe39538ccc9e2b280936c",
+   "format": 1
+  },
+  {
+   "name": "CONTRIBUTORS",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "6daa65b1eebf1dac16ddcfd51a2228102c387a3a1ef822f90e7463da137d171d",
+   "format": 1
+  },
+  {
+   "name": "tests",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "b4c0d51c71005d155feac2c199129a6cb76076214159a37071bde0b3c8f4ab2e",
+   "format": 1
+  },
+  {
+   "name": "CHANGELOG.rst",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "0289a88fb6295221bc06b49393d9ae4fcbce8db5b9232ca155f52fc69293f452",
+   "format": 1
+  }
+ ],
+ "format": 1
+}

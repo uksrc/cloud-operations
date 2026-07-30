@@ -1,0 +1,109 @@
+---
+# Device Configuration Management Playbook
+# =========================================
+#
+# This playbook demonstrates how to push raw device configurations to
+# Graphiant Edge devices using the graphiant_device_config module.
+#
+# Features:
+# - Push any configuration conforming to the Graphiant API spec
+# - Dry-run validation mode to test configurations before deployment
+# - Optional user-defined templates for configuration generation
+# - Concurrent execution for multiple devices
+#
+# Usage (controlled via tags):
+#   # Show validated payload (dry-run) - use --tags validate
+#   ansible-playbook playbooks/device_config_management.yml \
+#     --tags validate \
+#     -e "graphiant_host=https://your-portal.graphiant.com" \
+#     -e "graphiant_username=your-username" \
+#     -e "graphiant_password=your-password"
+#
+#   # Apply configuration - use --tags configure
+#   ansible-playbook playbooks/device_config_management.yml \
+#     --tags configure \
+#     -e "graphiant_host=https://your-portal.graphiant.com" \
+#     -e "graphiant_username=your-username" \
+#     -e "graphiant_password=your-password"
+#
+#   # Use a custom config file with template
+#   ansible-playbook playbooks/device_config_management.yml \
+#     --tags configure \
+#     -e "config_file=sample_device_config_with_template.yaml" \
+#     -e "template_file=device_config_template.yaml" \
+#     -e "graphiant_host=https://your-portal.graphiant.com" \
+#     -e "graphiant_username=your-username" \
+#     -e "graphiant_password=your-password"
+#
+# Available tags:
+#   - validate: Show validated payload without pushing (dry-run)
+#   - configure: Push device configuration
+#   - info: Display operation info only
+#
+
+- name: Device Configuration Management
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # Default configuration file (can be overridden with -e)
+    config_file: "sample_device_config_payload.yaml"
+    # Optional template file (uncomment and set to use)
+    # template_file: "device_config_template.yaml"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+      # host: "{{ graphiant_host | default(lookup('ini', 'url file=/absolute/path/credentials.ini section=host')) }}"
+      # username: "{{ graphiant_username | default(lookup('ini', 'username file=/absolute/path/credentials.ini section=credentials')) }}"
+      # password: "{{ graphiant_password | default(lookup('ini', 'password file=/absolute/path/credentials.ini section=credentials')) }}"
+
+  tasks:
+    - name: Display operation info
+      ansible.builtin.debug:
+        msg: |
+          Device Configuration Management
+          ================================
+          Config File: {{ config_file }}
+          {% if template_file is defined %}
+          Template File: {{ template_file }}
+          {% endif %}
+          Portal: {{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}
+      tags: ['always', 'info']
+
+    - name: Show validated payload for device configuration (dry-run)
+      graphiant.naas.graphiant_device_config:
+        <<: *graphiant_client_params
+        operation: show_validated_payload
+        config_file: "{{ config_file }}"
+        template_file: "{{ template_file | default(omit) }}"
+        detailed_logs: true
+      register: validate_result
+      tags: ['validate']
+
+    - name: Display validated payload result
+      ansible.builtin.debug:
+        msg: "{{ validate_result.msg }}"
+      when: validate_result is defined and validate_result.msg is defined
+      tags: ['validate']
+
+    - name: Push device configuration
+      graphiant.naas.graphiant_device_config:
+        <<: *graphiant_client_params
+        operation: configure
+        config_file: "{{ config_file }}"
+        template_file: "{{ template_file | default(omit) }}"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure']
+
+    - name: Display configuration result
+      ansible.builtin.debug:
+        msg: "{{ configure_result.msg }}"
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure']

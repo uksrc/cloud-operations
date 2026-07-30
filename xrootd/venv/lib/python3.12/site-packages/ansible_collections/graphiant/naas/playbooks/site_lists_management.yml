@@ -1,0 +1,82 @@
+---
+# Site Lists Management Playbook
+# ===============================
+#
+# This playbook demonstrates site lists management operations.
+#
+# Usage (controlled via tags):
+#   # Configure site lists - use --tags configure
+#   ansible-playbook playbooks/site_lists_management.yml --tags configure
+#
+#   # Deconfigure site lists - use --tags deconfigure
+#   ansible-playbook playbooks/site_lists_management.yml --tags deconfigure
+#
+# Available tags:
+#   - configure: Create site lists (idempotent)
+#   - deconfigure: Delete site lists (idempotent)
+#   - info: Display operation info only
+#
+
+- name: Site Lists Management Operations
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    # Default configuration file (can be overridden with -e)
+    config_file: "sample_global_site_lists.yaml"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+      # host: "{{ graphiant_host | default(lookup('ini', 'url file=/absolute/path/credentials.ini section=host')) }}"
+      # username: "{{ graphiant_username | default(lookup('ini', 'username file=/absolute/path/credentials.ini section=credentials')) }}"
+      # password: "{{ graphiant_password | default(lookup('ini', 'password file=/absolute/path/credentials.ini section=credentials')) }}"
+
+  tasks:
+    - name: Display operation info
+      ansible.builtin.debug:
+        msg: |
+          Site Lists Management
+          ======================
+          Config File: {{ config_file }}
+          Portal: {{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}
+      tags: ['always', 'info']
+
+    - name: Configure Global Site Lists
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "{{ config_file }}"
+        operation: "configure_site_lists"
+        # operation: "configure"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure']
+
+    - name: Display Configuration Results
+      ansible.builtin.debug:
+        msg: "{{ configure_result.msg }}"
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure']
+
+    - name: Deconfigure Global Site Lists
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "{{ config_file }}"
+        operation: "deconfigure_site_lists"
+        # operation: "deconfigure"
+        detailed_logs: true
+        state: absent
+      register: deconfigure_result
+      tags: ['deconfigure']
+
+    - name: Display Deconfiguration Results
+      ansible.builtin.debug:
+        msg: "{{ deconfigure_result.msg }}"
+      when: deconfigure_result is defined and deconfigure_result.msg is defined
+      tags: ['deconfigure']

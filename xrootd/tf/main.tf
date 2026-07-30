@@ -20,24 +20,18 @@ data "openstack_networking_subnet_v2" "ska_uksrc_subnet" {
   name       = var.openstack_ska_uksrc_subnet
 }
 
-data "openstack_networking_network_100_g" "ska_uksrc_network_wcdc_dirac" {
+data "openstack_networking_network_v2" "ska_uksrc_network_wcdc_dirac" {
   name = var.openstack_wcdc_dirac_network
 }
 
-data "openstack_networking_subnet_100_g" "ska_uksrc_subnet_wcdc_dirac" {
-  network_id = data.openstack_networking_network_100_g.ska_uksrc_network_wcdc_dirac.id
+data "openstack_networking_subnet_v2" "ska_uksrc_subnet_wcdc_dirac" {
+  network_id = data.openstack_networking_network_v2.ska_uksrc_network_wcdc_dirac.id
   name       = var.openstack_wcdc_dirac_subnet
 }
 
 resource "openstack_networking_secgroup_v2" "ska_uksrc_xrootd_sg" {
   name        = "${var.environment}-sg"
   description = "XRootD server access at Cambridge"
-}
-
-# 100Gb WCDC DIRAC SRIOV security group
-resource "openstack_networking_secgroup_v2" "ska_uksrc_wcdc_dirac_sg" {
-  name        = "${var.environment}-wcdc-dirac-sg"
-  description = "XRootD 100Gb SRIOV network access at Cambridge"
 }
 
 resource "openstack_networking_secgroup_rule_v2" "ssh_access" {
@@ -85,28 +79,14 @@ resource "openstack_networking_secgroup_rule_v2" "local_xroot_access" {
   description       = "Allow XRootD access from ${var.openstack_ska_uksrc_network}"
 }
 
-resource "openstack_networking_secgroup_rule_v2" "wcdc_dirac_xroot_access" {
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 1094
-  port_range_max    = 1094
-  remote_ip_prefix  = data.openstack_networking_subnet_100_g.ska_uksrc_subnet_wcdc_dirac.cidr
-  security_group_id = openstack_networking_secgroup_v2.ska_uksrc_wcdc_dirac_sg.id
-  description       = "Allow XRootD access from 100Gb network"
-}
-
 # 100Gb WCDC DIRAC SRIOV port
 resource "openstack_networking_port_v2" "ska_uksrc_wcdc_dirac_sriov_port" {
   name           = "${var.environment}-wcdc-dirac-sriov"
-  network_id     = data.openstack_networking_network_100_g.ska_uksrc_network_wcdc_dirac.id
+  network_id     = data.openstack_networking_network_v2.ska_uksrc_network_wcdc_dirac.id
   admin_state_up = "true"
-  vnic_type      = "direct"
-
-  security_group_ids = [openstack_networking_secgroup_v2.ska_uksrc_wcdc_dirac_sg.id]
 
   fixed_ip {
-    subnet_id  = data.openstack_networking_subnet_100_g.ska_uksrc_subnet_wcdc_dirac.id
+    subnet_id  = data.openstack_networking_subnet_v2.ska_uksrc_subnet_wcdc_dirac.id
     ip_address = "192.84.5.2"
   }
 }

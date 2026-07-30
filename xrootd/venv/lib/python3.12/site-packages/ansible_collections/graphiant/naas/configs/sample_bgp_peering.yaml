@@ -1,0 +1,50 @@
+bgp_peering:
+  - edge-1-sdktest:
+      # BGP IPv4 peer configuration with Global routing policies attached 
+      route_policies:
+        - demo_bgp_inbound_filter
+        - demo_bgp_outbound_filter
+      segments:
+        - lan_segment: lan-7-test
+          neighbors:
+            - remote_ipv4_address: 10.1.17.11
+              peer_as: 60011
+              local_interface: GigabitEthernet7/0/0.18
+              ipv4_inbound_filter: demo_bgp_inbound_filter
+              ipv4_outbound_filter: demo_bgp_outbound_filter
+              hold_timer: 180
+              keepalive_timer: 60
+              ebgp_multi_hop: 1
+              as_override: false
+              remote_private_as: false
+              allow_as_in: 1
+              # send_community: true
+              # md5_password: "mustchangeme"
+              bfd: true
+              minimum_interval: 1200 # in milliseconds, Range: 250-30000 (default: 1000)
+              local_multiplier: 4 # Range: 1-255 (default: 3)
+
+  - edge-2-sdktest:
+      route_policies:
+        - demo_bgp_inbound_filter
+        - demo_bgp_outbound_filter
+      segments:
+        - lan_segment: lan-7-test
+          neighbors:
+            - remote_ipv4_address: 10.3.177.11
+              peer_as: 60021
+              ipv4_inbound_filter: demo_bgp_inbound_filter
+              ipv4_outbound_filter: demo_bgp_outbound_filter
+              bfd: true
+        - lan_segment: lan-8-test
+          neighbors:
+            - remote_ipv4_address: 10.2.18.11
+              peer_as: 60023
+              local_interface: GigabitEthernet8/0/0.29
+              ipv4_inbound_filter: demo_bgp_inbound_filter
+              ipv4_outbound_filter: demo_bgp_outbound_filter
+            - remote_ipv4_address: 10.2.188.11
+              peer_as: 60024
+              local_interface: GigabitEthernet8/0/0.30
+              ipv4_inbound_filter: demo_bgp_inbound_filter
+              ipv4_outbound_filter: demo_bgp_outbound_filter

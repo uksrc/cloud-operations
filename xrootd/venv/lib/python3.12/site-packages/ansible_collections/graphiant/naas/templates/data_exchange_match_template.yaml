@@ -1,0 +1,9 @@
+# yamllint disable-file
+# Data Exchange Match Template
+# This template is not used to generate the API payload for Data Exchange service matching
+
+id: {{ customer_id }}
+service:
+  id: {{ service_id }}
+  servicePrefixes: {{ selected_service_prefixes }}
+  nat: {{ nat_configurations }}

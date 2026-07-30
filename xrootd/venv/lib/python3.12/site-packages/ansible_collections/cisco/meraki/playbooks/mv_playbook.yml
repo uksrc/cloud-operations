@@ -1,0 +1,20 @@
+- name: Play Name
+  hosts: localhost
+  vars:
+    serial_number: QBSB-VLHZ-JQCN
+  gather_facts: false
+  tasks:
+    - name: Update device name
+      cisco.meraki.devices:
+        state: present
+        serial: "{{ serial_number }}"
+        name: My Device
+    - name: Get device info
+      cisco.meraki.devices_info:
+        meraki_suppress_logging: true
+        serial: "{{ serial_number }}"
+      register: result
+
+    - name: Show device info
+      ansible.builtin.debug:
+        msg: "{{ result }}"

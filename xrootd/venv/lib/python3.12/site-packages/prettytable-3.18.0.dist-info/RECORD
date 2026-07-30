@@ -1,0 +1,16 @@
+prettytable-3.18.0.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+prettytable-3.18.0.dist-info/METADATA,sha256=JxpTV1JPAcjOBa9OzQ2fuOqWnndPgKotyqHTkAUlVVg,37998
+prettytable-3.18.0.dist-info/RECORD,,
+prettytable-3.18.0.dist-info/WHEEL,sha256=mffPy8wBnZQn2VnJUU5jE99KsxaSfiyMHV9Yt0aLVxs,87
+prettytable-3.18.0.dist-info/licenses/LICENSE,sha256=DIrcwgTIr2zf33iH39H5nCmQH2wdUFp4u6lu-k-yywU,1612
+prettytable/__init__.py,sha256=W2eCixsJFNqAMApLPdK3hAR6-qknBkbVRo85RqR4VFA,1343
+prettytable/__main__.py,sha256=NQKcwbzcbJB_quqC3R-Ps1wHMeO_l_bz2-yePSQKHmM,1321
+prettytable/__pycache__/__init__.cpython-312.pyc,,
+prettytable/__pycache__/__main__.cpython-312.pyc,,
+prettytable/__pycache__/_version.cpython-312.pyc,,
+prettytable/__pycache__/colortable.cpython-312.pyc,,
+prettytable/__pycache__/prettytable.cpython-312.pyc,,
+prettytable/_version.py,sha256=sI7Pf7KZPJqpmpRtt6OZ74duL6RSmMyJE1dCdxOx8Zk,522
+prettytable/colortable.py,sha256=dnbO7ZdyLbtBSI2ZTDbJ89SEj9pVZGPewMZExpN4nzM,4112
+prettytable/prettytable.py,sha256=QQftzGJWieZf6EARveR9IGPVvUy7cFHFIyImADxV3HM,120812
+prettytable/py.typed,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0

@@ -1,0 +1,21 @@
+# Sample Data Exchange Matches Configuration
+# This file demonstrates how to match Data Exchange services to customers
+#
+# The system will:
+# 1. Read match configuration from the 'data_exchange_matches' list
+# 2. Resolve customer and service names to IDs
+# 3. Use the specified servicePrefixes (user-selected, not all service prefixes)
+# 4. POST to v1/extranets-b2b-peering/match/service-to-customer with the payload
+#
+# Note: You can select specific service prefixes to include in the match.
+# This allows fine-grained control over which service prefixes are available to each customer.
+
+data_exchange_matches:
+  - customerName: "FinanceInc"
+    serviceName: "de-service-1"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.0/24" 
+        tag: "s-1-prefix1"
+    nat:
+      - prefix: "10.101.1.0/24"
+        outsideNatPrefix: "170.101.1.0/24"

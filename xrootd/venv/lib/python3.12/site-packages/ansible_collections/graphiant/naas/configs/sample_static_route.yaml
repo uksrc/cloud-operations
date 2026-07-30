@@ -1,0 +1,45 @@
+# Sample Static Routes Configuration
+staticRoutes:
+  - edge-1-sdktest:
+      segments:
+        - lanSegment: lan-1-test
+          staticRoutes:
+            # Null route
+            - destinationPrefix: "0.0.0.0/32"
+              description: "null route"
+              administrativeDistance: 10
+              nextHops:
+                - interface: "null0"
+
+        - lanSegment: lan-7-test
+          staticRoutes:
+            # Next hop via circuit
+            - destinationPrefix: "1.1.1.1/32"
+              description: "next hop via circuit"
+              nextHops:
+                - circuit: "c-gigabitethernet5-0-0"
+            # Default route via 3rd-party IPSec tunnel
+            - destinationPrefix: "0.0.0.0/0"
+              description: "testing default route"
+              administrativeDistance: 10
+              nextHops:
+                - thirdPartyIpsecTunnel: "s2s-vpn-2-edge-1-bgp"
+
+  - edge-2-sdktest:
+      segments:
+        - lanSegment: lan-8-test
+          staticRoutes:
+            - destinationPrefix: "0.0.0.0/0"
+              description: "testing default route"
+              administrativeDistance: 10
+              nextHops:
+                - circuit: "c-gigabitethernet5-0-0"
+            
+            # Next hop via interface + nextHopAddress
+            - destinationPrefix: "2.2.2.2/32"
+              description: "next hop via interface + nextHopAddress"
+              nextHops:
+                - interface: "GigabitEthernet8/0/0.29"
+                  nextHopAddress: "3.3.3.3"
+                - interface: "GigabitEthernet8/0/0.30"
+                  nextHopAddress: "4.4.4.4"

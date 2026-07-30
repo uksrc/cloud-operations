@@ -1,0 +1,114 @@
+{
+    {% if action == "delete_lag" %}
+        "interfaces": {
+            "{{ name }}": {
+                "interface": null
+            }
+        }
+    {% else %}
+        "lagInterfaces": {
+            "{{ name }}": {
+                "interface": {
+                    {% if action == "add" %}
+                        "segment": "{{ segment }}",
+                        {% if alias is defined %}
+                        "alias": "{{ alias }}",
+                        {% endif %}
+                        "adminStatus": {{ adminStatus | default('true') }},
+                        "mtu": {{ mtu | default(1500) }},
+                        "ipv4": {
+                            {% if ipv4 %}
+                                "address": {
+                                    "address": "{{ ipv4 }}"
+                                }
+                            {% else %}
+                                "dhcp": {
+                                    "dhcpClient": false
+                                }
+                            {% endif %}
+                        },
+                        "ipv6": {
+                            {% if ipv6 %}
+                                "address": {
+                                    "address": "{{ ipv6 }}"
+                                }
+                            {% else %}
+                                "dhcp": {
+                                    "dhcpClient": false
+                                }
+                            {% endif %}
+                        },
+                        "lacp": {
+                            "mode": "{{ lacpMode | default('ACTIVE') }}",
+                            "timer": "{{ lacpTimer | default('SLOW') }}"
+                        },
+                    {% endif %}
+                    {% if action == "update_lacp_configs" %}
+                        "lacp": {
+                            {% if lacpMode %}
+                                "mode": "{{ lacpMode }}",
+                            {% endif %}
+                            {% if lacpTimer %}
+                                "timer": "{{ lacpTimer }}",
+                            {% endif %}
+                        },
+                    {% endif %}
+                    {% if lagMembers and (action == "add" or action == "add_lag_members" or action == "remove_lag_members") %}
+                        "lagMembers": {
+                            {% for interfaceId in interfaceMemberIds %}
+                                "{{ interfaceId }}": {
+                                    {% if action == "add" or action == "add_lag_members" %}
+                                        "interface": {{ interfaceId }}
+                                    {% endif %}
+                                }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        },
+                    {% endif %}
+                    {% if subinterfaces and (action == "add" or action == "delete") %}
+                        "subinterfaces": {
+                            {% for subInterface in subinterfaces %}
+                                "{{ subInterface.vlan }}": {
+                                    {% if action == "delete" %}
+                                        "interface": null
+                                    {% elif action == "add" %}
+                                        "interface": {
+                                            "vlan": {{ subInterface.vlan }},
+                                            "description": "{{ subInterface.description | default(subInterface.vlan ~ '_' ~ subInterface.segment, true) }}",
+                                            {% if subInterface.alias is defined %}
+                                            "alias": "{{ subInterface.alias }}",
+                                            {% endif %}
+                                            "adminStatus": {{ subInterface.adminStatus | default(subInterface.enabled) | default('true') }},
+                                            "segment": "{{ subInterface.segment | default(null) }}",
+                                            "ipv4": {
+                                                {% if subInterface.ipv4 %}
+                                                    "address": {
+                                                        "address": "{{ subInterface.ipv4 }}"
+                                                    }
+                                                {% else %}
+                                                    "dhcp": {
+                                                        "dhcpClient": false
+                                                    }
+                                                {% endif %}
+                                            },
+                                            "ipv6": {
+                                                {% if subInterface.ipv6 %}
+                                                    "address": {
+                                                        "address": "{{ subInterface.ipv6 }}"
+                                                    }
+                                                {% else %}
+                                                    "dhcp": {
+                                                        "dhcpClient": false
+                                                    }
+                                                {% endif %}
+                                            }
+                                        }
+                                    {% endif %}
+                                },
+                            {% endfor %}
+                        },
+                    {% endif %}
+                }
+            }
+        }
+    {% endif %}
+}

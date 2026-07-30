@@ -1,0 +1,56 @@
+# yamllint disable-file
+{
+    "circuits": {
+        {% if circuit and action == "add" %}   
+        "{{ circuit }}": {
+            "name": "{{ circuit }}",
+            "description": "{{ description | default(circuit) }}",
+            "linkUpSpeedMbps": {{ upload_bandwidth | default(100) }},
+            "linkDownSpeedMbps": {{ download_bandwidth | default(1000) }},
+            "circuitType": "{{ circuit_type | default('circuitType_internet') }}",
+            "label": "{{ label | default('internet_dia_4') }}",
+            "diaEnabled": {{ dia | default(false) }},
+            "lastResort": {{ last_resort | default(false) }},
+            "loopback": {{ loopback | default(null) }},
+            "qosProfile": "{{ qos_profile | default('gold10') }}",
+            "qosProfileType": "{{ qos_profile_type | default('balanced') }}",
+            "staticRoutes": {
+                {% if static_routes %}
+                {# Static routes configuration - supports multiple routes with next hops #}
+                {% for route_prefix, route_config in static_routes.items() %}
+                "{{ route_prefix }}": {
+                    "route": {
+                        "destinationPrefix": "{{ route_config.destination_prefix }}",
+                        "description": "{{ route_config.description | default(route_prefix) }}",
+                        "administrativeDistance": {
+                            "distance": {{ route_config.administrative_distance | default(1) }}
+                        },
+                        "nextHops": [
+                            {% for next_hop in route_config.next_hops %}
+                            {
+                                "nextHopAddress": "{{ next_hop.next_hop_address }}"
+                            }{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        ]
+                    }
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                {% endif %}
+            }
+        }
+        {% elif circuit and action == "delete" %}
+        "{{ circuit }}": {
+            "staticRoutes": {
+                {% if static_routes %}
+                {# Static routes configuration - supports multiple routes with next hops #}
+                {% for route_prefix, route_config in static_routes.items() %}
+                "{{ route_prefix }}": {
+                    "route": null
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+                {% endif %}
+            }
+        }
+        {% endif %}
+    }
+}

@@ -1,0 +1,56 @@
+# Prefix and port lists under edge.trafficPolicy (per device).
+# On create_* operations, use state: absent on a list entry to remove that name only (list: null).
+# delete_* operations ignore per-entry state and remove every name listed for that section.
+networkLists:
+  - edge-1-sdktest:
+    - name: graphiant_dia_prefix
+      networks:
+        - 1.1.1.1/32
+        - 8.8.8.8/32
+    - name: testing_prefix_list
+      networks:
+        - 10.1.1.0/24
+        - 10.1.2.0/24
+      state: absent
+  - edge-2-sdktest:
+    - name: graphiant_dia_prefix
+      networks:
+        - 1.1.1.1/32
+        - 8.8.8.8/32
+    - name: testing_prefix_list
+      networks:
+        - 10.2.1.0/24
+        - 10.2.2.0/24
+        - 10.2.4.0/24
+      state: absent
+  - edge-3-sdktest:
+    - name: graphiant_dia_prefix
+      networks:
+        - 4.4.4.4/32
+        - 8.8.8.8/32
+
+portLists:
+  - edge-1-sdktest:
+    - name: web_ports
+      ports:
+        - 80
+        - 443
+    - name: testing_port_list
+      ports:
+        - 123
+  - edge-2-sdktest:
+    - name: web_ports
+      ports:
+        - 80
+        - 443
+    - name: testing_port_list
+      ports:
+        - 123
+        - 789
+  - edge-3-sdktest:
+    - name: web_ports
+      ports:
+        - 80
+        - 443
+        - 123
+      state: absent

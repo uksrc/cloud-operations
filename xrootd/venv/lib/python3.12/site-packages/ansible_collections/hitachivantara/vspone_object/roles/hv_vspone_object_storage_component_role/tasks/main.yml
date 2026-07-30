@@ -1,0 +1,121 @@
+---
+####################################################################
+# Role: hv_vspone_object_storage_component_role
+# Description: Activate one or more storage components in VSP One Object.
+####################################################################
+
+- name: Validate required connection information
+  ansible.builtin.assert:
+    that:
+      - connection_info is defined
+    fail_msg: "connection_info is required for hv_vspone_object_storage_component_role"
+
+- name: Validate at least one role input
+  ansible.builtin.assert:
+    that:
+      -
+        (hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none and
+        hv_vspone_object_storage_component_role_ids | length > 0) or
+        (hv_vspone_object_storage_component_used_capacity_bytes_gt is defined and hv_vspone_object_storage_component_used_capacity_bytes_gt is not none)
+    fail_msg: "Provide at least one input: non-empty hv_vspone_object_storage_component_role_ids or hv_vspone_object_storage_component_used_capacity_bytes_gt"
+
+- name: Validate storage component IDs input when provided
+  ansible.builtin.assert:
+    that:
+      - hv_vspone_object_storage_component_role_ids | type_debug == 'list'
+      - hv_vspone_object_storage_component_role_ids | length > 0
+    fail_msg: "hv_vspone_object_storage_component_role_ids must be a non-empty list when provided"
+  when: hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none
+
+- name: Initialize storage component activation counters
+  ansible.builtin.set_fact:
+    hv_vspone_object_storage_component_role_failed_count: 0
+    hv_vspone_object_storage_component_role_success_count: 0
+    hv_vspone_object_storage_component_role_failures: []
+  when: hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none and hv_vspone_object_storage_component_role_ids | length > 0
+
+- name: Activate storage components
+  hitachivantara.vspone_object.oneobject_node.hv_storage_component:
+    connection_info: "{{ connection_info }}"
+    state: "activate"
+    spec:
+      id: "{{ item }}"
+  loop: "{{ hv_vspone_object_storage_component_role_ids | default([]) }}"
+  register: hv_vspone_object_storage_component_role_activation_result
+  ignore_errors: true
+  when: hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none and hv_vspone_object_storage_component_role_ids | length > 0
+
+- name: Build storage component activation summary
+  ansible.builtin.set_fact:
+    hv_vspone_object_storage_component_role_failed_count: "{{ hv_vspone_object_storage_component_role_failed_count | int + (1 if (item.failed | default(false)) else 0) }}"
+    hv_vspone_object_storage_component_role_success_count: "{{ hv_vspone_object_storage_component_role_success_count | int + (0 if (item.failed | default(false)) else 1) }}"
+    hv_vspone_object_storage_component_role_failures: "{{ hv_vspone_object_storage_component_role_failures + [{'id': item.item, 'reason': (item.msg | default(item.stderr | default('Unknown error')))}] if (item.failed | default(false)) else hv_vspone_object_storage_component_role_failures }}"
+  loop: "{{ hv_vspone_object_storage_component_role_activation_result.results | default([]) }}"
+  when: hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none and hv_vspone_object_storage_component_role_ids | length > 0
+
+- name: Expose storage component activation summary
+  ansible.builtin.set_fact:
+    hv_vspone_object_storage_component_role_summary:
+      total: "{{ hv_vspone_object_storage_component_role_activation_result.results | default([]) | length }}"
+      success: "{{ hv_vspone_object_storage_component_role_success_count }}"
+      failed: "{{ hv_vspone_object_storage_component_role_failed_count }}"
+      failures: "{{ hv_vspone_object_storage_component_role_failures }}"
+  when: hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none and hv_vspone_object_storage_component_role_ids | length > 0
+
+- name: Show storage component activation failure reasons
+  ansible.builtin.debug:
+    msg: "Storage component activation failed for id {{ item.id }}. Reason: {{ item.reason }}"
+  loop: "{{ hv_vspone_object_storage_component_role_failures }}"
+  when:
+    - hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none and hv_vspone_object_storage_component_role_ids | length > 0
+    - hv_vspone_object_storage_component_role_failed_count | int > 0
+
+- name: Show storage component activation summary
+  ansible.builtin.debug:
+    msg: "Storage component activation summary: total={{ hv_vspone_object_storage_component_role_activation_result.results | default([]) | length }}, success={{ hv_vspone_object_storage_component_role_success_count }}, failed={{ hv_vspone_object_storage_component_role_failed_count }}"
+  when: hv_vspone_object_storage_component_role_ids is defined and hv_vspone_object_storage_component_role_ids is not none and hv_vspone_object_storage_component_role_ids | length > 0
+
+- name: Get all storage component capacities
+  hitachivantara.vspone_object.oneobject_node.hv_storage_components_facts:
+    connection_info: "{{ connection_info }}"
+    spec:
+      query: "CAPACITY"
+  register: hv_vspone_object_storage_component_role_capacity_result
+  when: hv_vspone_object_storage_component_used_capacity_bytes_gt is defined and hv_vspone_object_storage_component_used_capacity_bytes_gt is not none
+
+- name: Initialize normalized capacity list
+  ansible.builtin.set_fact:
+    hv_vspone_object_storage_component_role_capacity_entries: []
+    hv_vspone_object_storage_component_role_warned_capacities: []
+    hv_vspone_object_storage_component_role_exceeded_ids: []
+    hv_vspone_object_storage_component_role_exceeded_count: 0
+  when: hv_vspone_object_storage_component_used_capacity_bytes_gt is defined and hv_vspone_object_storage_component_used_capacity_bytes_gt is not none
+
+- name: Normalize capacity map to list entries
+  ansible.builtin.set_fact:
+    hv_vspone_object_storage_component_role_capacity_entries: "{{ hv_vspone_object_storage_component_role_capacity_entries + [item.value | combine({'storage_component_id': (item.value.storage_component_id | default(item.value.id | default(item.key)))})] }}"
+  loop: "{{ (hv_vspone_object_storage_component_role_capacity_result.ansible_facts.storage_components.storage_capacities | default({})) | dict2items }}"
+  when:
+    - hv_vspone_object_storage_component_used_capacity_bytes_gt is defined and hv_vspone_object_storage_component_used_capacity_bytes_gt is not none
+    - item.key != 'aggregate'
+
+- name: Build warning list for capacities above warn_threshold
+  ansible.builtin.set_fact:
+    hv_vspone_object_storage_component_role_warned_capacities: "{{ (hv_vspone_object_storage_component_role_warned_capacities | default([])) + [{'storage_component_id': item.storage_component_id, 'used_bytes': (item.used_bytes | default(item.usedBytes | default(0))), 'warn_threshold': (hv_vspone_object_storage_component_used_capacity_bytes_gt | int), 'capacity': item}] }}"
+  loop: "{{ hv_vspone_object_storage_component_role_capacity_entries }}"
+  when:
+    - hv_vspone_object_storage_component_used_capacity_bytes_gt is defined and hv_vspone_object_storage_component_used_capacity_bytes_gt is not none
+    - (item.used_bytes | default(item.usedBytes | default(0)) | int) > (hv_vspone_object_storage_component_used_capacity_bytes_gt | int)
+
+- name: Build exceeded storage component IDs and count
+  ansible.builtin.set_fact:
+    hv_vspone_object_storage_component_role_exceeded_ids: "{{ hv_vspone_object_storage_component_role_warned_capacities | default([]) | map(attribute='storage_component_id') | list }}"
+    hv_vspone_object_storage_component_role_exceeded_count: "{{ hv_vspone_object_storage_component_role_warned_capacities | default([]) | length }}"
+  when: hv_vspone_object_storage_component_used_capacity_bytes_gt is defined and hv_vspone_object_storage_component_used_capacity_bytes_gt is not none
+
+- name: Show storage components above warn_threshold
+  ansible.builtin.debug:
+    msg:
+      - "Storage component IDs where used_bytes exceeds provided warn_threshold ({{ hv_vspone_object_storage_component_used_capacity_bytes_gt | int }}): {{ hv_vspone_object_storage_component_role_exceeded_ids | default([]) }}"
+      - "Number of components where used_bytes exceeds provided warn_threshold: {{ hv_vspone_object_storage_component_role_exceeded_count | default(0) }}"
+  when: hv_vspone_object_storage_component_used_capacity_bytes_gt is defined and hv_vspone_object_storage_component_used_capacity_bytes_gt is not none

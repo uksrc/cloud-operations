@@ -1,0 +1,117 @@
+- name: Resolve certificate/key source paths
+  ansible.builtin.set_fact:
+    ravendb_server_pfx_src: >-
+      {{
+        (ravendb_certificate_file is match('^(/|~)'))
+        | ternary(ravendb_certificate_file, role_path ~ '/files/' ~ ravendb_certificate_file)
+      }}
+    ravendb_ca_cert_src: >-
+      {{
+        (ravendb_ca_certificate_file is match('^(/|~)'))
+        | ternary(ravendb_ca_certificate_file, role_path ~ '/files/' ~ ravendb_ca_certificate_file)
+      }}
+    ravendb_ca_key_src: >-
+      {{
+        (ravendb_ca_key_file is match('^(/|~)'))
+        | ternary(ravendb_ca_key_file, role_path ~ '/files/' ~ ravendb_ca_key_file)
+      }}
+  delegate_to: localhost
+
+- name: Ensure RavenDB server certificate file is present
+  assert:
+    that: 
+      - ravendb_certificate_file is not none
+      - ravendb_certificate_file | length > 0
+    fail_msg: "The RavenDB server certificate file is missing. Please provide an absolute path or locate it under: roles/ravendb_node/files"
+
+- name: Check if RavenDB server certificate file exists
+  stat:
+    path: "{{ ravendb_server_pfx_src }}"
+  register: server_cert_stat
+  delegate_to: localhost
+
+- name: Fail if RavenDB server certificate file is missing
+  fail:
+    msg: "The RavenDB server certificate file is missing: {{ ravendb_server_pfx_src }}"
+  when: not server_cert_stat.stat.exists
+
+- name: Ensure RavenDB CA cert file is present
+  assert:
+    that:
+      - ravendb_ca_certificate_file is not none
+      - ravendb_ca_certificate_file | length > 0
+    fail_msg: "The RavenDB CA cert file is missing. Please provide an absolute path or locate it under: roles/ravendb_node/files"
+
+- name: Check if RavenDB CA cert file exists
+  stat:
+    path: "{{ ravendb_ca_cert_src }}"
+  register: ca_cert_stat
+  delegate_to: localhost
+
+- name: Fail if RavenDB CA cert file is missing
+  fail:
+    msg: "The RavenDB CA cert file is missing: {{ ravendb_ca_cert_src }}"
+  when: not ca_cert_stat.stat.exists
+  
+- name: Ensure RavenDB CA key for system CA certificates is present
+  assert:
+    that:
+      - ravendb_ca_key_file is not none
+      - ravendb_ca_key_file | length > 0
+    fail_msg: "The RavenDB CA key file is missing. Please provide an absolute path or locate it under: roles/ravendb_node/files"
+
+- name: Check if RavenDB CA key file exists
+  stat:
+    path: "{{ ravendb_ca_key_src }}"
+  register: ca_key_stat
+  delegate_to: localhost
+
+- name: Fail if RavenDB CA key file is missing
+  fail:
+    msg: "The RavenDB CA key file is missing: {{ ravendb_ca_key_src }}"
+  when: not ca_key_stat.stat.exists
+
+- block:
+  - name: Copy RavenDB server certificate file
+    become: true
+    ansible.builtin.copy:
+      src: "{{ ravendb_server_pfx_src }}"
+      dest: /etc/ravendb/security/server.pfx
+      owner: ravendb
+      group: ravendb
+      mode: '0640'
+  
+  - name: Copy RavenDB CA certificate file
+    become: true
+    ansible.builtin.copy:
+      src: "{{ ravendb_ca_cert_src }}"
+      dest: /etc/ravendb/security/ca.crt
+      owner: ravendb
+      group: ravendb
+      mode: '0640'
+
+  - name: Copy RavenDB CA certificate to system CA certificates
+    become: true
+    ansible.builtin.copy:
+      src: "{{ ravendb_ca_cert_src }}"
+      dest: /usr/local/share/ca-certificates/ca.crt
+      owner: root
+      group: ravendb
+      mode: '0644'
+
+  - name: Update CA certificates
+    become: true
+    ansible.builtin.command: update-ca-certificates
+    register: update_ca_result
+    changed_when: "'added' in update_ca_result.stdout"
+
+  - name: Copy RavenDB CA key file
+    become: true
+    ansible.builtin.copy:
+      src: "{{ ravendb_ca_key_src }}"
+      dest: /etc/ravendb/security/ca.key
+      owner: ravendb
+      group: ravendb
+      mode: '0640' 
+
+  tags: config,self_signed

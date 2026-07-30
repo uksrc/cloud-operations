@@ -1,0 +1,529 @@
+# Copyright 2010 Jacob Kaplan-Moss
+
+# Copyright 2011 OpenStack Foundation
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+"""
+Base utilities to build API operation managers and objects on top of.
+"""
+
+import abc
+import contextlib
+import copy
+import hashlib
+import os
+
+from oslo_utils import strutils
+
+from manilaclient import api_versions
+from manilaclient.common import cliutils
+from manilaclient import exceptions
+from manilaclient import utils
+
+
+def getid(obj):
+    """Return id if argument is a Resource.
+
+    Abstracts the common pattern of allowing both an object or an object's ID
+    (UUID) as a parameter when dealing with relationships.
+    """
+    try:
+        if obj.uuid:
+            return obj.uuid
+    except AttributeError:
+        pass
+    try:
+        return obj.id
+    except AttributeError:
+        return obj
+
+
+class Manager(utils.HookableMixin):
+    """Manager for CRUD operations.
+
+    Managers interact with a particular type of API (shares, snapshots,
+    etc.) and provide CRUD operations for them.
+    """
+
+    resource_class = None
+
+    def __init__(self, api):
+        self.api = api
+        self.client = api.client
+
+    @property
+    def api_version(self):
+        return self.api.api_version
+
+    def _list(
+        self, url, response_key, manager=None, body=None, return_raw=None
+    ):
+        """List the collection.
+
+        :param url: a partial URL, e.g., '/shares'
+        :param response_key: the key to be looked up in response dictionary,
+            e.g., 'shares'. If response_key is None - all response body
+            will be used.
+        :param manager: manager instance for constructing the returned objects
+            (self will be used by default)
+        :param body: data that will be encoded as JSON and passed in POST
+            request (GET will be sent by default)
+        """
+        resp = None
+        if body:
+            resp, body = self.api.client.post(url, body=body)
+        else:
+            resp, body = self.api.client.get(url)
+
+        if manager is None:
+            manager = self
+
+        obj_class = manager.resource_class
+
+        data = body[response_key]
+        # NOTE(ja): keystone returns values as list as {'values': [ ... ]}
+        #           unlike other services which just return the list...
+        if isinstance(data, dict):
+            try:
+                data = data['values']
+            except KeyError:
+                pass
+        with self.completion_cache('human_id', obj_class, mode="w"):
+            with self.completion_cache('uuid', obj_class, mode="w"):
+                if return_raw:
+                    return data
+                resource = [
+                    obj_class(manager, res, loaded=True) for res in data if res
+                ]
+                if 'count' in body:
+                    return resource, body['count']
+                else:
+                    return resource
+
+    @contextlib.contextmanager
+    def completion_cache(self, cache_type, obj_class, mode):
+        """Bash autocompletion items storage.
+
+        The completion cache store items that can be used for bash
+        autocompletion, like UUIDs or human-friendly IDs.
+
+        A resource listing will clear and repopulate the cache.
+
+        A resource create will append to the cache.
+
+        Delete is not handled because listings are assumed to be performed
+        often enough to keep the cache reasonably up-to-date.
+        """
+        base_dir = cliutils.env(
+            'manilaclient_UUID_CACHE_DIR',
+            'MANILACLIENT_UUID_CACHE_DIR',
+            default="~/.cache/manilaclient",
+        )
+
+        # NOTE(sirp): Keep separate UUID caches for each username + endpoint
+        # pair
+        username = cliutils.env('OS_USERNAME', 'MANILA_USERNAME')
+        url = cliutils.env('OS_URL', 'MANILA_URL')
+        uniqifier = hashlib.sha256(
+            username.encode('utf-8') + url.encode('utf-8')
+        ).hexdigest()
+
+        cache_dir = os.path.expanduser(os.path.join(base_dir, uniqifier))
+
+        try:
+            os.makedirs(cache_dir, 0o755)
+        except OSError:
+            # NOTE(kiall): This is typically either permission denied while
+            #              attempting to create the directory, or the directory
+            #              already exists. Either way, don't fail.
+            pass
+
+        resource = obj_class.__name__.lower()
+        filename = "{}-{}-cache".format(resource, cache_type.replace('_', '-'))
+        path = os.path.join(cache_dir, filename)
+
+        cache_attr = f"_{cache_type}_cache"
+
+        try:
+            setattr(self, cache_attr, open(path, mode))
+        except OSError:
+            # NOTE(kiall): This is typically a permission denied while
+            #              attempting to write the cache file.
+            pass
+
+        try:
+            yield
+        finally:
+            cache = getattr(self, cache_attr, None)
+            if cache:
+                cache.close()
+                delattr(self, cache_attr)
+
+    def write_to_completion_cache(self, cache_type, val):
+        cache = getattr(self, f"_{cache_type}_cache", None)
+        if cache:
+            try:
+                cache.write(f"{val}\n")
+            except UnicodeEncodeError:
+                pass
+
+    def _get(self, url, response_key, return_raw=False):
+        resp, body = self.api.client.get(url)
+        if response_key:
+            if return_raw:
+                return body[response_key]
+            return self.resource_class(self, body[response_key], loaded=True)
+        else:
+            return self.resource_class(self, body, loaded=True)
+
+    def _get_with_base_url(self, url, response_key=None):
+        resp, body = self.api.client.get_with_base_url(url)
+        if response_key:
+            return [
+                self.resource_class(self, res, loaded=True)
+                for res in body[response_key]
+                if res
+            ]
+        else:
+            return self.resource_class(self, body, loaded=True)
+
+    def _create(self, url, body, response_key, return_raw=False, **kwargs):
+        self.run_hooks('modify_body_for_create', body, **kwargs)
+        resp, body = self.api.client.post(url, body=body)
+        if return_raw:
+            return body[response_key]
+
+        with self.completion_cache('human_id', self.resource_class, mode="a"):
+            with self.completion_cache('uuid', self.resource_class, mode="a"):
+                return self.resource_class(self, body[response_key])
+
+    def _accept(self, url, body):
+        resp, body = self.api.client.post(url, body=body)
+
+    def _delete(self, url):
+        resp, body = self.api.client.delete(url)
+
+    def _update(self, url, body, response_key=None, **kwargs):
+        self.run_hooks('modify_body_for_update', body, **kwargs)
+        resp, body = self.api.client.put(url, body=body)
+        if body:
+            if response_key:
+                return self.resource_class(self, body[response_key])
+            else:
+                return self.resource_class(self, body)
+
+    def _build_query_string(self, search_opts):
+        search_opts = search_opts or {}
+        params = sorted([(k, v) for (k, v) in search_opts.items() if v])
+        query_string = f"?{utils.safe_urlencode(params)}" if params else ''
+        return query_string
+
+
+class ManagerWithFind(Manager):
+    """Like a `Manager`, but with additional `find()`/`findall()` methods."""
+
+    def find(self, **kwargs):
+        """Find a single item with attributes matching ``**kwargs``.
+
+        This isn't very efficient: it loads the entire list then filters on
+        the Python side.
+        """
+        matches = self.findall(**kwargs)
+        num_matches = len(matches)
+        if num_matches == 0:
+            msg = f"No {self.resource_class.__name__} matching {kwargs}."
+            raise exceptions.NotFound(404, msg)
+        elif num_matches > 1:
+            raise exceptions.NoUniqueMatch
+        else:
+            return matches[0]
+
+    def findall(self, **kwargs):
+        """Find all items with attributes matching ``**kwargs``.
+
+        This isn't very efficient: it loads the entire list then filters on
+        the Python side.
+        """
+        found = []
+        searches = list(kwargs.items())
+
+        search_opts = {'all_tenants': 1}
+        resources = self.list(search_opts=search_opts)
+        if 'v2.shares.ShareManager' in str(
+            self.__class__
+        ) and self.api_version >= api_versions.APIVersion("2.69"):
+            search_opts_2 = {'all_tenants': 1, 'is_soft_deleted': True}
+            shares_soft_deleted = self.list(search_opts=search_opts_2)
+            resources += shares_soft_deleted
+        for obj in resources:
+            try:
+                if all(
+                    getattr(obj, attr) == value for (attr, value) in searches
+                ):
+                    found.append(obj)
+            except AttributeError:
+                continue
+
+        return found
+
+    def list(self, search_opts=None):
+        raise NotImplementedError
+
+
+class Resource:
+    """Base class for OpenStack resources (tenant, user, etc.).
+
+    This is pretty much just a bag for attributes.
+    """
+
+    HUMAN_ID = False
+    NAME_ATTR = 'name'
+
+    def __init__(self, manager, info, loaded=False):
+        """Populate and bind to a manager.
+
+        :param manager: BaseManager object
+        :param info: dictionary representing resource attributes
+        :param loaded: prevent lazy-loading if set to True
+        """
+        self.manager = manager
+        self._info = info
+        self._add_details(info)
+        self._loaded = loaded
+
+    def __repr__(self):
+        reprkeys = sorted(
+            k for k in self.__dict__.keys() if k[0] != '_' and k != 'manager'
+        )
+        info = ", ".join(f"{k}={getattr(self, k)}" for k in reprkeys)
+        return f"<{self.__class__.__name__} {info}>"
+
+    @property
+    def human_id(self):
+        """Human-readable ID which can be used for bash completion."""
+        if self.HUMAN_ID:
+            name = getattr(self, self.NAME_ATTR, None)
+            if name is not None:
+                return strutils.to_slug(name)
+        return None
+
+    def _add_details(self, info):
+        for k, v in info.items():
+            try:
+                setattr(self, k, v)
+                self._info[k] = v
+            except AttributeError:
+                # In this case we already defined the attribute on the class
+                pass
+
+    def __getattr__(self, k):
+        if k not in self.__dict__:
+            # NOTE(bcwaldon): disallow lazy-loading if already loaded once
+            if not self.is_loaded():
+                self.get()
+                return self.__getattr__(k)
+
+            raise AttributeError(k)
+        else:
+            return self.__dict__[k]
+
+    def get(self):
+        """Support for lazy loading details.
+
+        Some clients, such as novaclient have the option to lazy load the
+        details, details which can be loaded with this function.
+        """
+        # set_loaded() first ... so if we have to bail, we know we tried.
+        self.set_loaded(True)
+        if not hasattr(self.manager, 'get'):
+            return
+
+        new = self.manager.get(self.id)
+        if new:
+            self._add_details(new._info)
+
+    def __eq__(self, other):
+        if not isinstance(other, Resource):
+            return NotImplemented
+        # two resources of different types are not equal
+        if not isinstance(other, self.__class__):
+            return False
+        if hasattr(self, 'id') and hasattr(other, 'id'):
+            return self.id == other.id
+        return self._info == other._info
+
+    def __ne__(self, other):
+        return not self == other
+
+    def is_loaded(self):
+        return self._loaded
+
+    def set_loaded(self, val):
+        self._loaded = val
+
+    def to_dict(self):
+        return copy.deepcopy(self._info)
+
+
+class MetadataCapableResource(Resource, metaclass=abc.ABCMeta):
+    superresource = None
+
+    def _get_subresource_and_resource(self, superresource):
+        resource = self
+        subresource = None
+        superresource = superresource or self.superresource
+        if superresource is not None:
+            resource = superresource
+            subresource = self
+        return resource, subresource
+
+    def get_metadata(self, superresource=None):
+        """Get metadata of a resource
+
+        :param superresource: either a parent resource object or text with
+            its ID. Required for sub-resources such as share export
+            locations which do not include a reference to the parent object
+            by default
+        """
+
+        resource, subresource = self._get_subresource_and_resource(
+            superresource
+        )
+
+        return self.manager.get_metadata(resource, subresource=subresource)
+
+    def set_metadata(self, metadata, superresource=None):
+        """Set or update metadata for the resource.
+
+        :param metadata: A dictionary of key:value pairs to be set as
+            resource metadata
+        :param superresource: either a parent resource object or text with
+            its ID. Required for sub-resources such as share share export
+            locations which do not include a reference to the parent object
+            by default
+        """
+        resource, subresource = self._get_subresource_and_resource(
+            superresource
+        )
+
+        return self.manager.set_metadata(
+            resource, metadata, subresource=subresource
+        )
+
+    def delete_metadata(self, keys, superresource=None):
+        """Delete specified keys from the given resource.
+
+        :param keys: An iterable with keys of metadata items to be deleted
+        :param superresource: either a parent resource object or text with
+            its ID. Required for sub-resources such as share share export
+            locations which do not include a reference to the parent object
+            by default
+        """
+        resource, subresource = self._get_subresource_and_resource(
+            superresource
+        )
+
+        return self.manager.delete_metadata(
+            resource, keys, subresource=subresource
+        )
+
+    def update_all_metadata(self, metadata, superresource=None):
+        """Update all metadata for this resource.
+
+        :param metadata: A dictionary of key:value pairs of resource metadata
+            to be updated
+        :param superresource: either a parent resource object or text with
+            its ID. Required for sub-resources such as share share export
+            locations which do not include a reference to the parent object
+            by default
+        """
+        resource, subresource = self._get_subresource_and_resource(
+            superresource
+        )
+
+        return self.manager.update_all_metadata(
+            resource, metadata, subresource=subresource
+        )
+
+
+class MetadataCapableManager(ManagerWithFind, metaclass=abc.ABCMeta):
+    """Provides extended behavior to objects to handle key=value metadata."""
+
+    resource_path = None
+    subresource_path = None
+
+    def get_metadata(self, resource, subresource=None):
+        """Get metadata of a resource.
+
+        :param resource: either resource object or text with its ID.
+        :param subresource: either a child resource object or text with its ID
+        """
+        resource = getid(resource)
+        if subresource:
+            subresource = getid(subresource)
+            resource = f"{resource}{self.subresource_path}/{subresource}"
+
+        return self._get(
+            f"{self.resource_path}/{resource}/metadata", "metadata"
+        )
+
+    def set_metadata(self, resource, metadata, subresource=None):
+        """Set or update metadata for resource.
+
+        :param resource: either resource object or text with its ID.
+        :param metadata: A dictionary of key:value pairs to be set as
+            resource metadata
+        :param subresource: either a child resource object or text with its ID
+        """
+        body = {'metadata': metadata}
+        resource = getid(resource)
+        if subresource:
+            subresource = getid(subresource)
+            resource = f"{resource}{self.subresource_path}/{subresource}"
+
+        return self._create(
+            f"{self.resource_path}/{resource}/metadata", body, "metadata"
+        )
+
+    def delete_metadata(self, resource, keys, subresource=None):
+        """Delete specified keys from resource metadata.
+
+        :param resource: either resource object or text with its ID.
+        :param keys: An iterable with keys of metadata items to be deleted
+        :param subresource: either a child resource object or text with its ID
+        """
+        resource = getid(resource)
+        if subresource:
+            subresource = getid(subresource)
+            resource = f"{resource}{self.subresource_path}/{subresource}"
+
+        for key in keys:
+            self._delete(f"{self.resource_path}/{resource}/metadata/{key}")
+
+    def update_all_metadata(self, resource, metadata, subresource=None):
+        """Update all metadata of a resource.
+
+        :param resource: either resource object or text with its ID.
+        :param metadata: A dictionary of key:value pairs of resource metadata
+            to be updated
+        :param subresource: either a child resource object or text with its ID
+        """
+        body = {'metadata': metadata}
+        resource = getid(resource)
+        if subresource:
+            subresource = getid(subresource)
+            resource = f"{resource}{self.subresource_path}/{subresource}"
+
+        return self._update(f"{self.resource_path}/{resource}/metadata", body)

@@ -1,0 +1,59 @@
+# Sample Backbone (Core) Direct-Peer Interface Configuration
+# ==========================================================
+#
+# Usage:
+#   ansible-playbook playbooks/backbone_management.yml \
+#     -e "backbone_direct_peer_config_file=sample_backbone_direct_peer_config.yaml" \
+#     --tags backbone,configure_direct_peer_interfaces
+
+backbone_devices:
+
+  # ----------------------------------------------------------------------------
+  # Core 1: core-api-test-core-01
+  # ----------------------------------------------------------------------------
+  - core-api-test-core-01:
+      core:
+        name: "core-api-test-core-01"
+        regionName: "us-east-1 (N. Virginia)"
+
+        interfaces:
+          - name: "GigabitEthernet6/0/0"
+            interface_type: "direct_peer"
+            description: "Direct Peer towards GW-0"
+            circuit: "direct-peer-0"
+            adminStatus: true
+            mtu: 9200
+            ipv4: "100.64.0.1/24"
+
+          - name: "GigabitEthernet7/0/0"
+            interface_type: "direct_peer"
+            description: "Direct Peer towards GW-1"
+            circuit: "direct-peer-1"
+            adminStatus: true
+            mtu: 9200
+            ipv4: "100.64.0.2/24"
+
+  # ----------------------------------------------------------------------------
+  # Core 2: core-api-test-core-02
+  # ----------------------------------------------------------------------------
+  - core-api-test-core-02:
+      core:
+        name: "core-api-test-core-02"
+        regionName: "ap-southeast-1 (Singapore)"
+
+        interfaces:
+          - name: "GigabitEthernet6/0/0"
+            interface_type: "direct_peer"
+            description: "Direct Peer towards GW-0"
+            circuit: "direct-peer-0"
+            adminStatus: true
+            mtu: 9200
+            ipv4: "100.64.0.3/24"
+
+          - name: "GigabitEthernet7/0/0"
+            interface_type: "direct_peer"
+            description: "Direct Peer towards GW-1"
+            circuit: "direct-peer-1"
+            adminStatus: true
+            mtu: 9200
+            ipv4: "100.64.0.4/24"

@@ -1,0 +1,16 @@
+# Sample Global Site Lists Configuration
+# This file demonstrates how to configure global site lists
+# 
+# The system will:
+# 1. Read site names from the 'sites' list
+# 2. Look up site IDs using v1/sites/details API
+# 3. Generate the correct API payload with site IDs
+# 4. POST to v1/global/site-lists with the payload
+
+site_lists:
+  - name: "Site-list1"
+    description: "Site-list1 desc"
+    sites:
+      - "UAT-Site1"
+      - "UAT-Site2"
+      - "UAT-Site3"

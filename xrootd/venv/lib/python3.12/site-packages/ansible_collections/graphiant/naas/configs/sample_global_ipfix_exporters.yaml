@@ -1,0 +1,12 @@
+ipfix_exporters:
+  # Global IPFIX Exporter Configuration
+  - name: ipfix-global-test
+    exporter:
+      destinationAddress: 10.1.17.2
+      destinationPort: 70
+      monitoredSegments:
+        - lan-7-test
+        - lan-8-test
+      lanSegment: lan-7-test
+      sampleMode: random
+      sampleRate: 100

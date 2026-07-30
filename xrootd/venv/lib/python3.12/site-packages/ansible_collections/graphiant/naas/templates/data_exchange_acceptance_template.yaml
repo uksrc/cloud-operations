@@ -1,0 +1,107 @@
+# yamllint disable-file
+---
+# Data Exchange Service Acceptance Template
+# This template demonstrates the configuration structure for accepting Data Exchange service invitations
+# This template is not used to generate the API payload for Data Exchange service acceptance
+
+# List format (always a list, even for single acceptance):
+data_exchange_acceptances:
+  - customerName: "{{ customer_name }}"   # Customer name (will be used to lookup matchId)
+    serviceName: "{{ service_name }}"     # Service name (will be used to lookup serviceId)
+    
+    # Site Information Configuration (by name)
+    siteInformation:
+      - sites: {{ site_names }}           # List of site names (will be resolved to site IDs)
+        siteLists: {{ site_list_names }}  # Optional site list names (empty for direct site selection)
+    
+    # NAT Configuration (optional)
+    # Lists producer service prefixes (optionally NAT them to avoid overlap with customer network)
+    nat:
+      - prefix: "{{ producer_prefix_1 }}"   # Producer service prefix
+        tag: "{{ producer_tag_1 }}"         # Corresponding tag from service prefixes
+        # translatedPrefix: null            # Optional: NAT producer prefix if needed to avoid overlap
+        # outsideNatPrefix: null            # Optional: Outside NAT prefix
+      - prefix: "{{ producer_prefix_2  }}"  # Producer service prefix
+        tag: "{{ producer_tag_2 }}"         # Corresponding tag from service prefixes
+        # translatedPrefix: null            # Optional: NAT producer prefix if needed to avoid overlap
+        # outsideNatPrefix: null            # Optional: Outside NAT prefix
+    
+    # Policy Configuration (by name)
+    policy:
+      - lanSegment: "{{ lan_segment_name }}"  # LAN segment name (will be resolved to ID)
+        consumerPrefixes:                     # Customer/Consumer's own prefixes that will be advertised
+          - "{{ consumer_prefix}}"            # Customer's own /24 network
+
+    # Site-to-Site VPN Configuration
+    siteToSiteVpn:
+      # IPSec Gateway Details
+      ipsecGatewayDetails:
+        name: "{{ gateway_name }}"                            # Gateway name
+        destinationAddress: "{{ destination_address }}"       # Customer's external IP
+        mtu: {{ mtu }}                                        # Optional MTU setting
+        tcpMss: {{ tcp_mss }}                                 # Optional TCP MSS setting
+        remoteIkePeerIdentity: {{ remote_ike_peer_identity }} # Optional remote IKE peer identity
+        ikeInitiator: {{ ike_initiator }}                     # IKE initiation mode (false = responder)
+        
+        # Tunnel 1 Configuration
+        tunnel1:
+          localIkePeerIdentity: {{ tunnel1_local_ike_peer_identity | default(null) }}  # Optional local IKE peer identity
+          insideIpv4Cidr: {{ tunnel1_inside_ipv4_cidr | default(null) }}  # Optional Inside IPv4 subnet for tunnel 1 (will be auto filled by Graphiant portal APIs)
+          insideIpv6Cidr: {{ tunnel1_inside_ipv6_cidr | default(null) }}  # Optional Inside IPv6 subnet for tunnel 1 (will be auto filled by Graphiant portal APIs)
+          psk: {{ tunnel1_psk | default(null) }}  # Optional Preshared key for tunnel 1 (will be auto filled by Graphiant portal APIs)
+        
+        # Tunnel 2 Configuration  
+        tunnel2:
+          localIkePeerIdentity: {{ tunnel2_local_ike_peer_identity | default(null) }}  # Optional local IKE peer identity
+          insideIpv4Cidr: {{ tunnel2_inside_ipv4_cidr | default(null) }}  # Optional Inside IPv4 subnet for tunnel 2 (will be auto filled by Graphiant portal APIs)
+          insideIpv6Cidr: {{ tunnel2_inside_ipv6_cidr | default(null) }}  # Optional Inside IPv6 subnet for tunnel 2 (will be auto filled by Graphiant portal APIs)
+          psk: {{ tunnel2_psk | default(null) }}  # Optional Preshared key for tunnel 2 (will be auto filled by Graphiant portal APIs)
+      
+        # BGP Routing Configuration
+        routing:
+          static:
+            destinationPrefix: {{ destination_prefixes }}  # Customer's own network prefixes
+          # bgp:
+          #   peerAsn: {{ bgp_peer_asn  }}                              # Remote AS number
+          #   holdTimer: {{ bgp_hold_timer | default(180) }}            # BGP hold timer in seconds
+          #   keepaliveTimer: {{ bgp_keepalive_timer | default(60) }}   # BGP keepalive timer in seconds
+          #   md5Password:                                              # BGP MD5 authentication
+          #     md5Password: "{{ bgp_md5_password }}"
+          #   sendCommunity: {{ bgp_send_community | default(true) }}  # Send BGP communities
+          #   addressFamilies:
+          #     ipv4:
+          #       family:
+          #         addressFamily: "ipv4"
+          #         inboundPolicy:
+          #           policy: "{{ bgp_ipv4_inbound_policy | default('test_bgp_inbound_filter') }}"  # Inbound BGP policy
+          #         outboundPolicy:
+          #           policy: "{{ bgp_ipv4_outbound_policy | default('test_bgp_outbound_filter') }}"  # Outbound BGP policy
+          #     ipv6:
+          #       family:
+          #         addressFamily: "ipv6"
+          #         inboundPolicy: {{ bgp_ipv6_inbound_policy | default({}) }}  # No IPv6 inbound policy
+          #         outboundPolicy: {{ bgp_ipv6_outbound_policy | default({}) }}  # No IPv6 outbound policy
+      
+        # VPN Profile Selection
+        vpnProfile: "{{ vpn_profile }}"  # System VPN profile name
+
+      # Selected Region (by name)
+      region: "{{ region_name }}"  # Region name (will be resolved to regionId)
+
+      # Email notifications
+      emails: {{ notification_emails  }}  # Email addresses for notifications
+
+    # Global Object Operations (optional)
+    globalObjectOps: {{ global_object_ops | default({}) }}
+
+    # Routing Policy Table (optional)
+    routingPolicyTable: {{ routing_policy_table | default([]) }}
+
+# Multiple acceptance format (alternative):
+# data_exchange_acceptances:
+#   - customerName: "FinanceBank-001"
+#     serviceName: "de-service-scale-001"
+#     # ... (same structure as above)
+#   - customerName: "AnotherCustomer"
+#     serviceName: "de-service-scale-002"
+#     # ... (same structure as above)

@@ -1,0 +1,55 @@
+---
+# Data Exchange - Delete Services Playbook (Workflow 5)
+# Deletes Data Exchange peering services listed in a YAML configuration file.
+#
+# Usage:
+#   Delete services (default config):
+#     ansible-playbook ansible_collections/graphiant/naas/playbooks/de_workflows/05_dataex_delete_services.yml
+#
+#   Custom config file:
+#     ansible-playbook ... -e config_file=de_workflows_configs/sample_data_exchange_services_scale.yaml
+
+- name: Data Exchange - Delete Services
+  hosts: localhost
+  gather_facts: false
+  vars:
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+
+  tasks:
+    - name: Get Data Exchange services summary
+      graphiant.naas.graphiant_data_exchange_info:
+        <<: *graphiant_client_params
+        query: services_summary
+        detailed_logs: true
+      register: services_summary
+
+    - name: Display services summary
+      ansible.builtin.debug:
+        msg: "{{ services_summary.msg }}"
+
+    - name: Delete Data Exchange services
+      graphiant.naas.graphiant_data_exchange:
+        <<: *graphiant_client_params
+        operation: delete_services
+        config_file: "{{ config_file | default('de_workflows_configs/sample_data_exchange_services.yaml') }}"
+        detailed_logs: true
+      register: delete_services_result
+
+    - name: Display delete services result
+      ansible.builtin.debug:
+        msg: "{{ delete_services_result.msg }}"
+
+    - name: Get updated services summary
+      graphiant.naas.graphiant_data_exchange_info:
+        <<: *graphiant_client_params
+        query: services_summary
+        detailed_logs: true
+      register: updated_services_summary
+
+    - name: Display updated services count
+      ansible.builtin.debug:
+        msg: "{{ updated_services_summary.msg }}"

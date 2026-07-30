@@ -1,0 +1,33 @@
+{
+ "collection_info": {
+  "namespace": "pcg",
+  "name": "alpaca_operator",
+  "version": "2.2.0",
+  "authors": [
+   "Public Cloud Group GmbH (pcg.io)"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "automation",
+   "cloud",
+   "monitoring",
+   "sap"
+  ],
+  "description": "This collection contains Ansible modules for managing the ALPACA Operator, developed by Public Cloud Group GmbH (pcg.io).\n",
+  "license": [],
+  "license_file": "LICENSE",
+  "dependencies": {},
+  "repository": "https://github.com/pcg-sap/alpaca-operator-ansible",
+  "documentation": "https://docs.ansible.com/ansible/latest/collections/pcg/alpaca_operator",
+  "homepage": "https://github.com/pcg-sap/alpaca-operator-ansible",
+  "issues": "https://github.com/pcg-sap/alpaca-operator-ansible/issues"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "61d3455250e27397629f53eec7dcd08dfb36af09412f0b10b2f482ad060a0e19",
+  "format": 1
+ },
+ "format": 1
+}

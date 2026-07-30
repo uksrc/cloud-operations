@@ -1,0 +1,14 @@
+# yamllint disable-file
+{
+    "{{ name }}": {
+        "target": {
+            "name": "{{ name }}",
+            "host": "{{ target.host }}",
+            "port": {{ target.port }},
+            "transport": "{{ target.transport }}",
+            "severity": "{{ target.severity }}",
+            "vrfId": {{ target.vrfId }},
+            "serverStatus": {{ target.serverStatus }}
+        }
+    }
+}

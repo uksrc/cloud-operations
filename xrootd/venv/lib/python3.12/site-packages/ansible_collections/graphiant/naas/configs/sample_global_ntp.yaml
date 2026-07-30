@@ -1,0 +1,14 @@
+ntps:
+  - name: ntp-global-test
+    domains:
+    - time.google.com
+    - time.apple.com
+    - time.microsoft.com
+    - time.yahoo.com
+    - time.amazon.com
+    - time.facebook.com
+    - time.twitter.com
+    - time.instagram.com
+    - time.linkedin.com
+    - time.github.com
+    - time.gitlab.com

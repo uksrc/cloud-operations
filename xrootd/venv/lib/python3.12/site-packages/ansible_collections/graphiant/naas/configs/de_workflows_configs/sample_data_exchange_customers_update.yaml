@@ -1,0 +1,23 @@
+# Sample Data Exchange Customers Update Configuration
+# Used with: operation: update_customers
+#
+# Only 'name' and 'invite.adminEmail' are required.
+# The customer must already exist (use create_customers to create new customers).
+# 'numSites' (maximumNumberOfSites) is preserved from the existing customer configuration.
+#
+# Rules:
+# - The customer must already exist.
+# - At least one email address must be provided.
+# - Supports --check (dry run) and --diff (preview changes) flags.
+#
+# Preview changes before applying:
+#   ansible-playbook ... --check --diff
+# Apply changes:
+#   ansible-playbook ...
+
+data_exchange_customers:
+  - name: "FinanceInc"
+    invite:
+      adminEmail:
+        - "finance@financeinc.com"
+        - "admin@financeinc.com"

@@ -1,0 +1,220 @@
+---
+# Edge Services Management Playbook
+# =================================
+#
+# Configures Edge/Gateway services via graphiant_edge_services:
+# DHCP subnets, DNS mode, LLDP on LAN interfaces, local web server password, DPI applications.
+#
+# Local web server passwords can come from Ansible Vault (vault_devices_lws_password in
+# configs/vault_secrets.yml) — same pattern as site_to_site_vpn.yml.
+# If YAML sets localWebServerPasswordForce: true, supply password via vault (matching device key),
+# YAML localWebServerPassword, or module params — otherwise the task fails. Clear force after rotate.
+# vault_devices_lws_password and localWebServerPassword are declared no_log=True in the module
+# argument spec and the library masks localWebServerPassword in log output — no task-level no_log
+# needed on module tasks (would suppress --diff output). include_vars keeps no_log: true to guard
+# the raw vault file load.
+#
+# Usage:
+#   ansible-playbook playbooks/edge_services_management.yml --tags configure \
+#     -e config_file=sample_edge_services.yaml --check --diff \
+#     --vault-password-file configs/vault-password-file.sh
+#
+#   ansible-playbook playbooks/edge_services_management.yml --tags configure_without_vault \
+#     -e config_file=sample_edge_services.yaml --check --diff
+#
+#   ansible-playbook playbooks/edge_services_management.yml --tags configure_params_examples
+#
+#   ansible-playbook playbooks/edge_services_management.yml --tags configure_params_lws \
+#     -e edge_lws_device=edge-3-sdktest \
+#     --vault-password-file configs/vault-password-file.sh
+#
+# Tags:
+#   configure              — load vault + apply YAML (LWS from vault when force is set)
+#   configure_without_vault — apply YAML only (no vault load; use for DNS/LLDP/DHCP or literal LWS in YAML)
+#   configure_params_examples, configure_params_lws, info
+
+- name: Edge Services Management
+  hosts: localhost
+  gather_facts: false
+  vars:
+    config_file: "sample_edge_services.yaml"
+    vault_secrets_path: "{{ playbook_dir }}/../configs/vault_secrets.yml"
+    vault_password_script: "{{ playbook_dir }}/../configs/vault-password-file.sh"
+    vault_devices_lws_password: {}
+    edge_lws_password: ""
+    edge_lws_password_force: false
+    edge_lws_device: "edge-3-sdktest"
+
+    # Module params use camelCase (API-aligned); snake_case aliases are accepted by the module.
+    edge_module_param_examples:
+      - device: edge-1-sdktest
+        dns:
+          mode: DNSModeStatic
+          static:
+            primaryIpv4: "8.8.8.8"
+            primaryIpv6: "2001:4860:4860::8888"
+            secondaryIpv4: "8.8.4.4"
+            secondaryIpv6: "2001:4860:4860::8844"
+        lldp:
+          GigabitEthernet4/0/0: true
+          GigabitEthernet7/0/0: true
+        dhcpSubnets:
+          - segment: lan-1-test
+            interface: GigabitEthernet7/0/0
+            ipPrefix: "10.1.11.0/24"
+            state: present
+            subnet:
+              name: Edge-1-lan-1-test-DHCP
+              description: Edge-1-lan-1-test-DHCP description
+              ipGateway: "10.1.11.1"
+              ipRangesV2:
+                ipRange:
+                  - start: "10.1.11.100"
+                    end: "10.1.11.200"
+              domainName: example.com
+              domainNameServer:
+                primary: "8.8.8.8"
+                secondary: "8.8.4.4"
+              defaultLeaseTimeSecs: 216000
+              maxLeaseTimeSecs: 432000
+              minLeaseTimeSecs: 1440
+              staticLeases:
+                "10.1.11.201":
+                  lease:
+                    ipAddress: "10.1.11.201"
+                    macAddress: "00:1A:2B:3C:4D:5E"
+          - segment: lan-7-test
+            interface: GigabitEthernet7/0/0.18
+            ipPrefix: "10.1.17.0/24"
+            state: present
+            subnet:
+              name: Edge-1-lan-7-test-DHCP
+              description: Edge-1-lan-7-test-DHCP description
+              ipGateway: "10.1.17.1"
+              ipRangesV2:
+                ipRange:
+                  - start: "10.1.17.100"
+                    end: "10.1.17.200"
+      - device: edge-2-sdktest
+        dns:
+          mode: DNSModeDynamic
+        lldp:
+          GigabitEthernet4/0/0: true
+          GigabitEthernet8/0/0: true
+        dhcpSubnets:
+          - segment: lan-1-test
+            interface: GigabitEthernet8/0/0
+            ipPrefix: "10.2.11.0/24"
+            state: present
+            subnet:
+              name: Edge-2-lan-1-test-DHCP
+              description: Edge-2-lan-1-test-DHCP description
+              ipGateway: "10.2.11.1"
+              ipRangesV2:
+                ipRange:
+                  - start: "10.2.11.100"
+                    end: "10.2.11.200"
+              domainName: example.com
+              domainNameServer:
+                primary: "8.8.8.8"
+                secondary: "8.8.4.4"
+      - device: edge-3-sdktest
+        dns:
+          mode: DNSModeCloudflare
+        lldp:
+          GigabitEthernet4/0/0: false
+          GigabitEthernet8/0/0: false
+        dhcpSubnets:
+          - segment: lan-7-test
+            interface: GigabitEthernet8/0/0.28
+            ipPrefix: "10.3.177.0/24"
+            state: absent
+
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+
+    edge_service_params: &edge_service_params
+      <<: *graphiant_client_params
+      operation: configure
+      detailed_logs: true
+      state: present
+
+  tasks:
+    - name: Display operation info
+      ansible.builtin.debug:
+        msg: |
+          Edge Services Management
+          Config file: {{ config_file }}
+          Portal: {{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}
+      tags: ['always', 'info']
+
+    - name: Require vault secrets file for edge services with LWS passwords
+      ansible.builtin.fail:
+        msg: |
+          Vault file not found: {{ vault_secrets_path }}
+          Setup (no plaintext password file):
+            1. cp configs/vault_secrets.yml.example configs/vault_secrets.yml
+            2. Edit vault_secrets.yml and set vault_devices_lws_password (keys = portal device hostnames)
+            3. chmod +x configs/vault-password-file.sh
+            4. export ANSIBLE_VAULT_PASSPHRASE='your-vault-passphrase'
+            5. ansible-vault encrypt configs/vault_secrets.yml --vault-password-file configs/vault-password-file.sh
+            6. Run with vault: --vault-password-file <path> or --ask-vault-pass
+               e.g. ansible-playbook playbooks/edge_services_management.yml --tags configure --vault-password-file configs/vault-password-file.sh
+      when: vault_secrets_path is not file
+      tags: ['configure', 'configure_params_lws']
+
+    - name: Load vault secrets for edge services
+      ansible.builtin.include_vars:
+        file: "{{ vault_secrets_path }}"
+      no_log: true
+      tags: ['configure', 'configure_params_lws']
+
+    - name: Configure edge services from YAML
+      graphiant.naas.graphiant_edge_services:
+        <<: *graphiant_client_params
+        operation: configure
+        edge_services_config_file: "{{ config_file }}"
+        vault_devices_lws_password: "{{ vault_devices_lws_password | default({}) }}"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure', 'configure_without_vault']
+
+    - name: Display configure result (from YAML)
+      ansible.builtin.debug:
+        msg: |
+          {{ configure_result.msg | trim }}
+          configured_devices={{ configure_result.configured_devices | default([]) }}
+          skipped_devices={{ configure_result.skipped_devices | default([]) }}
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure', 'configure_without_vault']
+
+    - name: Configure edge services from module params examples
+      graphiant.naas.graphiant_edge_services:
+        <<: *edge_service_params
+        device: "{{ item.device }}"
+        dns: "{{ item.dns | default(omit) }}"
+        lldp: "{{ item.lldp | default(omit) }}"
+        dhcpSubnets: "{{ item.dhcpSubnets | default(omit) }}"
+        dpiApplications: "{{ item.dpiApplications | default(omit) }}"
+      loop: "{{ edge_module_param_examples }}"
+      loop_control:
+        label: "{{ item.device }}"
+      tags: ['configure_params_examples']
+
+    - name: Configure local web server password from module parameters
+      graphiant.naas.graphiant_edge_services:
+        <<: *edge_service_params
+        device: "{{ edge_lws_device }}"
+        localWebServerPassword: >-
+          {{ edge_lws_password if (edge_lws_password | default('') | length > 0)
+             else vault_devices_lws_password[edge_lws_device] }}
+        localWebServerPasswordForce: "{{ edge_lws_password_force }}"
+        vault_devices_lws_password: "{{ vault_devices_lws_password | default({}) }}"
+      when: >-
+        (edge_lws_password | default('') | length > 0)
+        or ((vault_devices_lws_password[edge_lws_device] | default('')) | length > 0)
+      tags: ['configure_params_lws']

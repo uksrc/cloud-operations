@@ -1,0 +1,24 @@
+interfaces:
+  - edge-1-sdktest:
+    # LAN Sub-Interface (VLAN) with Static IPv4 assignment
+    - name: GigabitEthernet4/0/0
+      subinterfaces:
+        - vlan: 1
+          lan: lan-segment-3
+          ipv4: 10.1.1.1/24
+          description: lan-segment-3 interface
+          alias: Gig4.1
+
+  - edge-2-sdktest:
+    # LAN interface with Static IPv4 assignments
+    - name: GigabitEthernet4/0/0
+      ipv4: 10.1.2.1/24
+      lan: lan-segment-3
+      description: lan-segment-3 interface
+
+  - edge-3-sdktest:  
+    # LAN Interface with Static IPv4/IPv6 assignment
+    - name: GigabitEthernet4/0/0
+      ipv4: 10.1.3.1/24
+      lan: lan-segment-3
+      description: lan-segment-3 interface

@@ -1,0 +1,406 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2024, Don Naro (@oranod) <dnaro@redhat.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
+DOCUMENTATION = r"""
+---
+module: clickhouse_role
+
+short_description: Creates or removes a ClickHouse role.
+
+description:
+  - Creates or removes a ClickHouse role.
+
+attributes:
+  check_mode:
+    description: Supports check_mode.
+    support: full
+  idempotent:
+    support: full
+    description:
+      - O(settings) can break idempotency when the deprecated C(list) format is used. Use the dictionary format instead.
+
+version_added: '0.5.0'
+
+author:
+  - Don Naro (@oranod)
+  - Aleksandr Vagachev (@aleksvagachev)
+  - Andrew Klychkov (@Andersson007)
+  - Rafal Kozlowski (@rkozlo)
+
+extends_documentation_fragment:
+  - community.clickhouse.client_inst_opts
+
+options:
+  state:
+    description:
+      - Role state.
+      - C(present) creates the role if it does not exist.
+      - C(absent) deletes the role if it exists.
+    type: str
+    choices: ['present', 'absent']
+    default: 'present'
+  name:
+    description:
+      - Role name to add or remove.
+    type: str
+    required: true
+  cluster:
+    description:
+      - Run the command on all cluster hosts.
+      - If the cluster is not configured, the command will crash with an error.
+    type: str
+  settings:
+    description:
+      - Settings with their limitations that apply to the role.
+      - Can pass either list(obsolete) or dictionary.
+      - You can also specify the profile from which the settings will be inherited C(list).
+    type: raw
+  profiles:
+    version_added: 2.2.0
+    description:
+      - Settings profiles that will be applied to role.
+      - Can be only used with O(settings) as C(dict).
+    type: list
+    elements: str
+    default: []
+"""
+
+EXAMPLES = r"""
+- name: Create role
+  community.clickhouse.clickhouse_role:
+    name: test_role
+    state: present
+
+- name: Create a role with settings
+  community.clickhouse.clickhouse_role:
+    name: test_role
+    state: present
+    settings:
+      max_memory_usage:
+        value: 15000
+        min: 15000
+        max: 16000
+        writability: readonly
+    profiles:
+      - restricted
+    cluster: test_cluster
+
+- name: Create a role with settings and profiles
+  community.clickhouse.clickhouse_role:
+    name: test_role
+    state: present
+    settings:
+      max_memory_usage:
+        value: 15000
+        min: 15000
+        max: 16000
+        writability: readonly
+    profiles:
+      - restricted
+    cluster: test_cluster
+
+- name: Remove role
+  community.clickhouse.clickhouse_role:
+    name: test_role
+    state: absent
+"""
+
+RETURN = r"""
+executed_statements:
+  description:
+  - Data-modifying executed statements.
+  returned: on success
+  type: list
+  sample: ['CREATE ROLE test_role']
+"""
+
+import re
+
+from ansible.module_utils.basic import AnsibleModule
+
+from ansible_collections.community.clickhouse.plugins.module_utils.clickhouse import (
+    check_clickhouse_driver,
+    client_common_argument_spec,
+    connect_to_db_via_client,
+    execute_query,
+    get_main_conn_kwargs,
+    validate_identifier,
+    get_on_cluster_clause,
+)
+from ansible_collections.community.clickhouse.plugins.module_utils.entity_settings import EntitySettings
+executed_statements = []
+
+
+class ClickHouseRole:
+    def __init__(self, module, client, name):
+        self.module = module
+        self.client = client
+        validate_identifier(self.module, name)
+        self.name = name
+        self.settings = EntitySettings(self.module, self.client, self.name, 'role')
+        self.exists = self.check_exists()
+
+    def check_exists(self):
+        query = "SELECT 1 FROM system.roles WHERE name = %(name)s LIMIT 1"
+        exec_kwargs = {'params': {'name': self.name}}
+        result = execute_query(self.module, self.client, query, exec_kwargs)
+        return bool(result)
+
+    def get_current_role_definition(self):
+        """Get current role definition using SHOW CREATE ROLE"""
+        if not self.exists:
+            return None
+
+        query = "SHOW CREATE ROLE `%s`" % self.name
+        result = execute_query(self.module, self.client, query)
+        if result:
+            return result[0][0]  # SHOW CREATE ROLE returns single row with CREATE statement
+        return None
+
+    def parse_settings_from_create_statement(self, create_statement):
+        """Parse settings from CREATE ROLE statement"""
+        if not create_statement or 'SETTINGS' not in create_statement:
+            return []
+
+        # Extract settings part after SETTINGS keyword
+        settings_part = create_statement.split('SETTINGS', 1)[1].strip()
+        if not settings_part:
+            return []
+
+        # Parse individual settings (this is a simplified parser)
+        # In real implementation, we might need more sophisticated parsing
+        settings = []
+        current_setting = ""
+        paren_depth = 0
+        quote_char = None
+
+        i = 0
+        while i < len(settings_part):
+            char = settings_part[i]
+
+            if quote_char:
+                current_setting += char
+                if char == quote_char and (i == 0 or settings_part[i - 1] != '\\'):
+                    quote_char = None
+            elif char in ("'", '"'):
+                current_setting += char
+                quote_char = char
+            elif char == '(':
+                current_setting += char
+                paren_depth += 1
+            elif char == ')':
+                current_setting += char
+                paren_depth -= 1
+            elif char == ',' and paren_depth == 0:
+                settings.append(current_setting.strip())
+                current_setting = ""
+            else:
+                current_setting += char
+            i += 1
+
+        if current_setting.strip():
+            settings.append(current_setting.strip())
+
+        return settings
+
+    def normalize_settings(self, settings_list):
+        """Normalize settings for comparison"""
+        if not settings_list:
+            return []
+
+        normalized = []
+        for setting in settings_list:
+            # Remove extra whitespace and standardize format
+            normalized_setting = ' '.join(setting.split())
+
+            # ClickHouse normalizes some constraint types
+            # Different versions may use CONST or READONLY interchangeably
+            # Since READONLY is an alias for CONST in ClickHouse, normalize both to CONST
+            normalized_setting = re.sub(r'\bREADONLY\b', 'CONST', normalized_setting)
+
+            # ClickHouse may handle profile names differently across versions
+            # Normalize quoted and unquoted profile names
+            # PROFILE 'default' -> PROFILE default, PROFILE "default" -> PROFILE default
+            normalized_setting = re.sub(r"PROFILE\s+'([^']+)'", r"PROFILE \1", normalized_setting)
+            normalized_setting = re.sub(r'PROFILE\s+"([^"]+)"', r"PROFILE \1", normalized_setting)
+
+            # Also handle case where profile name might be output with backticks
+            normalized_setting = re.sub(r"PROFILE\s+`([^`]+)`", r"PROFILE \1", normalized_setting)
+
+            normalized.append(normalized_setting)
+
+        return sorted(normalized)
+
+    def settings_changed(self, current_settings, desired_settings):
+        """Check if settings have changed"""
+        current_normalized = self.normalize_settings(current_settings)
+        desired_normalized = self.normalize_settings(desired_settings)
+
+        # For debugging version compatibility issues
+        if self.module._verbosity >= 3:  # Only show at high verbosity
+            self.module.log(f"Current settings (normalized): {current_normalized}")
+            self.module.log(f"Desired settings (normalized): {desired_normalized}")
+
+        return current_normalized != desired_normalized
+
+    def create(self, cluster):
+        if not self.exists:
+            query = "CREATE ROLE `%s`" % self.name
+
+            query += get_on_cluster_clause(self.module, cluster)
+
+            if isinstance(self.module.params['settings'], list):
+                list_settings = self.module.params['settings']
+                if list_settings:
+                    query += " SETTINGS"
+                    for index, value in enumerate(list_settings):
+                        query += " %s" % value
+                        if index < len(list_settings) - 1:
+                            query += ","
+            elif isinstance(self.module.params['settings'], dict) or self.module.params['profiles']:
+                settings_entity = self.settings.compare_and_build_clause(self.module.params['settings'], self.module.params['profiles'])
+                query += settings_entity[1]
+
+            executed_statements.append(query)
+
+            if not self.module.check_mode:
+                execute_query(self.module, self.client, query)
+
+            self.exists = True
+            return True
+        else:
+            return False
+
+    def alter(self, settings, profiles, cluster):
+        """Update role settings using ALTER ROLE"""
+        if not self.exists:
+            return False
+
+        query = "ALTER ROLE `%s`" % self.name
+
+        query += get_on_cluster_clause(self.module, cluster)
+
+        if isinstance(settings, list):
+            # Handle settings updates
+            if settings is not None and len(settings) > 0:
+                # Set these settings
+                query += " SETTINGS"
+                for index, value in enumerate(settings):
+                    query += " %s" % value
+                    if index < len(settings) - 1:
+                        query += ","
+        elif isinstance(settings, dict) or (settings is None and profiles):
+            settings_entity = self.settings.compare_and_build_clause(settings, profiles)
+            if settings_entity[0] is False:
+                return False
+            query += settings_entity[1]
+
+        executed_statements.append(query)
+
+        if not self.module.check_mode:
+            execute_query(self.module, self.client, query)
+
+        return True
+
+    def drop(self, cluster):
+        if self.exists:
+            query = "DROP ROLE `%s`" % self.name
+            query += get_on_cluster_clause(self.module, cluster)
+
+            executed_statements.append(query)
+
+            if not self.module.check_mode:
+                execute_query(self.module, self.client, query)
+
+            self.exists = False
+            return True
+        else:
+            return False
+
+
+def main():
+    # Set up arguments.
+    # If there are common arguments shared across several modules,
+    # create the common_argument_spec() function under plugins/module_utils/*
+    # and invoke here to return a dict with those arguments
+    argument_spec = client_common_argument_spec()
+    argument_spec.update(
+        state=dict(type="str", choices=["present", "absent"], default="present"),
+        name=dict(type="str", required=True),
+        cluster=dict(type='str', default=None),
+        settings=dict(type='raw'),
+        profiles=dict(type='list', elements='str', default=[])
+    )
+
+    # Instantiate an object of module class
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
+
+    # Assign passed options to variables
+    client_kwargs = module.params["client_kwargs"]
+    # The reason why these arguments are separate from client_kwargs
+    # is that we need to protect some sensitive data like passwords passed
+    # to the module from logging (see the arguments above with no_log=True);
+    # Such data must be passed as module arguments (not nested deep in values).
+    main_conn_kwargs = get_main_conn_kwargs(module)
+    state = module.params["state"]
+    name = module.params["name"]
+    settings = module.params["settings"]
+    profiles = module.params["profiles"]
+    cluster = module.params["cluster"]
+
+    # Will fail if no driver informing the user
+    check_clickhouse_driver(module)
+
+    # Connect to DB
+    client = connect_to_db_via_client(module, main_conn_kwargs, client_kwargs)
+
+    # Do the job
+    changed = False
+    role = ClickHouseRole(module, client, name)
+    desired_settings = module.params.get("settings", [])
+
+    if state == "present":
+        if not role.exists:
+            # Role doesn't exist, create it
+            changed = role.create(cluster)
+        else:
+            # Role exists, check if settings need to be updated
+            if isinstance(desired_settings, list):
+                if desired_settings is not None and len(desired_settings) > 0:  # Only check settings if they are specified and not empty
+                    module.deprecate(
+                        msg="List based settings are deprecated. Use dictionary instead.",
+                        version="3.0.0",
+                        collection_name="community.clickhouse",
+                    )
+                    current_definition = role.get_current_role_definition()
+                    current_settings = role.parse_settings_from_create_statement(current_definition) if current_definition else []
+
+                    if role.settings_changed(current_settings, desired_settings):
+                        changed = role.alter(desired_settings, profiles, cluster)
+            # No need to check settings in new settings parameter
+            elif isinstance(settings, dict) or profiles:
+                changed = role.alter(desired_settings, profiles, cluster)
+    else:
+        # If state is absent
+        if role.exists:
+            changed = role.drop(cluster)
+
+    # Close connection
+    client.disconnect_connection()
+
+    # Users will get this in JSON output after execution
+    module.exit_json(changed=changed, executed_statements=executed_statements)
+
+
+if __name__ == "__main__":
+    main()

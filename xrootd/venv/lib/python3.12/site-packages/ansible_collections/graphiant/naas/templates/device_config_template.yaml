@@ -1,0 +1,50 @@
+# Device Configuration Template
+# ==============================
+#
+# This Jinja2 template transforms a simple configuration file into
+# the full device_config structure required by the Graphiant API.
+#
+# Input (from config file):
+#   common:
+#     primary_dns: "8.8.8.8"
+#     secondary_dns: "8.8.4.4"
+#     region: "us-west-2 (San Jose)"
+#     config_ver_name: "dns_config_v1"
+#     config_ver_desc: "Configure custom DNS"
+#   devices:
+#     - name: "edge-1-sdktest"
+#       config_ver_desc: "Configure DNS for edge-1"
+#
+# Output:
+#   device_config:
+#     - edge-1-sdktest:
+#         payload: { ... full API payload ... }
+#
+
+device_config:
+{% for device in devices %}
+  - {{ device.name }}:
+      payload: |
+        {
+          "edge": {
+            "dns": {
+              "dns": {
+                "static": {
+                  "primaryIpv4V2": {
+                    "address": "{{ device.primary_dns | default(common.primary_dns) }}"
+                  },
+                  "secondaryIpv4V2": {
+                    "address": "{{ device.secondary_dns | default(common.secondary_dns) }}"
+                  }
+                }
+              }
+            },
+            "regionName": "{{ device.region | default(common.region) }}"
+          },
+          "description": "{{ device.config_ver_desc | default(common.config_ver_desc) }}",
+          "configurationMetadata": {
+            "name": "{{ device.config_ver_name | default(common.config_ver_name) }}"
+          }
+        }
+{% endfor %}
+

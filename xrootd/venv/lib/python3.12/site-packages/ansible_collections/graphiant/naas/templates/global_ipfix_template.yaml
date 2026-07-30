@@ -1,0 +1,20 @@
+# yamllint disable-file
+{
+    "{{ name }}": {
+        "exporter": {
+            "name": "{{ name }}",
+            "destinationAddress": "{{ exporter.destinationAddress }}",
+            "destinationPort": {{ exporter.destinationPort }},
+            "monitoredSegments": [
+                {% for segment in exporter.monitoredSegments %}
+                "{{ segment }}"{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            "vrfId": {{ exporter.vrfId }}
+            {% if exporter.sampleMode != "off" %}
+            ,"sampleMode": "{{ exporter.sampleMode }}"
+            ,"sampleRate": {{ exporter.sampleRate }}
+            {% endif %}
+        }
+    }
+}

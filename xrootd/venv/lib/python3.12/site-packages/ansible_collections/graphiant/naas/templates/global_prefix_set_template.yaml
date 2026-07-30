@@ -1,0 +1,46 @@
+# yamllint disable-file
+{
+    "{{ name }}": {
+        {% if action != "delete" %}
+            "prefixSet": {
+                "name": "{{ name }}",
+                "description": "{{ description | default(name) }}",
+                "mode": "{{ mode | default('ipv4') }}",
+                "entries": {
+                    {% for values in entries %}
+                        "{{ values.sequence }}": {
+                            {% if values.rule == "exact" %}
+                            "entry": {
+                                "ipPrefix": "{{ values.prefix }}",
+                                "maskLower": {{ values.ge }},
+                                "maskUpper": {{ values.le }},
+                                "seq": {{ values.sequence }}
+                            }
+                            {% elif values.rule == "range" %}
+                            "entry": {
+                                "ipPrefix": "{{ values.prefix }}",
+                                "maskLower": {{ values.ge }},
+                                "maskUpper": {{ values.le }},
+                                "seq": {{ values.sequence }}
+                            }
+                            {% elif values.rule == "less_and_equal" %}
+                            "entry": {
+                                "ipPrefix": "{{ values.prefix }}",
+                                "maskUpper": {{ values.le }},
+                                "seq": {{ values.sequence }}
+                            }
+                            {% elif values.rule == "greater_and_equal" %}
+                            "entry": {
+                                "ipPrefix": "{{ values.prefix }}",
+                                "maskLower": {{ values.ge }},
+                                "maskUpper": {{ values.le }},
+                                "seq": {{ values.sequence }}
+                            }
+                            {% endif %}
+                        },
+                    {% endfor %}
+                }
+            }
+        {% endif %}
+    }
+}

@@ -1,0 +1,10 @@
+---
+####################################################################
+# Default variables for hv_vspone_object_license_role
+####################################################################
+
+# Serial number to set before uploading the license.
+hv_vspone_object_license_role_serial_number: ""
+
+# Path to the license file to upload.
+hv_vspone_object_license_role_file_path: ""

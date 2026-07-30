@@ -1,0 +1,15 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: true
+
+  tasks:
+
+    - name: Update the APT cache on Debian-based systems
+      ansible.builtin.apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install openssl
+      ansible.builtin.package:
+        name: "openssl"

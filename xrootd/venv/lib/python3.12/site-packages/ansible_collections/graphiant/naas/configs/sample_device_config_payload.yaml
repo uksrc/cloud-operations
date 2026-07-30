@@ -1,0 +1,141 @@
+# Sample Edge/Gateway Device Configuration File (Full Payload)
+# =============================================================
+#
+# This configuration file demonstrates how to push raw device configurations
+# to Graphiant Edge and Gateway devices using the graphiant_device_config module.
+#
+# Edge and Gateway devices use the "edge" key in the payload.
+# For Core devices, see: sample_device_config_core_device_payload.yaml
+#
+# The payload structure follows the PUT /v1/devices/{device_id}/config API schema.
+# You can capture payloads directly from the Graphiant Portal UI developer tools
+# and use them in this configuration file.
+#
+# API Reference:
+# https://gitlab.com/graphiant/oss/gap/-/blob/dev/docs/swagger_output.json
+# Check: PUT /v1/devices/{deviceId}/config
+#
+# Key Features:
+# - Jinja2 templating support for dynamic value substitution
+# - Multiple devices can be configured in a single file
+# - Each device entry has a payload field containing the JSON configuration
+#
+# Usage:
+#   ansible-playbook playbooks/device_config_management.yml \
+#     -e "graphiant_host=https://your-portal.graphiant.com" \
+#     -e "graphiant_username=your-username" \
+#     -e "graphiant_password=your-password"
+#
+# Configuration Format:
+# device_config:
+#   - device-name:
+#       payload: |
+#         { "edge": { ... }, "description": "...", "configurationMetadata": { ... } }
+#
+
+# ==============================================================================
+# EDGE/GATEWAY DEVICE EXAMPLES
+# ==============================================================================
+# Example: Configure custom DNS servers for multiple edge devices
+
+device_config:
+  # Edge Device 1: Configure DNS and assign to a region
+  - edge-1-sdktest:
+      payload: |
+        {
+          "edge": {
+            "dns": {
+              "dns": {
+                "static": {
+                  "primaryIpv4V2": {
+                    "address": "8.8.8.8"
+                  },
+                  "secondaryIpv4V2": {
+                    "address": "8.8.4.4"
+                  }
+                }
+              }
+            },
+            "regionName": "us-west-2 (San Jose)"
+          },
+          "description": "Configure custom DNS and region",
+          "configurationMetadata": {
+            "name": "dns_config_v1"
+          }
+        }
+
+  # Edge Device 2: Configure DNS only (minimal configuration)
+  - edge-2-sdktest:
+      payload: |
+        {
+          "edge": {
+            "dns": {
+              "dns": {
+                "static": {
+                  "primaryIpv4V2": {
+                    "address": "8.8.8.8"
+                  },
+                  "secondaryIpv4V2": {
+                    "address": "8.8.4.4"
+                  }
+                }
+              }
+            }
+          },
+          "description": "Configure custom DNS servers."
+        }
+
+  # Edge Device 3: Same as Device 1 (demonstrating multi-device configuration)
+  - edge-3-sdktest:
+      payload: |
+        {
+          "edge": {
+            "dns": {
+              "dns": {
+                "static": {
+                  "primaryIpv4V2": {
+                    "address": "8.8.8.8"
+                  },
+                  "secondaryIpv4V2": {
+                    "address": "8.8.4.4"
+                  }
+                }
+              }
+            },
+            "regionName": "us-west-2 (San Jose)"
+          },
+          "description": "Configure custom DNS and region",
+          "configurationMetadata": {
+            "name": "dns_config_v1"
+          }
+        }
+
+# ==============================================================================
+# JINJA2 TEMPLATING EXAMPLE (COMMENTED)
+# ==============================================================================
+# You can use Jinja2 templating to make configurations more dynamic:
+#
+# {% set primary_dns = "8.8.8.8" %}
+# {% set secondary_dns = "8.8.4.4" %}
+# {% set region = "us-west-2 (San Jose)" %}
+# {% set devices = ["edge-1-sdktest", "edge-2-sdktest", "edge-3-sdktest"] %}
+#
+# device_config:
+# {% for device in devices %}
+#   - {{ device }}:
+#       payload: |
+#         {
+#           "edge": {
+#             "dns": {
+#               "dns": {
+#                 "static": {
+#                   "primaryIpv4V2": { "address": "{{ primary_dns }}" },
+#                   "secondaryIpv4V2": { "address": "{{ secondary_dns }}" }
+#                 }
+#               }
+#             },
+#             "regionName": "{{ region }}"
+#           },
+#           "description": "Configure DNS for {{ device }}"
+#         }
+# {% endfor %}

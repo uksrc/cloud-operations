@@ -1,0 +1,11 @@
+bugfixes:
+  - purefa_hg - Only default the context to the local array name when the array is a fleet member, so standalone arrays do not send fleet context that would fail on stricter Purity releases
+  - purefa_pg - Only default the context to the local array name when the array is a fleet member, so standalone arrays do not send fleet context that would fail on stricter Purity releases
+  - purefa_pgsnap - Only default the context to the local array name when the array is a fleet member, so standalone arrays do not send fleet context that would fail on stricter Purity releases
+  - purefa_snap - Only default the context to the local array name when the array is a fleet member, so standalone arrays do not send fleet context that would fail on stricter Purity releases
+  - purefa_vg - Only default the context to the local array name when the array is a fleet member, so standalone arrays do not send fleet context that would fail on stricter Purity releases
+  - purefa_volume - Only default the context to the local array name when the array is a fleet member, so standalone arrays do not send fleet context that would fail on stricter Purity releases
+  - purefa_volume - Route all context-aware API calls through the shared api_helpers so context_names is only sent when a context is set, and fix an inverted version check on the pod-move path
+  - purefa_pgsnap - Route context-aware API calls through the shared api_helpers so context_names is only sent when a context is set
+  - purefa_snap - Only send context_names when a context is set, so standalone arrays do not send fleet context that would fail on stricter Purity releases
+  - purefa_workload - Fail with a clear error when the array is not a member of a fleet, since the module requires a Fusion fleet environment

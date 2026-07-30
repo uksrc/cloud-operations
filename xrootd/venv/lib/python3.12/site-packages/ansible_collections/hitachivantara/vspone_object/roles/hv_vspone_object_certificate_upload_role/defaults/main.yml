@@ -1,0 +1,7 @@
+---
+####################################################################
+# Default variables for hv_vspone_object_certificate_upload_role
+####################################################################
+
+# Absolute or relative folder path containing certificate files.
+hv_vspone_object_certificate_upload_role_folder_path: ""

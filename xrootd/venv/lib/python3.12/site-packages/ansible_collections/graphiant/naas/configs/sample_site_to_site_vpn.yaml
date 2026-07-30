@@ -1,0 +1,139 @@
+# Sample Site-to-Site VPN Configuration for Graphiant Playbooks
+#
+# SECURITY: Preshared Keys and MD5 Passwords
+# -------------------------------------------
+# Precedence (YAML wins if non-null; vault fills null/absent):
+#   1. YAML non-null value  →  used as-is (dev/local testing only; do not commit secrets)
+#   2. YAML null or absent  →  looked up from vault_site_to_site_vpn_keys / vault_bgp_md5_passwords
+#                              keyed by the VPN 'name' field
+#   3. Not in YAML AND not in vault:
+#        presharedKey  →  ConfigurationError (required)
+#        md5Password   →  None (BGP without MD5 auth)
+#
+# Recommended production workflow:
+#   Fetch secrets from your organization's secrets store and pass as module params.
+#   Secrets are loaded via include_vars and passed to the module in memory only (no_log: true).
+#   See configs/vault_secrets.yml.example for the expected dict structure.
+#
+#   Ansible Vault (built-in option):
+#     1. cp configs/vault_secrets.yml.example configs/vault_secrets.yml
+#     2. Edit vault_secrets.yml and set your secrets (key = VPN name)
+#     3. export ANSIBLE_VAULT_PASSPHRASE="..."
+#     4. ansible-vault encrypt configs/vault_secrets.yml --vault-password-file configs/vault-password-file.sh
+#     5. Run with --vault-password-file configs/vault-password-file.sh
+#
+#   Other secrets stores (HashiCorp Vault, AWS Secrets Manager, etc.):
+#     Pre-fetch secrets and pass vault_site_to_site_vpn_keys / vault_bgp_md5_passwords as extra vars.
+#
+# In this file: set presharedKey: null and md5Password: null (vault fills them).
+
+siteToSiteVpn:
+  # Example with Static Routing
+  - edge-1-sdktest:
+    - name: s2s-vpn-1-edge-1-static
+      lan: lan-1-test
+      destinationAddress: "100.1.1.1"
+      # remoteIkePeerIdentity: "" # Optional, Default is destinationAddress if not provided
+      # localIkePeerIdentity: "" # Optional, Default is localAddressV4 if not provided
+      localAddressV4: "169.254.1.1/24"
+      remoteAddressV4: "169.254.1.2/24"
+      # localAddressV6: "2001:db8:1::1/64"
+      # remoteAddressV6: "2001:db8:1::2/64"
+      localCircuit: c-gigabitethernet2-0-0
+      # Default is true(initiator), Options: true(initiator), false(responder)
+      ikeInitiator: false
+      vpnProfile: "vpnprofile-global-test" # Default is "Default VPN Profile"
+      # Options: "ipsec_label_1", "ipsec_label_2", "ipsec_label_3", "ipsec_label_4", "ipsec_label_5", "ipsec_label_6"
+      ipsecLabel: "ipsec_label_1"
+      presharedKey: null   # null → looked up from vault_site_to_site_vpn_keys by VPN name
+      routing:
+        static:
+          destinationPrefix:
+            - "0.0.0.0/0"
+    - name: s2s-vpn-2-edge-1-bgp
+      lan: lan-7-test
+      destinationAddress: "100.1.2.1"
+      # remoteIkePeerIdentity: "" # Optional, Default is destinationAddress if not provided
+      # localIkePeerIdentity: "" # Optional, Default is localAddressV4 if not provided
+      localAddressV4: "169.254.1.1/24"
+      remoteAddressV4: "169.254.1.2/24"
+      # localAddressV6: "2001:db8:1::1/64"
+      # remoteAddressV6: "2001:db8:1::2/64"
+      localCircuit: c-gigabitethernet2-0-0
+      # Default is true(initiator), Options: true(initiator), false(responder)
+      ikeInitiator: true
+      vpnProfile: "vpnprofile-global-test" # Default is "Default VPN Profile"
+      # Options: "ipsec_label_1", "ipsec_label_2", "ipsec_label_3", "ipsec_label_4", "ipsec_label_5", "ipsec_label_6"
+      ipsecLabel: "ipsec_label_2"
+      presharedKey: null   # null → looked up from vault_site_to_site_vpn_keys by VPN name
+      routing:
+        bgp:
+          peerAsn: 123
+          # sendCommunity: true # Default is true
+          # holdTimer: 180 # Default is 90 seconds
+          # keepaliveTimer: 60 # Default is 30 seconds
+          md5Password: null  # null → looked up from vault_bgp_md5_passwords by VPN name; omit if not needed
+          # To set directly in YAML (bypasses vault): md5Password: {md5_password: "your-password"}
+          addressFamilies:
+            ipv4:
+              addressFamily: ipv4
+              # inboundPolicy: "policy-name"  # optional
+              # outboundPolicy: "policy-name" # optional
+            # ipv6:
+            #   addressFamily: ipv6
+            #   inboundPolicy: "my-inbound"
+            #   outboundPolicy: "my-outbound"
+
+  # Example with BGP Routing
+  - edge-2-sdktest:
+    - name: s2s-vpn-1-edge-2-bgp
+      lan: lan-1-test
+      destinationAddress: "100.2.1.1"
+      # remoteIkePeerIdentity: "" # Optional, Default is destinationAddress if not provided
+      # localIkePeerIdentity: "" # Optional, Default is localAddressV4 if not provided
+      localAddressV4: "169.254.2.1/24"
+      remoteAddressV4: "169.254.2.2/24"
+      # localAddressV6: "2001:db8:1::1/64"
+      # remoteAddressV6: "2001:db8:1::2/64"
+      localCircuit: c-gigabitethernet2-0-0
+      ikeInitiator: true # Options: true(initiator), false(responder)
+      vpnProfile: "vpnprofile-global-test"
+      # Options: "ipsec_label_1", "ipsec_label_2", "ipsec_label_3", "ipsec_label_4", "ipsec_label_5", "ipsec_label_6"
+      ipsecLabel: "ipsec_label_2"
+      presharedKey: null   # null → looked up from vault_site_to_site_vpn_keys by VPN name
+      routing:
+        bgp:
+          peerAsn: 123
+          # sendCommunity: true # Default is true
+          # holdTimer: 180 # Default is 90 seconds
+          # keepaliveTimer: 60 # Default is 30 seconds
+          md5Password: null  # null → looked up from vault_bgp_md5_passwords by VPN name; omit if not needed
+          # To set directly in YAML (bypasses vault): md5Password: {md5_password: "your-password"}
+          addressFamilies:
+            ipv4:
+              addressFamily: ipv4
+              # inboundPolicy: "policy-name"  # optional
+              # outboundPolicy: "policy-name" # optional
+            # ipv6:
+            #   addressFamily: ipv6
+            #   inboundPolicy: "my-inbound"
+            #   outboundPolicy: "my-outbound"
+    - name: s2s-vpn-2-edge-2-static
+      lan: lan-7-test
+      destinationAddress: "100.2.2.1"
+      # remoteIkePeerIdentity: "" # Optional, Default is destinationAddress if not provided
+      # localIkePeerIdentity: "" # Optional, Default is localAddressV4 if not provided
+      localAddressV4: "169.254.2.1/24"
+      remoteAddressV4: "169.254.2.2/24"
+      # localAddressV6: "2001:db8:1::1/64"
+      # remoteAddressV6: "2001:db8:1::2/64"
+      localCircuit: c-gigabitethernet2-0-0
+      ikeInitiator: false # Options: true(initiator), false(responder)
+      vpnProfile: "vpnprofile-global-test"
+      # Options: "ipsec_label_1", "ipsec_label_2", "ipsec_label_3", "ipsec_label_4", "ipsec_label_5", "ipsec_label_6"
+      ipsecLabel: "ipsec_label_3"
+      presharedKey: null   # null → looked up from vault_site_to_site_vpn_keys by VPN name
+      routing:
+        static:
+          destinationPrefix:
+            - "0.0.0.0/0"

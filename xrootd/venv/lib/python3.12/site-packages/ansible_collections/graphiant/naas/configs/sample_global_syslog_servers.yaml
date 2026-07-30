@@ -1,0 +1,10 @@
+syslog_servers:
+  # Global Syslog Server Configuration
+  - name: syslog-global-test
+    target:
+      host: 10.1.17.2
+      port: 443
+      transport: tcp
+      severity: alert
+      lanSegment: lan-7-test # will be resolved to vrfId if exists
+      serverStatus: true

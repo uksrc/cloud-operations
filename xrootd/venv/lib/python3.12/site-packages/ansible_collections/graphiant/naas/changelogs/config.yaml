@@ -1,0 +1,58 @@
+---
+# Configuration for antsibull-changelog
+# See https://docs.ansible.com/projects/antsibull-changelog/changelog-configuration/
+
+# Output (modern replacement for changelog_filename_template / output_formats)
+output:
+  - file: CHANGELOG.rst
+    format: rst
+    filename_version_depth: 0
+    title_version_depth: 0
+
+# Changelog file and format (standard for collections)
+changes_file: changelog.yaml
+changes_format: combined
+
+# Title for the changelog (shown at top of generated changelog)
+title: Graphiant NaaS
+
+# Fragments
+notes_dir: fragments
+keep_fragments: false
+ignore_other_fragment_extensions: true
+
+# Prelude (release summary) section
+prelude_name: release_summary
+prelude_title: Release Summary
+
+# Sections: use only antsibull-changelog standard categories so the collection
+# changelog appears correctly in the Ansible combined changelog. New modules/
+# plugins/roles are auto-detected from version_added in DOCUMENTATION.
+# https://docs.ansible.com/projects/antsibull-changelog/changelog-configuration/
+sections:
+  - - major_changes
+    - Major Changes
+  - - minor_changes
+    - Minor Changes
+  - - breaking_changes
+    - Breaking Changes / Porting Guide
+  - - deprecated_features
+    - Deprecated Features
+  - - removed_features
+    - Removed Features (previously deprecated)
+  - - security_fixes
+    - Security Fixes
+  - - bugfixes
+    - Bugfixes
+  - - known_issues
+    - Known Issues
+
+trivial_section_name: trivial
+
+# Optional
+mention_ancestor: true
+use_fqcn: true
+add_plugin_period: true
+changelog_nice_yaml: true
+changelog_sort: version
+vcs: auto

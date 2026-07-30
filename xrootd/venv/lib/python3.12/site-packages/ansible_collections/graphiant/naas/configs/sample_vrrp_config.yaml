@@ -1,0 +1,79 @@
+# VRRP Configuration Parameters:
+# ==============================
+# name: Name of the interface (e.g., "GigabitEthernet7/0/0")
+# vlan: (optional) VLAN ID of the subinterface. Omit for main interface VRRP.
+# vrrp_ipv4 / vrrp_ipv6:
+#   enabled: true/false - Enable or disable VRRP group
+#   virtualRouterId: 1-255 - VRRP group/router ID (REQUIRED)
+#   priority: 1-255 - Router priority (higher = more likely to be master)
+#   virtualIp: "IP_ADDRESS" - Virtual IP address for the VRRP group (without CIDR)
+#   preempt: true/false - Allow preemption from lower priority routers
+#   allowInterOperability: true/false - Allow interoperability with other VRRP implementations
+#   description: (optional) - Description for the VRRP group
+#   trackedInterfaces: (optional) - List of interfaces to track
+#     - interface: "InterfaceName" - Interface to track
+#       priorityDecrement: 1-255 - Priority decrease if tracked interface goes down
+
+vrrp_config:
+  # Edge Device 1: Configure VRRP on main interface
+  - edge-1-sdktest:
+    - name: GigabitEthernet7/0/0
+      # No vlan specified = main interface
+      # VRRP IPv4 configuration
+      vrrp_ipv4:
+        enabled: true
+        virtualRouterId: 1
+        priority: 120
+        virtualIp: "10.1.11.100"
+        preempt: true
+        allowInterOperability: true
+        trackedInterfaces:
+          - interface: "GigabitEthernet5/0/0"
+            priorityDecrement: 20
+
+  # Edge Device 2: Configure VRRP on subinterface (VLAN)
+  - edge-2-sdktest:
+    - name: GigabitEthernet8/0/0
+      vlan: 28
+      # VRRP IPv4 configuration
+      vrrp_ipv4:
+        enabled: true
+        virtualRouterId: 10
+        priority: 120
+        virtualIp: "10.3.177.100"
+        preempt: true
+        allowInterOperability: false
+        trackedInterfaces:
+          - interface: "GigabitEthernet2/0/0"
+            priorityDecrement: 20
+      # VRRP IPv6 configuration (optional)
+      vrrp_ipv6:
+        enabled: true
+        virtualRouterId: 11
+        priority: 120
+        virtualIp: "2001:10:3:177::100"
+        preempt: false
+        allowInterOperability: false
+
+  # Edge Device 3: Configure VRRP on subinterface
+  - edge-3-sdktest:
+    # Subinterface VRRP
+    - name: GigabitEthernet8/0/0
+      vlan: 28
+      vrrp_ipv4:
+        enabled: false
+        virtualRouterId: 10
+        priority: 100
+        virtualIp: "10.3.177.100"
+        preempt: true
+        allowInterOperability: false
+        trackedInterfaces:
+          - interface: "GigabitEthernet2/0/0"
+            priorityDecrement: 20
+      vrrp_ipv6:
+        enabled: true
+        virtualRouterId: 11
+        priority: 110
+        virtualIp: "2001:10:3:177::100"
+        preempt: false
+        allowInterOperability: false

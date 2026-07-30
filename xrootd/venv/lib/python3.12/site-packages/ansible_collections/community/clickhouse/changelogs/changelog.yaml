@@ -1,0 +1,501 @@
+ancestor: null
+releases:
+  0.1.0:
+    changes:
+      minor_changes:
+      - clickhouse_client - add the module.
+      - clickhouse_info - add the module.
+      release_summary: This is the first release of the community.clickhouse collection.
+    fragments:
+    - 0-clickhouse_client.yml
+    - 0.1.0.yml
+    - 1-clickhouse_info.yml
+    modules:
+    - description: Execute queries in a ClickHouse database using the clickhouse-driver
+        Client interface
+      name: clickhouse_client
+      namespace: ''
+    - description: Gather ClickHouse server information using the clickhouse-driver
+        Client interface
+      name: clickhouse_info
+      namespace: ''
+    release_date: '2024-01-25'
+  0.1.1:
+    changes:
+      bugfixes:
+      - clickhouse_info - fix the module to work with older server versions (https://github.com/ansible-collections/community.clickhouse/pull/10).
+      release_summary: This is a patch release of the community.clickhouse collections.
+        It fixes the ``clickhouse_info`` module to work with older versions of the
+        ClickHouse server.
+    fragments:
+    - 0-info.yml
+    - 0.1.1.yml
+    release_date: '2024-01-26'
+  0.10.0:
+    changes:
+      bugfixes:
+      - clickhouse_user - quote names in queries to prevent errors (https://github.com/ansible-collections/community.clickhouse/pull/110).
+      minor_changes:
+      - clickhouse_user - the settings argument can now update user settings idempotently
+        at any use, not only upon user creation as before (https://github.com/ansible-collections/community.clickhouse/issues/73).
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-user_update_settings.yml
+    - 0.10.0.yml
+    - 1-user_quote_names.yml
+    release_date: '2025-10-08'
+  0.11.0:
+    changes:
+      minor_changes:
+      - clickhouse_grants - add ``cluster`` argument (https://github.com/ansible-collections/community.clickhouse/issues/130).
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0.11.0.yml
+    - 131-add-cluster-param-for-grants.yaml
+    release_date: '2025-10-16'
+  0.12.0:
+    changes:
+      minor_changes:
+      - clickhouse_role - add support for updating existing role settings using ALTER
+        ROLE, making the module fully idempotent for role management operations (https://github.com/ansible-collections/community.clickhouse/issues/62).
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0.12.0.yml
+    - 62-clickhouse-role-update-settings.yml
+    release_date: '2025-10-24'
+  0.12.1:
+    changes:
+      bugfixes:
+      - clickhouse_grants - sanitize grantee by enclosing it in single qoutes to support
+        special characters in grantee names (https://github.com/ansible-collections/community.clickhouse/issues/139).
+      release_summary: 'This is a patch release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0.12.1.yml
+    - 139-grants-sanitize-grantee.yaml
+    release_date: '2025-11-10'
+  0.2.0:
+    changes:
+      minor_changes:
+      - clickhouse_info - add the ``limit`` argument to limit the returned values.
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-clickhouse_info_limit.yml
+    - 0.2.0.yml
+    release_date: '2024-01-31'
+  0.3.0:
+    changes:
+      bugfixes:
+      - clickhouse_client - Add support for returned values of types ``IPv4Address``
+        and ``IPv6Address``.
+      - clickhouse_client - Add support for returned values of types ``UUID`` and
+        ``decimal``.
+      minor_changes:
+      - clickhouse_info - added the ability to collect information from system.tables,
+        system.dictionaries, system.merge_tree_settings.
+      release_summary: 'This is the minor release of the ``community.clickhouse``
+        collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-clickhouse_info.yml
+    - 0.3.0.yml
+    - 1-clickhouse_client.yml
+    - 2-clickhouse_client.yml
+    modules:
+    - description: Creates or removes a ClickHouse database using the clickhouse-driver
+        Client interface
+      name: clickhouse_db
+      namespace: ''
+    release_date: '2024-02-15'
+  0.4.0:
+    changes:
+      minor_changes:
+      - clickhouse_db - add the ``cluster`` argument to execute commands on all cluster
+        hosts.
+      - clickhouse_db - add the ``comment`` argument to set a comment on databases.
+      - clickhouse_db - add the ``target`` argument to rename the database.
+      - clickhouse_db - added the ability to rename databases.
+      - clickhouse_info - added the ability to collect information from system.functions.
+      - clickhouse_info - added the ability to collect information from system.quotas,
+        system.settings_profiles.
+      - clickhouse_info - added the ability to collect information from system.storage_policies.
+      release_summary: 'This is the minor release of the ``community.clickhouse``
+        collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-clickhouse_info.yml
+    - 0.4.0.yml
+    - 1-clickhouse_db.yml
+    - 2-clickhouse_db.yml
+    - 2-clickhouse_info.yml
+    - 3-clickhouse_info.yml
+    modules:
+    - description: Creates or removes a ClickHouse user using the clickhouse-driver
+        Client interface
+      name: clickhouse_user
+      namespace: ''
+    release_date: '2024-03-14'
+  0.5.0:
+    changes:
+      minor_changes:
+      - clickhouse_client - added the ``set_settings`` argument (https://github.com/ansible-collections/community.clickhouse/pull/63).
+      - clickhouse_user - added the ability to add settings with their restrictions
+        applied by default when a user logs in.
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-clickhouse_user.yml
+    - 0.5.0.yml
+    - 1-clickhouse_client.yml
+    modules:
+    - description: Creates or removes a ClickHouse role.
+      name: clickhouse_role
+      namespace: ''
+    release_date: '2024-07-10'
+  0.6.0:
+    changes:
+      minor_changes:
+      - clickhouse_info - add the ``roles`` field to user information.
+      - clickhouse_user - add the ``default_roles_mode`` argument to specify how to
+        handle roles passed through ``default_roles`` argument (https://github.com/ansible-collections/community.clickhouse/pull/70).
+      - clickhouse_user - add the ``default_roles`` argument to set default roles
+        (https://github.com/ansible-collections/community.clickhouse/pull/70).
+      - clickhouse_user - add the ``roles_mode`` argument to specify how to handle
+        roles passed through ``roles`` argument (https://github.com/ansible-collections/community.clickhouse/pull/70).
+      - clickhouse_user - add the ``roles`` argument to grant roles (https://github.com/ansible-collections/community.clickhouse/pull/70).
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-clickhouse_info.yml
+    - 0-clickhouse_user.yml
+    - 0.6.0.yml
+    release_date: '2024-08-26'
+  0.7.0:
+    changes:
+      breaking_changes:
+      - clickhouse_info - removed ``functions`` for collecting information of created
+        functions. A rare and unpopular feature.
+      minor_changes:
+      - clickhouse_info - add the ``grants`` return value for users and roles.
+      - clickhouse_info - add the ``grants`` returns all grants for users and roles.
+      - clickhouse_info - add the ``settings_profile_elements`` returns all settings
+        for users, profiles and roles.
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-info_add_grants.yml
+    - 0.7.0.yml
+    - 1-info_add_all_grants.yml
+    - 2-info_add_all_settings_profiles.yml
+    - 3-info_get_functions.yml
+    modules:
+    - description: Retrieves ClickHouse config file content and returns it as JSON
+      name: clickhouse_cfg_info
+      namespace: ''
+    release_date: '2024-11-05'
+  0.8.0:
+    changes:
+      bugfixes:
+      - clickhouse_user - fixes failure when creating a new user and role_mode is
+        not remove (https://github.com/ansible-collections/community.clickhouse/issues/97).
+      major_changes:
+      - clickhouse_info - removed support for clickhouse versions 21 and 22 (https://github.com/ansible-collections/community.clickhouse/pull/93).
+      minor_changes:
+      - clickhouse_info - columns are extracted from clickhouse version 23 system
+        tables, the affected system tables are - databases, clusters, tables, dictionaries,
+        settings, merge_tree_settings, users, settings_profile_elements (https://github.com/ansible-collections/community.clickhouse/pull/93).
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-clickhouse_info.yml
+    - 0-clickhouse_user.yml
+    - 0.8.0.yml
+    release_date: '2025-04-03'
+  0.8.1:
+    changes:
+      bugfixes:
+      - clickhouse_info - ensure the module works with ansible-core 2.19 and higher.
+      release_summary: 'This is a patch release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-info.yml
+    - 0.8.1.yml
+    release_date: '2025-04-25'
+  0.8.2:
+    changes:
+      bugfixes:
+      - clickhouse_user - fix the module to correct work clause "ON CLUSTER" when
+        updating user attributes such as roles and passwords (https://github.com/ansible-collections/community.clickhouse/pull/105).
+      release_summary: 'This is a patch release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0.8.2.yml
+    - 105-clickhouse_user.yaml
+    release_date: '2025-05-24'
+  0.8.3:
+    changes:
+      bugfixes:
+      - clickhouse_db - fix the module to correct position "ON CLUSTER" when create
+        db with specifying engine type (https://github.com/ansible-collections/community.clickhouse/pull/108).
+      release_summary: 'This is a patch release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0.8.3.yml
+    - 107-clickhouse_db.yaml
+    release_date: '2025-05-27'
+  0.8.4:
+    changes:
+      bugfixes:
+      - clickhouse_cfg_info - Prevent infinite loop when parsing YAML files with recursive
+        anchors by validating JSON serializability (https://github.com/ansible-collections/community.clickhouse/pull/114).
+      release_summary: 'This is a patch release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0.8.4.yml
+    - 114-clickhouse-cfg-info.yml
+    release_date: '2025-07-18'
+  0.8.5:
+    changes:
+      bugfixes:
+      - clickhouse_client - the module fails when executing DDL queries that return
+        nothing via client object (https://github.com/ansible-collections/community.clickhouse/issues/116).
+      release_summary: 'This is a patch release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-client.yml
+    - 0.8.5.yml
+    release_date: '2025-08-27'
+  0.9.0:
+    changes:
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0.9.0.yml
+    modules:
+    - description: Manage grants for ClickHouse users and roles
+      name: clickhouse_grants
+      namespace: ''
+    release_date: '2025-10-06'
+  1.0.0:
+    changes:
+      minor_changes:
+      - clickhouse_user - add new user_hosts parameter to clickhouse_user module to
+        allow restricting hosts for users  (https://github.com/ansible-collections/community.clickhouse/issues/146).
+      release_summary: 'This is a major release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 1.0.0.yml
+    - 147-add-user-hosts.yml
+    release_date: '2025-11-19'
+  1.1.0:
+    changes:
+      bugfixes:
+      - clickhouse_user - Fixed idempotency issue when user hosts were provided in
+        different orders. Now compares pre/post user host settings using a set. (https://github.com/ansible-collections/community.clickhouse/issues/152)
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 1.1.0.yml
+    - 164-fix-user-host-idempotency-bug.yml
+    modules:
+    - description: Creates or removes a ClickHouse quota
+      name: clickhouse_quota
+      namespace: ''
+    release_date: '2025-12-12'
+  2.0.0:
+    changes:
+      breaking_changes:
+      - ansible-core support - the collection supports ansible-core >= 2.17 and no
+        longer supports older versions. If you use an older version, please upgrade
+        to at least 2.17 (https://github.com/ansible-collections/community.clickhouse/pull/169).
+      release_summary: 'This is a major release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 0-breaking.yml
+    - 2.0.0.yml
+    release_date: '2026-01-12'
+  2.1.0:
+    changes:
+      minor_changes:
+      - clickhouse_user - added new ``authentication`` dict parameter supporting LDAP,
+        hashed, and plain-text password authentication for created users. Cannot be
+        used together with the existing ``type_password`` and ``password`` parameters
+        (https://github.com/ansible-collections/community.clickhouse/issues/142).
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 175-clickhouse-user-authentication-parameter.yml
+    - 2.1.0.yml
+    release_date: '2026-03-20'
+  2.2.0:
+    changes:
+      deprecated_features:
+      - clickhouse_user - ``password`` and ``type_password`` are deprecated and will
+        be removed in ``community.clickhouse 3.0.0``, use the ``authentication`` instead.
+      major_changes:
+      - clickhouse_named_collection - new module to add/modify/delete named collections
+        in database.
+      minor_changes:
+      - Added warning about using unsupported server version.
+      - Fetch server version only once during opening connection to a database.
+      - Refactored user/role settings for better maintainability and improved idempotency.
+        Since now settings option accepts both list(old) argument or dictionary(new).
+        Profiles are moved to a separate option. (https://github.com/ansible-collections/community.clickhouse/pull/178).
+      - clickhouse_client - Change how server errors are handled. Previously, error
+        code 497 (ACCESS_DENIED / not enough privileges) was always treated as success
+        with no way to disable this behavior. Old behavior is preserved by default.
+        It is now possible to control which error codes are treated as success using
+        the new ``success_on`` parameter (https://github.com/ansible-collections/community.clickhouse/issues/117).
+      - clickhouse_db - support for changing database comment. Requires ClickHouse
+        server version >= 25.8 (https://github.com/ansible-collections/community.clickhouse/issues/189).
+      - clickhouse_named_collection - improve SQL injection protection with parameterized
+        queries, identifier validation, and new `query_parameters` output.
+      - clickhouse_role - added the ``profile`` argument to apply settings profiles
+        to role (https://github.com/ansible-collections/community.clickhouse/pull/196).
+      - clickhouse_user - added the ``profile`` argument to apply settings profiles
+        to user (https://github.com/ansible-collections/community.clickhouse/pull/196).
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 117-rewrite-error-handling.yml
+    - 178-refactor-user-role-settings.yml
+    - 189-support-alter-database-comment.yml
+    - 197-module-named-collection.yml
+    - 199-deprecate-old-authentication-options.yml
+    - 2.2.0.yml
+    - 201-parametrize-arguments.yml
+    - 210-warning-about-unsupported-version.yml
+    - 212-normalize-fetching-server-version.yml
+    modules:
+    - description: Creates, removes or modify a ClickHouse named collection using
+        the clickhouse\-driver Client interface
+      name: clickhouse_named_collection
+      namespace: ''
+    - description: Creates, removes or modify a ClickHouse row policy using the clickhouse\-driver
+        Client interface
+      name: clickhouse_row_policy
+      namespace: ''
+    - description: Run SQL queries from a file
+      name: clickhouse_script
+      namespace: ''
+    release_date: '2026-05-28'
+  2.3.0:
+    changes:
+      bugfixes:
+      - clickhouse_quota - add missing on cluster for drop
+      - clickhouse_role - fix cluster for drop role (https://github.com/ansible-collections/community.clickhouse/pull/215).
+      deprecated_features:
+      - clickhouse_db - deprecate pre 22.x handling code for comments (https://github.com/ansible-collections/community.clickhouse/issues/217).
+      - clickhouse_role - list based settings and profiles are marked as deprecated
+        and sheduled for removal in 3.0.0 (https://github.com/ansible-collections/community.clickhouse/issues/218).
+      - clickhouse_user - list based settings and profiles are marked as deprecated
+        and sheduled for removal in 3.0.0 (https://github.com/ansible-collections/community.clickhouse/issues/218).
+      - mark ansible-core-2.17 as deprecated. Support will be removed in future.
+      minor_changes:
+      - clickhouse_db - check if passed engine is supported before executing query.
+        Module checks if passed name exists in system.database_engines (https://github.com/ansible-collections/community.clickhouse/pull/214).
+      - clickhouse_db - validate passed identifiers. Close them in backticks to keep
+        it consistent with other modules (https://github.com/ansible-collections/community.clickhouse/pull/214).
+      - clickhouse_grants - pass cluster name in ON CLUSTER clause in backticks.
+      - clickhouse_quota - inherit cluster documentation and spec option.
+      - clickhouse_quota - pass quota and cluster name in backticks in queries.
+      - clickhouse_role - close names in backticks. Now names for roles and cluster
+        will be validated. Those containing ` or \ will be rejected. Other will eb
+        safe passed without risk of breaking query.
+      - clickhouse_user - module on success returns query_parameters with password
+        used for query.
+      - clickhouse_user - normalize generating query. Now identifiers like user names
+        will be closed in backticks.
+      - clickhouse_user - pass password to ClickHouse using query parameters. Prevent
+        breaking query when containing soem special characters.
+      release_summary: 'This is a minor release of the ``community.clickhouse`` collection.
+
+        This changelog contains all changes to the modules and plugins in this collection
+
+        that have been made after the previous release.'
+    fragments:
+    - 214-clickhouse-db-improve-validation.yml
+    - 215-fix-cluster-drop-role.yml
+    - 217-clean-pre-22-db-handling.yml
+    - 218-deprecate-settings-as-list.yml
+    - 221-hardening-role-names.yml
+    - 222-refactor-normalizng-user-module.yml
+    - 223-drop-2-17-core-support.yml
+    - 224-normalize-cluster-option-in-grant.yml
+    - 228-normalize-quota-module.yml
+    modules:
+    - description: Creates, removes or modify a ClickHouse settings profile using
+        the clickhouse\-driver Client interface
+      name: clickhouse_settings_profile
+      namespace: ''
+    release_date: '2026-07-13'

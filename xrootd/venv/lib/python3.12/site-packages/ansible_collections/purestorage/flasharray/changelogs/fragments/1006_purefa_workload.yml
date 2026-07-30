@@ -1,0 +1,6 @@
+minor_changes:
+  - purefa_workload - Added custom parameters support
+
+bugfixes:
+  - purefa_dns - Fixed issue with purefa_dns not updating DNS config on remote arrays correctly
+  - purefa_host - Fixed issue with purefa_host not updating host config on remote arrays correctly

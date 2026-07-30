@@ -1,0 +1,40 @@
+# Sample Device Configuration File (With Template)
+# =================================================
+#
+# This is a simplified configuration file that uses a user-defined template
+# to generate the final API payload. This approach reduces repetition and
+# makes it easier to configure multiple devices with similar settings.
+#
+# Usage:
+#   Use this config file with the template file:
+#   ansible-playbook playbooks/device_config_management.yml \
+#     -e "config_file=sample_device_config_with_template.yaml" \
+#     -e "template_file=device_config_template.yaml" \
+#     -e "operation=configure"
+#
+# The template (device_config_template.yaml) will expand these simple
+# variables into the full API payload structure.
+#
+
+# Common settings applied to all devices
+common:
+  primary_dns: "8.8.8.8"
+  secondary_dns: "8.8.4.4"
+  region: "us-west-2 (San Jose)"
+  config_ver_name: "dns_config_changes_version_1"
+  config_ver_desc: "Configure custom DNS and region"
+
+# List of devices to configure with template
+devices:
+  - name: "edge-1-sdktest"
+    config_ver_desc: "Configure DNS and region for edge-1"
+    # Optional device-specific overrides
+    # primary_dns: "1.1.1.1"
+
+  - name: "edge-2-sdktest"
+    config_ver_desc: "Configure DNS and region for edge-2"
+
+  - name: "edge-3-sdktest"
+    # Override region for this device
+    region: "us-east-1 (N. Virginia)"
+    config_ver_desc: "Configure DNS and region for edge-3"

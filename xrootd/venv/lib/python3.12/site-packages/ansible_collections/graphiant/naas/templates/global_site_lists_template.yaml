@@ -1,0 +1,12 @@
+# yamllint disable-file
+{
+  "{{ name }}": {
+    "name": "{{ name }}",
+    "description": "{{ description }}",
+    "entries": [
+      {% for site_id in site_ids %}
+      {"regular": {{ site_id }}}{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+global_prefix_sets:
+  # Multiple IPv4 Global Prefix set configuration with exact match
+  - name: demo_prefix_list_1
+    description: For_testing_prefix_list_1
+    mode: ipv4
+    entries:
+      - sequence: 1
+        prefix: 1.1.1.0/24
+        rule: exact
+        ge: 24
+        le: 24
+  - name: demo_prefix_list_2
+    description: For_testing_prefix_list_2
+    mode: ipv4
+    entries:
+      - sequence: 1
+        prefix: 10.1.1.0/24
+        rule: exact
+        ge: 24
+        le: 24
+      - sequence: 2
+        prefix: 10.1.2.0/24
+        rule: exact
+        ge: 24
+        le: 24
+  - name: demo_prefix_list_3
+    description: For_testing_prefix_list_3
+    mode: ipv4
+    entries:
+      - sequence: 10
+        prefix: 14.0.0.0/8
+        rule: range
+        ge: 20
+        le: 22
+      - sequence: 20
+        prefix: 2.0.0.0/8
+        rule: less_and_equal
+        le: 15
+      - sequence: 30
+        prefix: 10.18.2.0/24
+        rule: exact
+        ge: 24
+        le: 24
+      - sequence: 40
+        prefix: 15.0.0.0/8
+        rule: greater_and_equal
+        ge: 15
+        le: 32
+  - name: prefix_list_edge_1
+    description: For_testing_graphiant_filter
+    mode: ipv4
+    entries:
+      - sequence: 1
+        prefix: 10.1.1.0/24
+        rule: exact
+        le: 32
+  - name: prefix_list_edge_2
+    description: For_testing_graphiant_filter
+    mode: ipv4
+    entries:
+      - sequence: 1
+        prefix: 10.1.2.0/24
+        rule: exact
+        le: 32
+  - name: prefix_list_edge_3
+    description: For_testing_graphiant_filter
+    mode: ipv4
+    entries:
+      - sequence: 1
+        prefix: 10.1.3.0/24
+        rule: exact
+        le: 32

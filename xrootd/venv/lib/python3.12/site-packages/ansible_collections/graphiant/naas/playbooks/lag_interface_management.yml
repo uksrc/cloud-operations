@@ -1,0 +1,117 @@
+---
+- name: Manage Graphiant LAG (Link Aggregation Group) configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # graphiant_host: "https://api.graphiant.com"
+    # graphiant_username: "{{ vault_graphiant_username }}"
+    # graphiant_password: "{{ vault_graphiant_password }}"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+      # host: "{{ graphiant_host | default(lookup('ini', 'url file=/absolute/path/credentials.ini section=host')) }}"
+      # username: "{{ graphiant_username | default(lookup('ini', 'username file=/absolute/path/credentials.ini section=credentials')) }}"
+      # password: "{{ graphiant_password | default(lookup('ini', 'password file=/absolute/path/credentials.ini section=credentials')) }}"
+
+  tasks:
+    # Note: All LAG operations are idempotent - safe to run multiple times
+    # The module automatically checks existing state and skips if already configured/added/removed/updated
+
+    - name: Configure LAG interfaces (LAG + optional subinterfaces)
+      graphiant.naas.graphiant_lag_interfaces:
+        <<: *graphiant_client_params
+        operation: configure
+        lag_config_file: "sample_lag_interface_config.yaml"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure']
+
+    - name: Display LAG Configuration Results
+      ansible.builtin.debug:
+        msg: "{{ configure_result.msg }}"
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure']
+
+    - name: Add LAG members
+      graphiant.naas.graphiant_lag_interfaces:
+        <<: *graphiant_client_params
+        operation: add_lag_members
+        lag_config_file: "sample_lag_interface_config.yaml"
+        detailed_logs: true
+      register: add_members_result
+      tags: ['add_lag_members']
+
+    - name: Display Add LAG Members Results
+      ansible.builtin.debug:
+        msg: "{{ add_members_result.msg }}"
+      when: add_members_result is defined and add_members_result.msg is defined
+      tags: ['add_lag_members']
+
+    - name: Remove LAG members
+      graphiant.naas.graphiant_lag_interfaces:
+        <<: *graphiant_client_params
+        operation: remove_lag_members
+        lag_config_file: "sample_lag_interface_config.yaml"
+        detailed_logs: true
+      register: remove_members_result
+      tags: ['remove_lag_members']
+
+    - name: Display Remove LAG Members Results
+      ansible.builtin.debug:
+        msg: "{{ remove_members_result.msg }}"
+      when: remove_members_result is defined and remove_members_result.msg is defined
+      tags: ['remove_lag_members']
+
+    - name: Update LACP settings (mode/timer)
+      graphiant.naas.graphiant_lag_interfaces:
+        <<: *graphiant_client_params
+        operation: update_lacp_configs
+        lag_config_file: "sample_lag_interface_config.yaml"
+        detailed_logs: true
+      register: update_lacp_result
+      tags: ['update_lacp_configs']
+
+    - name: Display Update LACP Results
+      ansible.builtin.debug:
+        msg: "{{ update_lacp_result.msg }}"
+      when: update_lacp_result is defined and update_lacp_result.msg is defined
+      tags: ['update_lacp_configs']
+
+    - name: Delete LAG subinterfaces (VLANs)
+      # Idempotent: Skips if LAG or subinterface doesn't exist
+      graphiant.naas.graphiant_lag_interfaces:
+        <<: *graphiant_client_params
+        operation: delete_lag_subinterfaces
+        lag_config_file: "sample_lag_interface_config.yaml"
+        detailed_logs: true
+      register: delete_subif_result
+      tags: ['delete_lag_subinterfaces']
+
+    - name: Display Delete LAG Subinterfaces Results
+      ansible.builtin.debug:
+        msg: "{{ delete_subif_result.msg }}"
+      when: delete_subif_result is defined and delete_subif_result.msg is defined
+      tags: ['delete_lag_subinterfaces']
+
+    - name: Deconfigure LAG interfaces (delete subinterfaces + delete LAG)
+      graphiant.naas.graphiant_lag_interfaces:
+        <<: *graphiant_client_params
+        operation: deconfigure
+        lag_config_file: "sample_lag_interface_config.yaml"
+        detailed_logs: true
+        state: absent
+      register: deconfigure_result
+      tags: ['deconfigure']
+
+    - name: Display LAG Deconfiguration Results
+      ansible.builtin.debug:
+        msg: "{{ deconfigure_result.msg }}"
+      when: deconfigure_result is defined and deconfigure_result.msg is defined
+      tags: ['deconfigure']

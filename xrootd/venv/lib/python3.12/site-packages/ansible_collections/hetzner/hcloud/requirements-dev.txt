@@ -1,0 +1,11 @@
+ansible-core>=2.18
+
+# Third party collections requirements
+netaddr
+cryptography
+
+# Development requirements
+antsibull-docs>=2.24,<2.25
+pylint
+pytest
+pytest-xdist

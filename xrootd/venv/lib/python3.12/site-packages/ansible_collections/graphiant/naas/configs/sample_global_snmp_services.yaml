@@ -1,0 +1,51 @@
+snmps:
+  # Global SNMP Service Configuration - SNMPv3 NoAuthNoPriv
+  - name: snmp-global-test-noauth
+    v3Enabled: true
+    engineEndpoints:
+      - lanSegment: lan-segment-3
+    usmLocalUsers:
+      - name: v3_noauth
+    vacmGroups:
+        accesses:
+          - name: snmpV3Access_noauth
+            securityLevel: SnmpSecurityNoAuthNoPriv
+
+  # Global SNMP Service Configuration - SNMPv3 AuthNoPriv
+  - name: snmp-global-test-authnopriv
+    v3Enabled: true
+    engineEndpoints:
+      - lanSegment: lan-7-test
+    usmLocalUsers:
+      - name: v3_auth
+        authProtocol: SnmLocalAuthMd5
+        authPassphrase: testing@123!
+    vacmGroups:
+        accesses:
+          - name: snmpV3Access_auth
+            securityLevel: SnmpSecurityAuthNoPriv
+
+  # Global SNMP Service Configuration - SNMPv3 AuthPriv
+  - name: snmp-global-test-authpriv
+    v3Enabled: true
+    engineEndpoints:
+      - lanSegment: lan-7-test
+    usmLocalUsers:
+      - name: v3_authpriv
+        authProtocol: SnmLocalAuthMd5
+        authPassphrase: testing@123!
+        encryptionProtocol: SnmpLocalEncryptDes
+        encryptionPassphrase: systest@graphiant
+    vacmGroups:
+        accesses:
+          - name: snmpV3Access_authpriv
+            securityLevel: SnmpSecurityAuthPriv
+
+  # Global SNMP Service Configuration - SNMPv2c
+  - name: snmp-global-test-v2c
+    v2cEnabled: true
+    engineEndpoints:
+      - lanSegment: lan-7-test
+    communities:
+      - communityString: public
+    vacmGroups:

@@ -1,0 +1,105 @@
+---
+# Manage device-level traffic policy rulesets and LAN segment attachments.
+#
+# Tags:
+#   configure     — configure rulesets, then attach to LAN segments (full apply)
+#   deconfigure   — detach from LAN segments, then delete listed rulesets (full teardown)
+#   attach_to_lan_segments / detach_from_lan_segments — segment attach/detach only
+#
+# Example:
+#   ansible-playbook traffic_policies_management.yml --tags configure
+#   ansible-playbook traffic_policies_management.yml --tags configure --check
+#   ansible-playbook traffic_policies_management.yml --tags configure --check --diff
+#   ansible-playbook traffic_policies_management.yml --tags deconfigure
+#
+- name: Manage Graphiant Device-level Traffic Policy Configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # graphiant_host: "https://api.graphiant.com"
+    # graphiant_username: "{{ vault_graphiant_username }}"
+    # graphiant_password: "{{ vault_graphiant_password }}"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+
+  tasks:
+    - name: Configure device-level traffic policy rulesets (edge.trafficPolicy)
+      graphiant.naas.graphiant_traffic_policy:
+        <<: *graphiant_client_params
+        operation: configure
+        traffic_policy_config_file: "sample_device_traffic_policies.yaml"
+        detailed_logs: true
+        state: present
+      register: configure_result
+      tags: ['configure']
+
+    - name: Display configure result message (includes detailed logs)
+      ansible.builtin.debug:
+        msg:
+          - "{{ configure_result.msg }}"
+          - "configured_devices={{ configure_result.configured_devices | default([]) }}"
+          - "skipped_devices={{ configure_result.skipped_devices | default([]) }}"
+      when: configure_result is defined and configure_result.msg is defined
+      tags: ['configure']
+
+    - name: Attach traffic ruleset to LAN segments (part of configure workflow)
+      graphiant.naas.graphiant_traffic_policy:
+        <<: *graphiant_client_params
+        operation: attach_to_lan_segments
+        traffic_policy_config_file: "sample_device_traffic_policies.yaml"
+        detailed_logs: true
+      register: attach_segments_result
+      tags: ['configure', 'attach_to_lan_segments']
+
+    - name: Display attach-to-segments result
+      ansible.builtin.debug:
+        msg:
+          - "{{ attach_segments_result.msg }}"
+          - "configured_devices={{ attach_segments_result.configured_devices | default([]) }}"
+          - "skipped_devices={{ attach_segments_result.skipped_devices | default([]) }}"
+      when: attach_segments_result is defined and attach_segments_result.msg is defined
+      tags: ['configure', 'attach_to_lan_segments']
+
+    - name: Detach traffic ruleset from LAN segments (part of deconfigure workflow)
+      graphiant.naas.graphiant_traffic_policy:
+        <<: *graphiant_client_params
+        operation: detach_from_lan_segments
+        traffic_policy_config_file: "sample_device_traffic_policies.yaml"
+        detailed_logs: true
+      register: detach_segments_result
+      tags: ['deconfigure', 'detach_from_lan_segments']
+
+    - name: Display detach-from-segments result
+      ansible.builtin.debug:
+        msg:
+          - "{{ detach_segments_result.msg }}"
+          - "configured_devices={{ detach_segments_result.configured_devices | default([]) }}"
+          - "skipped_devices={{ detach_segments_result.skipped_devices | default([]) }}"
+      when: detach_segments_result is defined and detach_segments_result.msg is defined
+      tags: ['deconfigure', 'detach_from_lan_segments']
+
+    - name: Deconfigure device-level traffic policy rulesets (after segment detach)
+      graphiant.naas.graphiant_traffic_policy:
+        <<: *graphiant_client_params
+        operation: deconfigure
+        traffic_policy_config_file: "sample_device_traffic_policies.yaml"
+        detailed_logs: true
+        state: absent
+      register: deconfigure_result
+      tags: ['deconfigure']
+
+    - name: Display deconfigure result message (includes detailed logs)
+      ansible.builtin.debug:
+        msg:
+          - "{{ deconfigure_result.msg }}"
+          - "configured_devices={{ deconfigure_result.configured_devices | default([]) }}"
+          - "skipped_devices={{ deconfigure_result.skipped_devices | default([]) }}"
+      when: deconfigure_result is defined and deconfigure_result.msg is defined
+      tags: ['deconfigure']

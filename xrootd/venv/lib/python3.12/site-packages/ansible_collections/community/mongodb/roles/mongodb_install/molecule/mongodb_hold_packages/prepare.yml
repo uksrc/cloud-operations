@@ -1,0 +1,21 @@
+---
+- name: Prepare
+  hosts: all
+  become: false
+
+  tasks:
+
+    - name: Required packages
+      ansible.builtin.yum:
+        name: yum-plugin-versionlock
+        state: present
+      when: ansible_facts.os_family == "RedHat"
+
+    - name: Update the APT cache on Debian-based systems
+      ansible.builtin.apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install openssl
+      ansible.builtin.package:
+        name: "openssl"

@@ -1,0 +1,32 @@
+{
+ "collection_info": {
+  "namespace": "vmware",
+  "name": "vmware_rest",
+  "version": "4.11.0",
+  "authors": [
+   "Ansible (https://github.com/ansible)"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "cloud",
+   "vmware",
+   "virtualization"
+  ],
+  "description": "VMware collection for Ansible",
+  "license": [],
+  "license_file": "LICENSE",
+  "dependencies": {},
+  "repository": "https://github.com/ansible-collections/vmware.vmware_rest",
+  "documentation": null,
+  "homepage": "https://github.com/ansible-collections/vmware.vmware_rest",
+  "issues": "https://github.com/ansible-collections/vmware.vmware_rest/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "31bbd8b59a5027b420ae36933a9adaf61c0ccc476a3f736db905c970c1ea6392",
+  "format": 1
+ },
+ "format": 1
+}

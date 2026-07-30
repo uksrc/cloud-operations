@@ -1,0 +1,1134 @@
+# Sample Data Exchange Matches Configuration - Scale Test (100 Matches)
+# This file demonstrates how to match Data Exchange services to customers at scale
+# Each service is matched to 5 customers (20 services × 5 customers = 100 matches)
+# Updated to match the new service prefixes from sample_data_exchange_services_scale.yaml
+#
+# The system will:
+# 1. Read match configuration from the 'data_exchange_matches' list
+# 2. Resolve customer and service names to IDs
+# 3. Use the specified servicePrefixes (user-selected, not all service prefixes)
+# 4. POST to v1/extranets-b2b-peering/match/service-to-customer with the payload
+#
+# Note: You can select specific service prefixes to include in the match.
+# This allows fine-grained control over which service prefixes are available to each customer.
+
+data_exchange_matches:
+  # Service 1 matches (5 customers)
+  - customerName: "FinanceBank-001"
+    serviceName: "de-service-scale-001"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.0/28"
+        tag: "s-scale-001-prefix1"
+      - prefix: "10.1.1.16/28"
+        tag: "s-scale-001-prefix2"
+    nat:
+      - prefix: "10.101.0.0/24"
+        outsideNatPrefix: "170.101.0.0/24"
+
+  - customerName: "FinanceBank-002"
+    serviceName: "de-service-scale-001"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.0/28"
+        tag: "s-scale-001-prefix1"
+      - prefix: "10.1.1.16/28"
+        tag: "s-scale-001-prefix2"
+    nat:
+      - prefix: "10.102.0.0/24"
+        outsideNatPrefix: "170.102.0.0/24"
+
+  - customerName: "FinanceBank-003"
+    serviceName: "de-service-scale-001"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.0/28"
+        tag: "s-scale-001-prefix1"
+      - prefix: "10.1.1.16/28"
+        tag: "s-scale-001-prefix2"
+    nat:
+      - prefix: "10.103.0.0/24"
+        outsideNatPrefix: "170.103.0.0/24"
+
+  - customerName: "FinanceBank-004"
+    serviceName: "de-service-scale-001"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.0/28"
+        tag: "s-scale-001-prefix1"
+      - prefix: "10.1.1.16/28"
+        tag: "s-scale-001-prefix2"
+    nat:
+      - prefix: "10.104.0.0/24"
+        outsideNatPrefix: "170.104.0.0/24"
+
+  - customerName: "FinanceBank-005"
+    serviceName: "de-service-scale-001"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.0/28"
+        tag: "s-scale-001-prefix1"
+      - prefix: "10.1.1.16/28"
+        tag: "s-scale-001-prefix2"
+    nat:
+      - prefix: "10.105.0.0/24"
+        outsideNatPrefix: "170.105.0.0/24"
+
+  # Service 2 matches (5 customers)
+  - customerName: "FinanceBank-006"
+    serviceName: "de-service-scale-002"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.32/28"
+        tag: "s-scale-002-prefix1"
+      - prefix: "10.1.1.48/28"
+        tag: "s-scale-002-prefix2"
+    nat:
+      - prefix: "10.106.0.0/24"
+        outsideNatPrefix: "170.106.0.0/24"
+
+  - customerName: "FinanceBank-007"
+    serviceName: "de-service-scale-002"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.32/28"
+        tag: "s-scale-002-prefix1"
+      - prefix: "10.1.1.48/28"
+        tag: "s-scale-002-prefix2"
+    nat:
+      - prefix: "10.107.0.0/24"
+        outsideNatPrefix: "170.107.0.0/24"
+
+  - customerName: "FinanceBank-008"
+    serviceName: "de-service-scale-002"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.32/28"
+        tag: "s-scale-002-prefix1"
+      - prefix: "10.1.1.48/28"
+        tag: "s-scale-002-prefix2"
+    nat:
+      - prefix: "10.108.0.0/24"
+        outsideNatPrefix: "170.108.0.0/24"
+
+  - customerName: "FinanceBank-009"
+    serviceName: "de-service-scale-002"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.32/28"
+        tag: "s-scale-002-prefix1"
+      - prefix: "10.1.1.48/28"
+        tag: "s-scale-002-prefix2"
+    nat:
+      - prefix: "10.109.0.0/24"
+        outsideNatPrefix: "170.109.0.0/24"
+
+  - customerName: "FinanceBank-010"
+    serviceName: "de-service-scale-002"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.32/28"
+        tag: "s-scale-002-prefix1"
+      - prefix: "10.1.1.48/28"
+        tag: "s-scale-002-prefix2"
+    nat:
+      - prefix: "10.110.0.0/24"
+        outsideNatPrefix: "170.110.0.0/24"
+
+  # Service 3 matches (5 customers)
+  - customerName: "FinanceBank-011"
+    serviceName: "de-service-scale-003"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.64/28"
+        tag: "s-scale-003-prefix1"
+      - prefix: "10.1.1.80/28"
+        tag: "s-scale-003-prefix2"
+    nat:
+      - prefix: "10.111.0.0/24"
+        outsideNatPrefix: "170.111.0.0/24"
+
+  - customerName: "FinanceBank-012"
+    serviceName: "de-service-scale-003"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.64/28"
+        tag: "s-scale-003-prefix1"
+      - prefix: "10.1.1.80/28"
+        tag: "s-scale-003-prefix2"
+    nat:
+      - prefix: "10.112.0.0/24"
+        outsideNatPrefix: "170.112.0.0/24"
+
+  - customerName: "FinanceBank-013"
+    serviceName: "de-service-scale-003"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.64/28"
+        tag: "s-scale-003-prefix1"
+      - prefix: "10.1.1.80/28"
+        tag: "s-scale-003-prefix2"
+    nat:
+      - prefix: "10.113.0.0/24"
+        outsideNatPrefix: "170.113.0.0/24"
+
+  - customerName: "FinanceBank-014"
+    serviceName: "de-service-scale-003"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.64/28"
+        tag: "s-scale-003-prefix1"
+      - prefix: "10.1.1.80/28"
+        tag: "s-scale-003-prefix2"
+    nat:
+      - prefix: "10.114.0.0/24"
+        outsideNatPrefix: "170.114.0.0/24"
+
+  - customerName: "FinanceBank-015"
+    serviceName: "de-service-scale-003"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.64/28"
+        tag: "s-scale-003-prefix1"
+      - prefix: "10.1.1.80/28"
+        tag: "s-scale-003-prefix2"
+    nat:
+      - prefix: "10.115.0.0/24"
+        outsideNatPrefix: "170.115.0.0/24"
+
+  # Service 4 matches (5 customers)
+  - customerName: "FinanceBank-016"
+    serviceName: "de-service-scale-004"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.96/28"
+        tag: "s-scale-004-prefix1"
+      - prefix: "10.1.1.112/28"
+        tag: "s-scale-004-prefix2"
+    nat:
+      - prefix: "10.116.0.0/24"
+        outsideNatPrefix: "170.116.0.0/24"
+
+  - customerName: "FinanceBank-017"
+    serviceName: "de-service-scale-004"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.96/28"
+        tag: "s-scale-004-prefix1"
+      - prefix: "10.1.1.112/28"
+        tag: "s-scale-004-prefix2"
+    nat:
+      - prefix: "10.117.0.0/24"
+        outsideNatPrefix: "170.117.0.0/24"
+
+  - customerName: "FinanceBank-018"
+    serviceName: "de-service-scale-004"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.96/28"
+        tag: "s-scale-004-prefix1"
+      - prefix: "10.1.1.112/28"
+        tag: "s-scale-004-prefix2"
+    nat:
+      - prefix: "10.118.0.0/24"
+        outsideNatPrefix: "170.118.0.0/24"
+
+  - customerName: "FinanceBank-019"
+    serviceName: "de-service-scale-004"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.96/28"
+        tag: "s-scale-004-prefix1"
+      - prefix: "10.1.1.112/28"
+        tag: "s-scale-004-prefix2"
+    nat:
+      - prefix: "10.119.0.0/24"
+        outsideNatPrefix: "170.119.0.0/24"
+
+  - customerName: "FinanceBank-020"
+    serviceName: "de-service-scale-004"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.96/28"
+        tag: "s-scale-004-prefix1"
+      - prefix: "10.1.1.112/28"
+        tag: "s-scale-004-prefix2"
+    nat:
+      - prefix: "10.120.0.0/24"
+        outsideNatPrefix: "170.120.0.0/24"
+
+  # Service 5 matches (5 customers)
+  - customerName: "FinanceBank-021"
+    serviceName: "de-service-scale-005"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.128/28"
+        tag: "s-scale-005-prefix1"
+      - prefix: "10.1.1.144/28"
+        tag: "s-scale-005-prefix2"
+    nat:
+      - prefix: "10.121.0.0/24"
+        outsideNatPrefix: "170.121.0.0/24"
+
+  - customerName: "FinanceBank-022"
+    serviceName: "de-service-scale-005"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.128/28"
+        tag: "s-scale-005-prefix1"
+      - prefix: "10.1.1.144/28"
+        tag: "s-scale-005-prefix2"
+    nat:
+      - prefix: "10.122.0.0/24"
+        outsideNatPrefix: "170.122.0.0/24"
+
+  - customerName: "FinanceBank-023"
+    serviceName: "de-service-scale-005"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.128/28"
+        tag: "s-scale-005-prefix1"
+      - prefix: "10.1.1.144/28"
+        tag: "s-scale-005-prefix2"
+    nat:
+      - prefix: "10.123.0.0/24"
+        outsideNatPrefix: "170.123.0.0/24"
+
+  - customerName: "FinanceBank-024"
+    serviceName: "de-service-scale-005"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.128/28"
+        tag: "s-scale-005-prefix1"
+      - prefix: "10.1.1.144/28"
+        tag: "s-scale-005-prefix2"
+    nat:
+      - prefix: "10.124.0.0/24"
+        outsideNatPrefix: "170.124.0.0/24"
+
+  - customerName: "FinanceBank-025"
+    serviceName: "de-service-scale-005"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.128/28"
+        tag: "s-scale-005-prefix1"
+      - prefix: "10.1.1.144/28"
+        tag: "s-scale-005-prefix2"
+    nat:
+      - prefix: "10.125.0.0/24"
+        outsideNatPrefix: "170.125.0.0/24"
+
+  # Service 6 matches (5 customers)
+  - customerName: "FinanceBank-026"
+    serviceName: "de-service-scale-006"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.160/28"
+        tag: "s-scale-006-prefix1"
+      - prefix: "10.1.1.176/28"
+        tag: "s-scale-006-prefix2"
+    nat:
+      - prefix: "10.126.0.0/24"
+        outsideNatPrefix: "170.126.0.0/24"
+
+  - customerName: "FinanceBank-027"
+    serviceName: "de-service-scale-006"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.160/28"
+        tag: "s-scale-006-prefix1"
+      - prefix: "10.1.1.176/28"
+        tag: "s-scale-006-prefix2"
+    nat:
+      - prefix: "10.127.0.0/24"
+        outsideNatPrefix: "170.127.0.0/24"
+
+  - customerName: "FinanceBank-028"
+    serviceName: "de-service-scale-006"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.160/28"
+        tag: "s-scale-006-prefix1"
+      - prefix: "10.1.1.176/28"
+        tag: "s-scale-006-prefix2"
+    nat:
+      - prefix: "10.128.0.0/24"
+        outsideNatPrefix: "170.128.0.0/24"
+
+  - customerName: "FinanceBank-029"
+    serviceName: "de-service-scale-006"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.160/28"
+        tag: "s-scale-006-prefix1"
+      - prefix: "10.1.1.176/28"
+        tag: "s-scale-006-prefix2"
+    nat:
+      - prefix: "10.129.0.0/24"
+        outsideNatPrefix: "170.129.0.0/24"
+
+  - customerName: "FinanceBank-030"
+    serviceName: "de-service-scale-006"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.160/28"
+        tag: "s-scale-006-prefix1"
+      - prefix: "10.1.1.176/28"
+        tag: "s-scale-006-prefix2"
+    nat:
+      - prefix: "10.130.0.0/24"
+        outsideNatPrefix: "170.130.0.0/24"
+
+  # Service 7 matches (5 customers)
+  - customerName: "FinanceBank-031"
+    serviceName: "de-service-scale-007"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.192/28"
+        tag: "s-scale-007-prefix1"
+      - prefix: "10.1.1.208/28"
+        tag: "s-scale-007-prefix2"
+    nat:
+      - prefix: "10.131.0.0/24"
+        outsideNatPrefix: "170.131.0.0/24"
+
+  - customerName: "FinanceBank-032"
+    serviceName: "de-service-scale-007"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.192/28"
+        tag: "s-scale-007-prefix1"
+      - prefix: "10.1.1.208/28"
+        tag: "s-scale-007-prefix2"
+    nat:
+      - prefix: "10.132.0.0/24"
+        outsideNatPrefix: "170.132.0.0/24"
+
+  - customerName: "FinanceBank-033"
+    serviceName: "de-service-scale-007"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.192/28"
+        tag: "s-scale-007-prefix1"
+      - prefix: "10.1.1.208/28"
+        tag: "s-scale-007-prefix2"
+    nat:
+      - prefix: "10.133.0.0/24"
+        outsideNatPrefix: "170.133.0.0/24"
+
+  - customerName: "FinanceBank-034"
+    serviceName: "de-service-scale-007"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.192/28"
+        tag: "s-scale-007-prefix1"
+      - prefix: "10.1.1.208/28"
+        tag: "s-scale-007-prefix2"
+    nat:
+      - prefix: "10.134.0.0/24"
+        outsideNatPrefix: "170.134.0.0/24"
+
+  - customerName: "FinanceBank-035"
+    serviceName: "de-service-scale-007"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.192/28"
+        tag: "s-scale-007-prefix1"
+      - prefix: "10.1.1.208/28"
+        tag: "s-scale-007-prefix2"
+    nat:
+      - prefix: "10.135.0.0/24"
+        outsideNatPrefix: "170.135.0.0/24"
+
+  # Service 8 matches (5 customers)
+  - customerName: "FinanceBank-036"
+    serviceName: "de-service-scale-008"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.224/28"
+        tag: "s-scale-008-prefix1"
+      - prefix: "10.1.1.240/28"
+        tag: "s-scale-008-prefix2"
+    nat:
+      - prefix: "10.136.0.0/24"
+        outsideNatPrefix: "170.136.0.0/24"
+
+  - customerName: "FinanceBank-037"
+    serviceName: "de-service-scale-008"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.224/28"
+        tag: "s-scale-008-prefix1"
+      - prefix: "10.1.1.240/28"
+        tag: "s-scale-008-prefix2"
+    nat:
+      - prefix: "10.137.0.0/24"
+        outsideNatPrefix: "170.137.0.0/24"
+
+  - customerName: "FinanceBank-038"
+    serviceName: "de-service-scale-008"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.224/28"
+        tag: "s-scale-008-prefix1"
+      - prefix: "10.1.1.240/28"
+        tag: "s-scale-008-prefix2"
+    nat:
+      - prefix: "10.138.0.0/24"
+        outsideNatPrefix: "170.138.0.0/24"
+
+  - customerName: "FinanceBank-039"
+    serviceName: "de-service-scale-008"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.224/28"
+        tag: "s-scale-008-prefix1"
+      - prefix: "10.1.1.240/28"
+        tag: "s-scale-008-prefix2"
+    nat:
+      - prefix: "10.139.0.0/24"
+        outsideNatPrefix: "170.139.0.0/24"
+
+  - customerName: "FinanceBank-040"
+    serviceName: "de-service-scale-008"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.1.224/28"
+        tag: "s-scale-008-prefix1"
+      - prefix: "10.1.1.240/28"
+        tag: "s-scale-008-prefix2"
+    nat:
+      - prefix: "10.140.0.0/24"
+        outsideNatPrefix: "170.140.0.0/24"
+
+  # Service 9 matches (5 customers)
+  - customerName: "FinanceBank-041"
+    serviceName: "de-service-scale-009"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.0/28"
+        tag: "s-scale-009-prefix1"
+      - prefix: "10.1.2.16/28"
+        tag: "s-scale-009-prefix2"
+    nat:
+      - prefix: "10.141.0.0/24"
+        outsideNatPrefix: "170.141.0.0/24"
+
+  - customerName: "FinanceBank-042"
+    serviceName: "de-service-scale-009"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.0/28"
+        tag: "s-scale-009-prefix1"
+      - prefix: "10.1.2.16/28"
+        tag: "s-scale-009-prefix2"
+    nat:
+      - prefix: "10.142.0.0/24"
+        outsideNatPrefix: "170.142.0.0/24"
+
+  - customerName: "FinanceBank-043"
+    serviceName: "de-service-scale-009"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.0/28"
+        tag: "s-scale-009-prefix1"
+      - prefix: "10.1.2.16/28"
+        tag: "s-scale-009-prefix2"
+    nat:
+      - prefix: "10.143.0.0/24"
+        outsideNatPrefix: "170.143.0.0/24"
+
+  - customerName: "FinanceBank-044"
+    serviceName: "de-service-scale-009"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.0/28"
+        tag: "s-scale-009-prefix1"
+      - prefix: "10.1.2.16/28"
+        tag: "s-scale-009-prefix2"
+    nat:
+      - prefix: "10.144.0.0/24"
+        outsideNatPrefix: "170.144.0.0/24"
+
+  - customerName: "FinanceBank-045"
+    serviceName: "de-service-scale-009"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.0/28"
+        tag: "s-scale-009-prefix1"
+      - prefix: "10.1.2.16/28"
+        tag: "s-scale-009-prefix2"
+    nat:
+      - prefix: "10.145.0.0/24"
+        outsideNatPrefix: "170.145.0.0/24"
+
+  # Service 10 matches (5 customers)
+  - customerName: "FinanceBank-046"
+    serviceName: "de-service-scale-010"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.32/28"
+        tag: "s-scale-010-prefix1"
+      - prefix: "10.1.2.48/28"
+        tag: "s-scale-010-prefix2"
+    nat:
+      - prefix: "10.146.0.0/24"
+        outsideNatPrefix: "170.146.0.0/24"
+
+  - customerName: "FinanceBank-047"
+    serviceName: "de-service-scale-010"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.32/28"
+        tag: "s-scale-010-prefix1"
+      - prefix: "10.1.2.48/28"
+        tag: "s-scale-010-prefix2"
+    nat:
+      - prefix: "10.147.0.0/24"
+        outsideNatPrefix: "170.147.0.0/24"
+
+  - customerName: "FinanceBank-048"
+    serviceName: "de-service-scale-010"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.32/28"
+        tag: "s-scale-010-prefix1"
+      - prefix: "10.1.2.48/28"
+        tag: "s-scale-010-prefix2"
+    nat:
+      - prefix: "10.148.0.0/24"
+        outsideNatPrefix: "170.148.0.0/24"
+
+  - customerName: "FinanceBank-049"
+    serviceName: "de-service-scale-010"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.32/28"
+        tag: "s-scale-010-prefix1"
+      - prefix: "10.1.2.48/28"
+        tag: "s-scale-010-prefix2"
+    nat:
+      - prefix: "10.149.0.0/24"
+        outsideNatPrefix: "170.149.0.0/24"
+
+  - customerName: "FinanceBank-050"
+    serviceName: "de-service-scale-010"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.32/28"
+        tag: "s-scale-010-prefix1"
+      - prefix: "10.1.2.48/28"
+        tag: "s-scale-010-prefix2"
+    nat:
+      - prefix: "10.150.0.0/24"
+        outsideNatPrefix: "170.150.0.0/24"
+
+  # Service 11 matches (5 customers)
+  - customerName: "FinanceBank-001"
+    serviceName: "de-service-scale-011"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.64/28"
+        tag: "s-scale-011-prefix1"
+      - prefix: "10.1.2.80/28"
+        tag: "s-scale-011-prefix2"
+    nat:
+      - prefix: "10.151.0.0/24"
+        outsideNatPrefix: "170.151.0.0/24"
+
+  - customerName: "FinanceBank-002"
+    serviceName: "de-service-scale-011"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.64/28"
+        tag: "s-scale-011-prefix1"
+      - prefix: "10.1.2.80/28"
+        tag: "s-scale-011-prefix2"
+    nat:
+      - prefix: "10.152.0.0/24"
+        outsideNatPrefix: "170.152.0.0/24"
+
+  - customerName: "FinanceBank-003"
+    serviceName: "de-service-scale-011"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.64/28"
+        tag: "s-scale-011-prefix1"
+      - prefix: "10.1.2.80/28"
+        tag: "s-scale-011-prefix2"
+    nat:
+      - prefix: "10.153.0.0/24"
+        outsideNatPrefix: "170.153.0.0/24"
+
+  - customerName: "FinanceBank-004"
+    serviceName: "de-service-scale-011"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.64/28"
+        tag: "s-scale-011-prefix1"
+      - prefix: "10.1.2.80/28"
+        tag: "s-scale-011-prefix2"
+    nat:
+      - prefix: "10.154.0.0/24"
+        outsideNatPrefix: "170.154.0.0/24"
+
+  - customerName: "FinanceBank-005"
+    serviceName: "de-service-scale-011"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.64/28"
+        tag: "s-scale-011-prefix1"
+      - prefix: "10.1.2.80/28"
+        tag: "s-scale-011-prefix2"
+    nat:
+      - prefix: "10.155.0.0/24"
+        outsideNatPrefix: "170.155.0.0/24"
+
+  # Service 12 matches (5 customers)
+  - customerName: "FinanceBank-006"
+    serviceName: "de-service-scale-012"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.96/28"
+        tag: "s-scale-012-prefix1"
+      - prefix: "10.1.2.112/28"
+        tag: "s-scale-012-prefix2"
+    nat:
+      - prefix: "10.156.0.0/24"
+        outsideNatPrefix: "170.156.0.0/24"
+
+  - customerName: "FinanceBank-007"
+    serviceName: "de-service-scale-012"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.96/28"
+        tag: "s-scale-012-prefix1"
+      - prefix: "10.1.2.112/28"
+        tag: "s-scale-012-prefix2"
+    nat:
+      - prefix: "10.157.0.0/24"
+        outsideNatPrefix: "170.157.0.0/24"
+
+  - customerName: "FinanceBank-008"
+    serviceName: "de-service-scale-012"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.96/28"
+        tag: "s-scale-012-prefix1"
+      - prefix: "10.1.2.112/28"
+        tag: "s-scale-012-prefix2"
+    nat:
+      - prefix: "10.158.0.0/24"
+        outsideNatPrefix: "170.158.0.0/24"
+
+  - customerName: "FinanceBank-009"
+    serviceName: "de-service-scale-012"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.96/28"
+        tag: "s-scale-012-prefix1"
+      - prefix: "10.1.2.112/28"
+        tag: "s-scale-012-prefix2"
+    nat:
+      - prefix: "10.159.0.0/24"
+        outsideNatPrefix: "170.159.0.0/24"
+
+  - customerName: "FinanceBank-010"
+    serviceName: "de-service-scale-012"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.96/28"
+        tag: "s-scale-012-prefix1"
+      - prefix: "10.1.2.112/28"
+        tag: "s-scale-012-prefix2"
+    nat:
+      - prefix: "10.160.0.0/24"
+        outsideNatPrefix: "170.160.0.0/24"
+
+  # Service 13 matches (5 customers)
+  - customerName: "FinanceBank-011"
+    serviceName: "de-service-scale-013"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.128/28"
+        tag: "s-scale-013-prefix1"
+      - prefix: "10.1.2.144/28"
+        tag: "s-scale-013-prefix2"
+    nat:
+      - prefix: "10.161.0.0/24"
+        outsideNatPrefix: "170.161.0.0/24"
+
+  - customerName: "FinanceBank-012"
+    serviceName: "de-service-scale-013"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.128/28"
+        tag: "s-scale-013-prefix1"
+      - prefix: "10.1.2.144/28"
+        tag: "s-scale-013-prefix2"
+    nat:
+      - prefix: "10.162.0.0/24"
+        outsideNatPrefix: "170.162.0.0/24"
+
+  - customerName: "FinanceBank-013"
+    serviceName: "de-service-scale-013"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.128/28"
+        tag: "s-scale-013-prefix1"
+      - prefix: "10.1.2.144/28"
+        tag: "s-scale-013-prefix2"
+    nat:
+      - prefix: "10.163.0.0/24"
+        outsideNatPrefix: "170.163.0.0/24"
+
+  - customerName: "FinanceBank-014"
+    serviceName: "de-service-scale-013"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.128/28"
+        tag: "s-scale-013-prefix1"
+      - prefix: "10.1.2.144/28"
+        tag: "s-scale-013-prefix2"
+    nat:
+      - prefix: "10.164.0.0/24"
+        outsideNatPrefix: "170.164.0.0/24"
+
+  - customerName: "FinanceBank-015"
+    serviceName: "de-service-scale-013"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.128/28"
+        tag: "s-scale-013-prefix1"
+      - prefix: "10.1.2.144/28"
+        tag: "s-scale-013-prefix2"
+    nat:
+      - prefix: "10.165.0.0/24"
+        outsideNatPrefix: "170.165.0.0/24"
+
+  # Service 14 matches (5 customers)
+  - customerName: "FinanceBank-016"
+    serviceName: "de-service-scale-014"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.160/28"
+        tag: "s-scale-014-prefix1"
+      - prefix: "10.1.2.176/28"
+        tag: "s-scale-014-prefix2"
+    nat:
+      - prefix: "10.166.0.0/24"
+        outsideNatPrefix: "170.166.0.0/24"
+
+  - customerName: "FinanceBank-017"
+    serviceName: "de-service-scale-014"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.160/28"
+        tag: "s-scale-014-prefix1"
+      - prefix: "10.1.2.176/28"
+        tag: "s-scale-014-prefix2"
+    nat:
+      - prefix: "10.167.0.0/24"
+        outsideNatPrefix: "170.167.0.0/24"
+
+  - customerName: "FinanceBank-018"
+    serviceName: "de-service-scale-014"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.160/28"
+        tag: "s-scale-014-prefix1"
+      - prefix: "10.1.2.176/28"
+        tag: "s-scale-014-prefix2"
+    nat:
+      - prefix: "10.168.0.0/24"
+        outsideNatPrefix: "170.168.0.0/24"
+
+  - customerName: "FinanceBank-019"
+    serviceName: "de-service-scale-014"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.160/28"
+        tag: "s-scale-014-prefix1"
+      - prefix: "10.1.2.176/28"
+        tag: "s-scale-014-prefix2"
+    nat:
+      - prefix: "10.169.0.0/24"
+        outsideNatPrefix: "170.169.0.0/24"
+
+  - customerName: "FinanceBank-020"
+    serviceName: "de-service-scale-014"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.160/28"
+        tag: "s-scale-014-prefix1"
+      - prefix: "10.1.2.176/28"
+        tag: "s-scale-014-prefix2"
+    nat:
+      - prefix: "10.170.0.0/24"
+        outsideNatPrefix: "170.170.0.0/24"
+
+  # Service 15 matches (5 customers)
+  - customerName: "FinanceBank-021"
+    serviceName: "de-service-scale-015"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.192/28"
+        tag: "s-scale-015-prefix1"
+      - prefix: "10.1.2.208/28"
+        tag: "s-scale-015-prefix2"
+    nat:
+      - prefix: "10.171.0.0/24"
+        outsideNatPrefix: "170.171.0.0/24"
+
+  - customerName: "FinanceBank-022"
+    serviceName: "de-service-scale-015"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.192/28"
+        tag: "s-scale-015-prefix1"
+      - prefix: "10.1.2.208/28"
+        tag: "s-scale-015-prefix2"
+    nat:
+      - prefix: "10.172.0.0/24"
+        outsideNatPrefix: "170.172.0.0/24"
+
+  - customerName: "FinanceBank-023"
+    serviceName: "de-service-scale-015"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.192/28"
+        tag: "s-scale-015-prefix1"
+      - prefix: "10.1.2.208/28"
+        tag: "s-scale-015-prefix2"
+    nat:
+      - prefix: "10.173.0.0/24"
+        outsideNatPrefix: "170.173.0.0/24"
+
+  - customerName: "FinanceBank-024"
+    serviceName: "de-service-scale-015"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.192/28"
+        tag: "s-scale-015-prefix1"
+      - prefix: "10.1.2.208/28"
+        tag: "s-scale-015-prefix2"
+    nat:
+      - prefix: "10.174.0.0/24"
+        outsideNatPrefix: "170.174.0.0/24"
+
+  - customerName: "FinanceBank-025"
+    serviceName: "de-service-scale-015"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.192/28"
+        tag: "s-scale-015-prefix1"
+      - prefix: "10.1.2.208/28"
+        tag: "s-scale-015-prefix2"
+    nat:
+      - prefix: "10.175.0.0/24"
+        outsideNatPrefix: "170.175.0.0/24"
+
+  # Service 16 matches (5 customers)
+  - customerName: "FinanceBank-026"
+    serviceName: "de-service-scale-016"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.224/28"
+        tag: "s-scale-016-prefix1"
+      - prefix: "10.1.2.240/28"
+        tag: "s-scale-016-prefix2"
+    nat:
+      - prefix: "10.176.0.0/24"
+        outsideNatPrefix: "170.176.0.0/24"
+
+  - customerName: "FinanceBank-027"
+    serviceName: "de-service-scale-016"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.224/28"
+        tag: "s-scale-016-prefix1"
+      - prefix: "10.1.2.240/28"
+        tag: "s-scale-016-prefix2"
+    nat:
+      - prefix: "10.177.0.0/24"
+        outsideNatPrefix: "170.177.0.0/24"
+
+  - customerName: "FinanceBank-028"
+    serviceName: "de-service-scale-016"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.224/28"
+        tag: "s-scale-016-prefix1"
+      - prefix: "10.1.2.240/28"
+        tag: "s-scale-016-prefix2"
+    nat:
+      - prefix: "10.178.0.0/24"
+        outsideNatPrefix: "170.178.0.0/24"
+
+  - customerName: "FinanceBank-029"
+    serviceName: "de-service-scale-016"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.224/28"
+        tag: "s-scale-016-prefix1"
+      - prefix: "10.1.2.240/28"
+        tag: "s-scale-016-prefix2"
+    nat:
+      - prefix: "10.179.0.0/24"
+        outsideNatPrefix: "170.179.0.0/24"
+
+  - customerName: "FinanceBank-030"
+    serviceName: "de-service-scale-016"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.2.224/28"
+        tag: "s-scale-016-prefix1"
+      - prefix: "10.1.2.240/28"
+        tag: "s-scale-016-prefix2"
+    nat:
+      - prefix: "10.180.0.0/24"
+        outsideNatPrefix: "170.180.0.0/24"
+
+  # Service 17 matches (5 customers)
+  - customerName: "FinanceBank-031"
+    serviceName: "de-service-scale-017"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.0/28"
+        tag: "s-scale-017-prefix1"
+      - prefix: "10.1.3.16/28"
+        tag: "s-scale-017-prefix2"
+    nat:
+      - prefix: "10.181.0.0/24"
+        outsideNatPrefix: "170.181.0.0/24"
+
+  - customerName: "FinanceBank-032"
+    serviceName: "de-service-scale-017"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.0/28"
+        tag: "s-scale-017-prefix1"
+      - prefix: "10.1.3.16/28"
+        tag: "s-scale-017-prefix2"
+    nat:
+      - prefix: "10.182.0.0/24"
+        outsideNatPrefix: "170.182.0.0/24"
+
+  - customerName: "FinanceBank-033"
+    serviceName: "de-service-scale-017"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.0/28"
+        tag: "s-scale-017-prefix1"
+      - prefix: "10.1.3.16/28"
+        tag: "s-scale-017-prefix2"
+    nat:
+      - prefix: "10.183.0.0/24"
+        outsideNatPrefix: "170.183.0.0/24"
+
+  - customerName: "FinanceBank-034"
+    serviceName: "de-service-scale-017"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.0/28"
+        tag: "s-scale-017-prefix1"
+      - prefix: "10.1.3.16/28"
+        tag: "s-scale-017-prefix2"
+    nat:
+      - prefix: "10.184.0.0/24"
+        outsideNatPrefix: "170.184.0.0/24"
+
+  - customerName: "FinanceBank-035"
+    serviceName: "de-service-scale-017"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.0/28"
+        tag: "s-scale-017-prefix1"
+      - prefix: "10.1.3.16/28"
+        tag: "s-scale-017-prefix2"
+    nat:
+      - prefix: "10.185.0.0/24"
+        outsideNatPrefix: "170.185.0.0/24"
+
+  # Service 18 matches (5 customers)
+  - customerName: "FinanceBank-036"
+    serviceName: "de-service-scale-018"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.32/28"
+        tag: "s-scale-018-prefix1"
+      - prefix: "10.1.3.48/28"
+        tag: "s-scale-018-prefix2"
+    nat:
+      - prefix: "10.186.0.0/24"
+        outsideNatPrefix: "170.186.0.0/24"
+
+  - customerName: "FinanceBank-037"
+    serviceName: "de-service-scale-018"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.32/28"
+        tag: "s-scale-018-prefix1"
+      - prefix: "10.1.3.48/28"
+        tag: "s-scale-018-prefix2"
+    nat:
+      - prefix: "10.187.0.0/24"
+        outsideNatPrefix: "170.187.0.0/24"
+
+  - customerName: "FinanceBank-038"
+    serviceName: "de-service-scale-018"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.32/28"
+        tag: "s-scale-018-prefix1"
+      - prefix: "10.1.3.48/28"
+        tag: "s-scale-018-prefix2"
+    nat:
+      - prefix: "10.188.0.0/24"
+        outsideNatPrefix: "170.188.0.0/24"
+
+  - customerName: "FinanceBank-039"
+    serviceName: "de-service-scale-018"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.32/28"
+        tag: "s-scale-018-prefix1"
+      - prefix: "10.1.3.48/28"
+        tag: "s-scale-018-prefix2"
+    nat:
+      - prefix: "10.189.0.0/24"
+        outsideNatPrefix: "170.189.0.0/24"
+
+  - customerName: "FinanceBank-040"
+    serviceName: "de-service-scale-018"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.32/28"
+        tag: "s-scale-018-prefix1"
+      - prefix: "10.1.3.48/28"
+        tag: "s-scale-018-prefix2"
+    nat:
+      - prefix: "10.190.0.0/24"
+        outsideNatPrefix: "170.190.0.0/24"
+
+  # Service 19 matches (5 customers)
+  - customerName: "FinanceBank-041"
+    serviceName: "de-service-scale-019"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.64/28"
+        tag: "s-scale-019-prefix1"
+      - prefix: "10.1.3.80/28"
+        tag: "s-scale-019-prefix2"
+    nat:
+      - prefix: "10.191.0.0/24"
+        outsideNatPrefix: "170.191.0.0/24"
+
+  - customerName: "FinanceBank-042"
+    serviceName: "de-service-scale-019"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.64/28"
+        tag: "s-scale-019-prefix1"
+      - prefix: "10.1.3.80/28"
+        tag: "s-scale-019-prefix2"
+    nat:
+      - prefix: "10.192.0.0/24"
+        outsideNatPrefix: "170.192.0.0/24"
+
+  - customerName: "FinanceBank-043"
+    serviceName: "de-service-scale-019"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.64/28"
+        tag: "s-scale-019-prefix1"
+      - prefix: "10.1.3.80/28"
+        tag: "s-scale-019-prefix2"
+    nat:
+      - prefix: "10.193.0.0/24"
+        outsideNatPrefix: "170.193.0.0/24"
+
+  - customerName: "FinanceBank-044"
+    serviceName: "de-service-scale-019"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.64/28"
+        tag: "s-scale-019-prefix1"
+      - prefix: "10.1.3.80/28"
+        tag: "s-scale-019-prefix2"
+    nat:
+      - prefix: "10.194.0.0/24"
+        outsideNatPrefix: "170.194.0.0/24"
+
+  - customerName: "FinanceBank-045"
+    serviceName: "de-service-scale-019"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.64/28"
+        tag: "s-scale-019-prefix1"
+      - prefix: "10.1.3.80/28"
+        tag: "s-scale-019-prefix2"
+    nat:
+      - prefix: "10.195.0.0/24"
+        outsideNatPrefix: "170.195.0.0/24"
+
+  # Service 20 matches (5 customers)
+  - customerName: "FinanceBank-046"
+    serviceName: "de-service-scale-020"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.96/28"
+        tag: "s-scale-020-prefix1"
+      - prefix: "10.1.3.112/28"
+        tag: "s-scale-020-prefix2"
+    nat:
+      - prefix: "10.196.0.0/24"
+        outsideNatPrefix: "170.196.0.0/24"
+
+  - customerName: "FinanceBank-047"
+    serviceName: "de-service-scale-020"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.96/28"
+        tag: "s-scale-020-prefix1"
+      - prefix: "10.1.3.112/28"
+        tag: "s-scale-020-prefix2"
+    nat:
+      - prefix: "10.197.0.0/24"
+        outsideNatPrefix: "170.197.0.0/24"
+
+  - customerName: "FinanceBank-048"
+    serviceName: "de-service-scale-020"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.96/28"
+        tag: "s-scale-020-prefix1"
+      - prefix: "10.1.3.112/28"
+        tag: "s-scale-020-prefix2"
+    nat:
+      - prefix: "10.198.0.0/24"
+        outsideNatPrefix: "170.198.0.0/24"
+
+  - customerName: "FinanceBank-049"
+    serviceName: "de-service-scale-020"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.96/28"
+        tag: "s-scale-020-prefix1"
+      - prefix: "10.1.3.112/28"
+        tag: "s-scale-020-prefix2"
+    nat:
+      - prefix: "10.199.0.0/24"
+        outsideNatPrefix: "170.199.0.0/24"
+
+  - customerName: "FinanceBank-050"
+    serviceName: "de-service-scale-020"
+    servicePrefixes:  # Select specific service prefixes to include
+      - prefix: "10.1.3.96/28"
+        tag: "s-scale-020-prefix1"
+      - prefix: "10.1.3.112/28"
+        tag: "s-scale-020-prefix2"
+    nat:
+      - prefix: "10.200.0.0/24"
+        outsideNatPrefix: "170.200.0.0/24"

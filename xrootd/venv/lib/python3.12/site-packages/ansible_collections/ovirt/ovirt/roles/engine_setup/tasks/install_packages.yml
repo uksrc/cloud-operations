@@ -1,0 +1,11 @@
+---
+- name: Install oVirt Engine package
+  ansible.builtin.dnf:
+    name: "ovirt-engine"
+    state: present
+
+- name: Install rest of the packages required for oVirt Engine deployment
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ ovirt_engine_setup_package_list }}"

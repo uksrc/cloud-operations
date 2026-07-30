@@ -1,0 +1,12 @@
+---
+release_summary: |
+  Release 2.1.0 eliminates the external requests dependency, adds official support for Ansible 2.20, fixes documentation issues, and improves code quality through reduced duplication and consistent Python version requirements.
+
+minor_changes:
+  - "Replace requests library dependency with ansible.module_utils.urls in _alpaca_api.py and alpaca_group.py to eliminate external dependency requirement."
+  - "Add ansible-core 2.20 to the CI/CD test matrix and officially support Ansible 2.20."
+
+bugfixes:
+  - "Fix incorrect version_added values for parameters that were renamed from camelCase to snake_case in version 2.0.0. All renamed parameters now correctly show version_added: '2.0.0' instead of '1.0.0'."
+  - "Refactor api_connection parameter documentation to use doc fragment and move argument spec to module utils to eliminate duplication across all modules."
+  - "Fix inconsistent Python version requirement in module utils comment. Updated comment in _alpaca_api.py from Python 2.7+ to Python 3.8+ to match README.md and other documentation."

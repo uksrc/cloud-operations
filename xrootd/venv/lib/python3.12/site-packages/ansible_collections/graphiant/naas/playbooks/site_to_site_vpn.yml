@@ -1,0 +1,107 @@
+---
+# Site-to-Site VPN: preshared keys and BGP MD5 passwords come from Ansible Vault.
+# Use vault-password-file.sh (echoes ANSIBLE_VAULT_PASSPHRASE); no plaintext password file.
+# Secrets are loaded with include_vars (no_log: true to guard the raw vault load) and passed
+# to the module via vault_site_to_site_vpn_keys / vault_bgp_md5_passwords, which are declared
+# no_log=True in the module argument spec. The Python library also masks presharedKey and
+# md5Password in log output. No task-level no_log is needed on module tasks — removing it
+# allows --diff to show before/after state when running with --check --diff.
+#
+# Prerequisites: Circuits, interfaces, and LAN segments (VRFs) must be configured on the
+# devices first.
+#
+# Sample execution (provide vault password with --vault-password-file or --ask-vault-pass):
+#   ansible-playbook playbooks/site_to_site_vpn.yml --tags create --vault-password-file configs/vault-password-file.sh
+#   ansible-playbook playbooks/site_to_site_vpn.yml --tags create --ask-vault-pass
+#
+- name: Manage Graphiant Site-to-Site VPN configuration
+  hosts: localhost
+  gather_facts: false
+  vars:
+    vault_secrets_path: "{{ playbook_dir }}/../configs/vault_secrets.yml"
+    vault_password_script: "{{ playbook_dir }}/../configs/vault-password-file.sh"
+    vault_site_to_site_vpn_keys: {}
+    vault_bgp_md5_passwords: {}
+    # graphiant_host: "https://api.graphiant.com"
+    # graphiant_username: "{{ graphiant_username }}"
+    # graphiant_password: "{{ graphiant_password }}"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+
+  tasks:
+    - name: Require vault secrets file for Site-to-Site VPN create
+      ansible.builtin.fail:
+        msg: |
+          Vault file not found: {{ vault_secrets_path }}
+          Setup (no plaintext password file):
+            1. cp configs/vault_secrets.yml.example configs/vault_secrets.yml
+            2. Edit vault_secrets.yml and replace placeholder values with your preshared keys and BGP MD5 passwords
+            3. chmod +x configs/vault-password-file.sh
+            4. export ANSIBLE_VAULT_PASSPHRASE='your-vault-passphrase'
+            5. ansible-vault encrypt configs/vault_secrets.yml --vault-password-file configs/vault-password-file.sh
+            6. Run with vault: --vault-password-file <path> or --ask-vault-pass
+               e.g. ansible-playbook playbooks/site_to_site_vpn.yml --tags create --vault-password-file configs/vault-password-file.sh
+      when: vault_secrets_path is not file
+      tags: ['site_to_site_vpn', 'create']
+
+    - name: Load vault secrets for Site-to-Site VPN
+      ansible.builtin.include_vars:
+        file: "{{ vault_secrets_path }}"
+      no_log: true
+      tags: ['site_to_site_vpn', 'create']
+
+    - name: Configure global VPN profiles
+      graphiant.naas.graphiant_global_config:
+        <<: *graphiant_client_params
+        config_file: "sample_global_vpn_profiles.yaml"
+        operation: "configure"
+        detailed_logs: true
+        state: present
+      register: vpn_result
+      tags: ['site_to_site_vpn', 'vpn_profiles']
+
+    - name: Display VPN result
+      ansible.builtin.debug:
+        msg: "{{ vpn_result.msg }}"
+      tags: ['site_to_site_vpn', 'vpn_profiles']
+
+    - name: Create Site-to-Site VPN
+      graphiant.naas.graphiant_site_to_site_vpn:
+        <<: *graphiant_client_params
+        operation: create
+        site_to_site_vpn_config_file: "sample_site_to_site_vpn.yaml"
+        vault_site_to_site_vpn_keys: "{{ vault_site_to_site_vpn_keys | default({}) }}"
+        vault_bgp_md5_passwords: "{{ vault_bgp_md5_passwords | default({}) }}"
+        detailed_logs: true
+        state: present
+      register: create_result
+      tags: ['site_to_site_vpn', 'create']
+
+    - name: Display Site-to-Site VPN Creation Results
+      ansible.builtin.debug:
+        msg: "{{ create_result.msg }}"
+      when: create_result is defined and create_result.msg is defined
+      tags: ['site_to_site_vpn', 'create']
+
+    - name: Delete Site-to-Site VPN
+      graphiant.naas.graphiant_site_to_site_vpn:
+        <<: *graphiant_client_params
+        operation: delete
+        site_to_site_vpn_config_file: "sample_site_to_site_vpn.yaml"
+        detailed_logs: true
+        state: absent
+      register: delete_result
+      tags: ['site_to_site_vpn', 'delete']
+
+    - name: Display Site-to-Site VPN Deletion Results
+      ansible.builtin.debug:
+        msg: "{{ delete_result.msg }}"
+      when: delete_result is defined and delete_result.msg is defined
+      tags: ['site_to_site_vpn', 'delete']

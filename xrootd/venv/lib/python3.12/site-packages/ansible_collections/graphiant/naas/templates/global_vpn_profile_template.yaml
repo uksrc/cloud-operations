@@ -1,0 +1,23 @@
+# yamllint disable-file
+{
+    "vpn_profiles": {
+        {% for profile in vpn_profiles %}
+        "{{ profile.name }}": {
+            "vpnProfile": {
+                "name": "{{ profile.name }}",
+                "ikeEncryptionAlg": "{{ profile.vpnProfile.ikeEncryptionAlg }}",
+                "ikeDhGroup": "{{ profile.vpnProfile.ikeDhGroup }}",
+                "ikeIntegrity": "{{ profile.vpnProfile.ikeIntegrity }}",
+                "reauthInterval": {{ profile.vpnProfile.reauthInterval }},
+                "ipsecEncryptionAlg": "{{ profile.vpnProfile.ipsecEncryptionAlg }}",
+                "perfectForwardSecrecy": "{{ profile.vpnProfile.perfectForwardSecrecy }}",
+                "ipsecIntegrity": "{{ profile.vpnProfile.ipsecIntegrity }}",
+                "rekeyInterval": {{ profile.vpnProfile.rekeyInterval }},
+                "antiReplayWindowSize": {{ profile.vpnProfile.antiReplayWindowSize }},
+                "esn": {{ profile.vpnProfile.esn | lower }},
+                "dpdInterval": {{ profile.vpnProfile.dpdInterval }}
+            }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    }
+}

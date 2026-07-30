@@ -1,0 +1,109 @@
+# yamllint disable-file
+{
+    "{{ name }}": {
+        {% if action != "delete" %}
+            "policy": {
+                {% if direction == "inbound" %}
+                    "attachPoint": "BGPNeighborIn",
+                {% elif direction == "outbound" %}
+                    "attachPoint": "BGPNeighborOut",
+                {% endif %}
+                "name": "{{ name }}",
+                "description": "{{ description | default('') }}",
+                "defaultAction": "{{ implicit_rule }}",
+                "statements": {
+                    {% for policy in policy_statements %}
+                        "{{ policy.sequence_number }}": {
+                            "statement": {
+                                "seq": {{ policy.sequence_number }},
+                                "seqOld": null,
+                                "matches": {
+                                    "1": {
+                                        "match": {
+                                            "seq": 1,
+                                            "prefixSet": {
+                                                {% if policy.match_prefix_list %}
+                                                    "prefixSet": "{{ policy.match_prefix_list }}"
+                                                {% endif %}
+                                            },
+                                            "community": {
+                                                {% if policy.match_community %}
+                                                    "community": {
+                                                        "community": [
+                                                            {% for value in policy.match_community %}
+                                                                "{{ value }}"{% if not loop.last %},{% endif %}
+                                                            {% endfor %}
+                                                        ]
+                                                    }
+                                                {% endif %}
+                                            }
+                                        }
+                                    }
+                                },
+                                "actions": {
+                                    "1": {
+                                        "action": {
+                                            "seq": 1,
+                                            "callPolicy": {
+                                                "policy": null
+                                            },
+                                            "result": "{{ policy.action_permit }}",
+                                            "metric": {
+                                                "modifier": null,
+                                                {% if policy.action_set_med %} 
+                                                    "absolute": {{ policy.action_set_med }}
+                                                {% else %}
+                                                    "absolute": null
+                                                {% endif %}
+                                            },
+                                            "administrativeDistance": {
+                                                "distance": null
+                                            },
+                                            "bgpSetNextHop": {
+                                                "nextHop": null
+                                            },
+                                            "localPref": {
+                                                {% if policy.action_set_local_preference %} 
+                                                    "localPref": {{ policy.action_set_local_preference }}
+                                                {% else %}
+                                                    "localPref": null
+                                                {% endif %}
+                                            },
+                                            "communities": {
+                                                {% if policy.action_set_community_list %}
+                                                    "community": {
+                                                        "communityList": [
+                                                            {% for value in policy.action_set_community_list %}
+                                                                "{{ value }}"{% if not loop.last %},{% endif %}
+                                                            {% endfor %}
+                                                        ],
+                                                        "additive": {{ policy.action_set_community_additive | default(false) }}
+                                                    }
+                                                {% else %}
+                                                    "community": null
+                                                {% endif %}
+                                            },
+                                            {% if direction == "inbound" %}
+                                                "weight": {
+                                                    {% if policy.action_set_weight %} 
+                                                        "weight": {{ policy.action_set_weight }}
+                                                    {% else %}
+                                                        "weight": null
+                                                    {% endif %}
+                                                },
+                                            {% elif direction == "outbound" %}
+                                                "aspathPrepend": {
+                                                    "repeat": null
+                                                }
+                                            {% endif %}
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    {% endfor %}
+                }
+            }
+        {% endif %}
+    }
+}

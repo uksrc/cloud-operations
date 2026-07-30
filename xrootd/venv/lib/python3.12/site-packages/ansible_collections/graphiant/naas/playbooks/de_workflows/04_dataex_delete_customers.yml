@@ -1,0 +1,68 @@
+---
+# Data Exchange - Delete Customers Playbook (Workflow 4)
+# Deletes Data Exchange customers listed in the config file.
+#
+# Usage:
+#   Preview changes (dry run):
+#     ansible-playbook ansible_collections/graphiant/naas/playbooks/de_workflows/04_dataex_delete_customers.yml --check
+#
+#   Apply changes:
+#     ansible-playbook ansible_collections/graphiant/naas/playbooks/de_workflows/04_dataex_delete_customers.yml
+#
+#   Custom config file:
+#     ansible-playbook ... -e config_file=de_workflows_configs/sample_data_exchange_customers.yaml
+
+- name: Data Exchange - Delete Customers
+  hosts: localhost
+  gather_facts: false
+  vars:
+    # graphiant_host: "https://api.graphiant.com"
+    # graphiant_username: "{{ vault_graphiant_username }}"
+    # graphiant_password: "{{ vault_graphiant_password }}"
+
+    # Use YAML anchors to avoid repetition.
+    # Auth: either set GRAPHIANT_ACCESS_TOKEN (e.g. graphiant login; source ~/.graphiant/env.sh)
+    # or set GRAPHIANT_USERNAME / GRAPHIANT_PASSWORD for password login. Token is tried first.
+    graphiant_client_params: &graphiant_client_params
+      host: "{{ graphiant_host | default(lookup('env', 'GRAPHIANT_HOST')) }}"
+      username: "{{ graphiant_username | default(lookup('env', 'GRAPHIANT_USERNAME')) }}"
+      password: "{{ graphiant_password | default(lookup('env', 'GRAPHIANT_PASSWORD')) }}"
+      access_token: "{{ graphiant_access_token | default(lookup('env', 'GRAPHIANT_ACCESS_TOKEN')) }}"
+      # host: "{{ graphiant_host | default(lookup('ini', 'url file=/absolute/path/credentials.ini section=host')) }}"
+      # username: "{{ graphiant_username | default(lookup('ini', 'username file=/absolute/path/credentials.ini section=credentials')) }}"
+      # password: "{{ graphiant_password | default(lookup('ini', 'password file=/absolute/path/credentials.ini section=credentials')) }}"
+
+  tasks:
+    - name: Get Data Exchange customers summary
+      graphiant.naas.graphiant_data_exchange_info:
+        <<: *graphiant_client_params
+        query: customers_summary
+        detailed_logs: true
+      register: customers_summary
+
+    - name: Display customers summary
+      ansible.builtin.debug:
+        msg: "{{ customers_summary.msg }}"
+
+    - name: Delete Data Exchange customers
+      graphiant.naas.graphiant_data_exchange:
+        <<: *graphiant_client_params
+        operation: delete_customers
+        config_file: "{{ config_file | default('de_workflows_configs/sample_data_exchange_customers.yaml') }}"
+        detailed_logs: true
+      register: delete_customers_result
+
+    - name: Display delete customers result
+      ansible.builtin.debug:
+        msg: "{{ delete_customers_result.msg }}"
+
+    - name: Get updated customers summary
+      graphiant.naas.graphiant_data_exchange_info:
+        <<: *graphiant_client_params
+        query: customers_summary
+        detailed_logs: true
+      register: updated_customers_summary
+
+    - name: Display updated customers count
+      ansible.builtin.debug:
+        msg: "{{ updated_customers_summary.msg }}"

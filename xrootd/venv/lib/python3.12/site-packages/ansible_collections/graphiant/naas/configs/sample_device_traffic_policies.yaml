@@ -1,0 +1,314 @@
+# Device-level traffic policy (edge.trafficPolicy.trafficRulesets).
+# Rule shorthand guidance:
+# Required for every rule: seq, logging, slaClass, and egress.
+# Optional match fields: name, applicationBuiltin or applicationCustom, ipProtocol,
+# sourceNetwork, destinationNetwork, dscpCodePoint, sourcePort, destinationPort, and icmpType.
+# Use applicationBuiltin for portal built-in apps, or applicationCustom for a custom app/domain.
+# If ipProtocol is tcp or udp, sourcePort/destinationPort are optional filters.
+# If ipProtocol is icmp, icmpType is optional: null=Any, 0=Echo Reply, 3=Destination Unreachable,
+# 5=Redirect Message, 8=Echo Request, 9=Router Advertisement, 10=Router Solicitation,
+# 11=Time Exceeded, 12=Parameter Problem, 13=Timestamp, 14=Timestamp Reply.
+# ipProtocol options: any, icmp, igmp, tcp, udp, esp, or ah; DSCP values: 0-63.
+# For egress overlay, circuit labels are not required.
+# For egress dia, set primaryCircuitLabel; backupCircuitLabel is optional and defaults to null.
+# For egress ipsec, use primaryCircuitLabel/backupCircuitLabel with ipsecLabel values.
+# Optional action fields: remarkCodePoint, primaryCircuitLabel, and backupCircuitLabel.
+
+# Segment attachment guidance:
+# Configure workflow: operation configure (trafficRulesets) then attach_to_lan_segments (segments).
+# Deconfigure workflow: detach_from_lan_segments (segments) then deconfigure (trafficRulesets).
+# The traffic_policies_management.yml playbook runs both steps under the configure / deconfigure tags.
+# attach_to_lan_segments maps each listed segment to the ruleset value (string shorthand or API shape).
+# detach_from_lan_segments clears the ruleset reference on each listed segment; values are ignored.
+#
+# Per-object state (under configure; default is present):
+#   - Delete one ruleset:  name: My-Ruleset / state: absent
+#   - Delete one rule:     seq: 500 / state: absent  (only seq required for absent)
+# Example — remove rule 500 from Edge-2-Traffic-Policy on edge-2-sdktest only:
+#   trafficPolicyObject:
+#     - edge-2-sdktest:
+#         trafficRulesets:
+#           - name: Edge-2-Traffic-Policy
+#             rules:
+#               - seq: 500
+#                 state: absent
+
+trafficPolicyObject:
+  - edge-1-sdktest:
+      trafficRulesets:
+        - name: Edge-1-Traffic-Policy
+          description: Payload collection
+          rules:
+            - seq: 1
+              applicationBuiltin: Office 365
+              logging: true  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 100
+              applicationBuiltin: Microsoft Teams
+              logging: true  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_1"
+              backupCircuitLabel: "internet_dia_2"
+
+            - seq: 150
+              applicationCustom: whitehouse.gov
+              logging: false  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: ipsec  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel:
+                ipsecLabel: ipsec_label_1
+              backupCircuitLabel:
+                ipsecLabel: ipsec_label_2
+              state: absent
+
+            - seq: 200
+              ipProtocol: udp  # any, icmp, igmp, tcp, udp, esp, or ah.
+              # sourcePort: 53  # 1-65535.
+              destinationPort: 53  # 1-65535.
+              destinationNetwork: 0.0.0.0/0
+              logging: true  # true or false.
+              slaClass: Silver  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 300
+              applicationCustom: graphiant_dia_ping
+              logging: true  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+              state: absent
+
+            - seq: 400
+              applicationBuiltin: YouTube
+              logging: true  # true or false.
+              slaClass: Bronze  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_1"
+
+            - seq: 500
+              applicationBuiltin: NetFlix
+              logging: true  # true or false.
+              slaClass: Bronze  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_1"
+
+            - seq: 600
+              applicationBuiltin: Facebook
+              logging: true  # true or false.
+              slaClass: Bronze  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 700
+              applicationBuiltin: FaceTime
+              logging: true  # true or false.
+              slaClass: Silver  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 750
+              ipProtocol: tcp  # any, icmp, igmp, tcp, udp, esp, or ah.
+              destinationPort: 443  # 1-65535.
+              destinationNetwork: 0.0.0.0/0
+              logging: true  # true or false.
+              slaClass: Silver  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_1"
+
+            - seq: 800
+              destinationNetwork: 10.0.0.0/8
+              logging: false  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 900
+              destinationNetwork: 172.16.0.0/12
+              logging: true  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 1000
+              destinationNetwork: 192.168.0.0/16
+              logging: true  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 2000
+              sourceNetwork: 10.10.10.0/24
+              destinationNetwork: 20.20.20.0/24
+              dscpCodePoint: 1  # DSCP value: 0-63.
+              logging: true  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              remarkCodePoint: 3  # DSCP remark value: 0-63.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 2010
+              ipProtocol: icmp  # any, icmp, igmp, tcp, udp, esp, or ah.
+              destinationNetwork: 0.0.0.0/0
+              # ICMP types: null=Any, 0=Echo Reply, 3=Destination Unreachable, 5=Redirect Message.
+              # 8=Echo Request, 9=Router Advertisement, 10=Router Solicitation, 11=Time Exceeded.
+              # 12=Parameter Problem, 13=Timestamp, 14=Timestamp Reply.
+              icmpType: 0
+              logging: false  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 2000000000
+              logging: false  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+
+        - name: Edge-1-Traffic-Policy-HA
+          rules:
+            - seq: 1
+              applicationBuiltin: Dns
+              logging: false  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 10
+              name: Wikipedia
+              applicationBuiltin: Wikipedia
+              logging: true  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+      # LAN segment attachments.
+      segments:
+        lan-1-test: Edge-1-Traffic-Policy
+        lan-segment-3: Edge-1-Traffic-Policy-HA
+
+  - edge-2-sdktest:
+      trafficRulesets:
+        - name: Edge-2-Traffic-Policy
+          description: Payload collection
+          rules:
+            - seq: 1
+              applicationBuiltin: Office 365
+              logging: true  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 100
+              applicationBuiltin: Microsoft Teams
+              logging: true  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 150
+              applicationCustom: whitehouse.gov
+              logging: false  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: ipsec  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel:
+                ipsecLabel: ipsec_label_2
+              backupCircuitLabel:
+                ipsecLabel: ipsec_label_3
+
+            - seq: 200
+              ipProtocol: udp  # any, icmp, igmp, tcp, udp, esp, or ah.
+              # sourcePort: 53  # 1-65535.
+              destinationPort: 53  # 1-65535.
+              destinationNetwork: 0.0.0.0/0
+              logging: true  # true or false.
+              slaClass: Silver  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 300
+              applicationCustom: graphiant_dia_ping
+              logging: true  # true or false.
+              slaClass: Gold  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 400
+              applicationBuiltin: YouTube
+              logging: true  # true or false.
+              slaClass: Bronze  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 500
+              applicationBuiltin: NetFlix
+              logging: true  # true or false.
+              slaClass: Bronze  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 600
+              applicationBuiltin: Facebook
+              logging: true  # true or false.
+              slaClass: Bronze  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 700
+              applicationBuiltin: FaceTime
+              logging: true  # true or false.
+              slaClass: Silver  # Default, Bronze, Silver, or Gold.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 750
+              ipProtocol: tcp  # any, icmp, igmp, tcp, udp, esp, or ah.
+              destinationPort: 443  # 1-65535.
+              destinationNetwork: 0.0.0.0/0
+              logging: true  # true or false.
+              slaClass: Silver  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 800
+              destinationNetwork: 10.0.0.0/8
+              logging: false  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 900
+              destinationNetwork: 172.16.0.0/12
+              logging: true  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 1000
+              destinationNetwork: 192.168.0.0/16
+              logging: true  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 2000
+              sourceNetwork: 10.10.10.0/24
+              destinationNetwork: 20.20.20.0/24
+              dscpCodePoint: 1  # DSCP value: 0-63.
+              logging: true  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              remarkCodePoint: 3  # DSCP remark value: 0-63.
+              egress: dia  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+              primaryCircuitLabel: "internet_dia_2"
+
+            - seq: 2010
+              ipProtocol: icmp  # any, icmp, igmp, tcp, udp, esp, or ah.
+              destinationNetwork: 0.0.0.0/0
+              # ICMP types: null=Any, 0=Echo Reply, 3=Destination Unreachable, 5=Redirect Message.
+              # 8=Echo Request, 9=Router Advertisement, 10=Router Solicitation, 11=Time Exceeded.
+              # 12=Parameter Problem, 13=Timestamp, 14=Timestamp Reply.
+              icmpType: 0
+              logging: false  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+              egress: overlay  # overlay, dia, or ipsec; dia/ipsec usually require circuit labels.
+
+            - seq: 2000000000
+              logging: false  # true or false.
+              slaClass: Default  # Default, Bronze, Silver, or Gold.
+
+      # LAN segment attachments.
+      segments:
+        lan-1-test: Edge-2-Traffic-Policy

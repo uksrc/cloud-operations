@@ -1,0 +1,81 @@
+# Graphiant routing policies (GraphiantIn / GraphiantOut attach points).
+# Inbound match: Community, Prefix List, Policy Tag (Level 0/1/2), Stale.
+# Inbound action: Local Preference, Community.
+# Outbound match: Community, Prefix List, Source Route Protocol (Connected, Static, OSPFv2, BGP).
+# Outbound action: Local Preference, Community.
+
+graphiant_routing_policies:
+  - name: Policy-Edge1-Primary 
+    description: Edge1 prefixes with the best priority
+    direction: outbound
+    implicit_rule: Reject
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: prefix_list_edge_1
+        action_permit: accept
+        action_set_local_preference: 110
+        action_set_community_list:
+          - "64512:1"
+        action_set_community_additive: false
+
+  - name: Policy-Edge2-Primary
+    description: Edge2 prefixes with the best priority
+    direction: outbound
+    implicit_rule: Reject
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: prefix_list_edge_2
+        action_permit: accept
+        action_set_local_preference: 110
+        action_set_community_list:
+          - "64512:1"
+        action_set_community_additive: false
+
+  - name: Policy-Edge3-Primary
+    description: Edge3 prefixes with the best priority
+    direction: outbound
+    implicit_rule: Reject
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: prefix_list_edge_3
+        action_permit: accept
+        action_set_local_preference: 110
+        action_set_community_list:
+          - "64512:1"
+        action_set_community_additive: false
+
+  - name: demo_graphiant_inbound_filter
+    description: Graphiant inbound filter with prefix and community
+    direction: inbound
+    implicit_rule: Accept
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: demo_prefix_list_3
+        match_community:
+          - NO_EXPORT
+        action_permit: accept
+        action_set_local_preference: 100
+
+  # - name: demo_graphiant_inbound_with_policy_tag
+  #   description: Graphiant inbound with policy tag and stale match
+  #   direction: inbound
+  #   implicit_rule: Reject
+  #   policy_statements:
+  #     - sequence_number: 10
+  #       match_prefix_list: demo_prefix_list_3
+  #       match_policy_tag_level_0: tag0
+  #       match_policy_tag_level_1: tag1
+  #       match_stale: true
+  #       action_permit: accept
+  #       action_set_local_preference: 105
+
+  - name: demo_graphiant_outbound_source_protocol
+    description: Graphiant outbound match by source route protocol
+    direction: outbound
+    implicit_rule: Accept
+    policy_statements:
+      - sequence_number: 10
+        match_prefix_list: demo_prefix_list_3
+        match_source_route_protocol: BGP
+        action_permit: accept
+        action_set_local_preference: 200

@@ -1,0 +1,15 @@
+---
+requires_ansible: ">=2.16.0"
+plugin_routing:
+  action:
+    grpc_config:
+      redirect: ansible.netcommon.grpc
+    grpc_get:
+      redirect: ansible.netcommon.grpc
+  filter:
+    ipaddr:
+      redirect: ansible.utils.ipaddr
+    ipv4:
+      redirect: ansible.utils.ipv4
+    ipv6:
+      redirect: ansible.utils.ipv6

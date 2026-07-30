@@ -1,0 +1,10 @@
+---
+####################################################################
+# Default variables for hv_vspone_object_kmip_server_role
+####################################################################
+
+# List of KMIP server names to process.
+hv_vspone_object_kmip_server_role_names: []
+
+# Comma-separated HTTPS cipher suites to apply on each KMIP server.
+hv_vspone_object_kmip_server_role_https_ciphers: ""

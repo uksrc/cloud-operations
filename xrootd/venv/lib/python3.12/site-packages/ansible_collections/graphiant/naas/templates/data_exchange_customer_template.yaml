@@ -1,0 +1,9 @@
+# yamllint disable-file
+# Data Exchange Customer Template
+# This template is not used to generate the API payload for Data Exchange customer creation
+
+name: "{{ customer_name }}"
+type: "{{ customer_type }}"  # Default is "graphiant_peer" if not specified
+invite:
+  adminEmail: {{ admin_emails }}
+  maximumNumberOfSites: {{ max_sites }}  # Default is 5 if not specified
