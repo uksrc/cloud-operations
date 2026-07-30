@@ -92,3 +92,12 @@
     state: started
     enabled: true
   become: true
+
+- name: Switch logrotate to use copytruncate rather than nocreate
+  ansible.builtin.copy:
+    src: logrotate.d-xrootd
+    dest: /etc/logrotate.d/xrootd
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
