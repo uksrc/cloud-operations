@@ -11,13 +11,13 @@
     enabled: yes
 
 # Disabling this firewalld rule temporarily, as needed to test the new 100gbp link network access on port 1094
-# - name: open xrootd port in firewalld
-#   ansible.posix.firewalld:
-#     zone: public
-#     port: 1094/tcp
-#     permanent: true
-#     state: enabled
-#     immediate: true
+- name: open xrootd port in firewalld
+  ansible.posix.firewalld:
+    zone: public
+    port: 1094/tcp
+    permanent: true
+    state: enabled
+    immediate: true
 
 - name: open port 80 for LetsEncrypt in firewalld
   ansible.posix.firewalld:
@@ -101,3 +101,22 @@
   ansible.builtin.service:
     name: firewalld
     state: restarted
+
+# Set default route via the 100Gb SRIOV interface gateway
+# This ensures XRootD data traffic uses the high-speed 100Gb link by default
+
+- name: Get the NetworkManager connection name for the SRIOV interface
+  ansible.builtin.shell: |
+    nmcli -t -f NAME,DEVICE con show --active | grep ":{{ wcdc_dirac_interface }}$" | cut -d: -f1
+  register: nm_connection_result
+  changed_when: false
+  when: wcdc_dirac_interface is defined and wcdc_dirac_interface | length > 0
+
+- name: Set the default route via the 100Gb SRIOV gateway
+  ansible.builtin.shell: |
+    nmcli con mod "{{ nm_connection_result.stdout }}" ipv4.gateway "{{ wcdc_dirac_gateway }}"
+    nmcli con down "{{ nm_connection_result.stdout }}"
+    nmcli con up "{{ nm_connection_result.stdout }}"
+  when:
+    - nm_connection_result.stdout is defined
+    - nm_connection_result.stdout | length > 0

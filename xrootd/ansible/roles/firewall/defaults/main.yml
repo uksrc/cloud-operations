@@ -1,4 +1,5 @@
 ssh_local_access_cidr: 192.168.0.0/24
 wcdc_dirac_subnet: 192.84.5.0/27
+wcdc_dirac_gateway: 192.84.5.30
 wcdc_dirac_zone: wcdc-dirac
 wcdc_dirac_xrootd_port: 1094
