@@ -1,2 +1,0 @@
-bugfixes:
-  - na_ontap_qtree - Updated module with alias `volume_name` for `flexvol_name`.

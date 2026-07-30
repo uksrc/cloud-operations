@@ -1,2 +1,0 @@
-bugfixes:
-  - na_ontap_vserver_delete- Added gathering of NVMe subsystems and deletion of them before deleting the vserver to fix errors when NVMe subsystems are present.

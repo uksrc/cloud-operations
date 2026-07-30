@@ -1,4 +1,0 @@
----
-minor_changes:
-  - Adds new event queries for indirect host count.
-  - Adds test structure by adding api_fixtures and conftest.py under tests/unit/ directory.

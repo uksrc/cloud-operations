@@ -1,2 +1,0 @@
-bugfixes:
-  - na_ontap_user_role - Removed special handling of `DEFAULT` path and normalized empty query in privileges to None for consistency.

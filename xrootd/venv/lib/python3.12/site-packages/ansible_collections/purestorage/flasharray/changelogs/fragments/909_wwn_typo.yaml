@@ -1,2 +1,0 @@
-bugfixes:
- - purefa_host - Fixed AttributeError when deleting WWNs from a host

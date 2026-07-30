@@ -1,2 +1,0 @@
-bugfixes:
-  - na_ontap_vserver_delete - Added `check_mode` to the task that deletes the vserver to ensure support for dry-run mode.

@@ -1,2 +1,0 @@
-bugfixes:
- - purefa_pgsched - Fixed schedule deletion idempotency

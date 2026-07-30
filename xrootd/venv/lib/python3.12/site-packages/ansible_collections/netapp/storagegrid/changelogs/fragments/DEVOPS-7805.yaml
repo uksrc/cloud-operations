@@ -1,3 +1,0 @@
-bugfixes:
-  - na_sg_grid_info - Fix issue where the module incorrectly reported tasks as changed.
-  - na_sg_org_info - Fix issue where the module incorrectly reported tasks as changed.

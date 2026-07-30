@@ -1,2 +1,0 @@
-bugfixes:
- - purefa_info - Resolved AttributeErrors in ``default`` info section

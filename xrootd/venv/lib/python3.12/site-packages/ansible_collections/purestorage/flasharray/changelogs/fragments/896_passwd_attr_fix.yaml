@@ -1,2 +1,0 @@
-bugfixes:
- - purefa_policy - Fixed AttributeError when modifying a password policy

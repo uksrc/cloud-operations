@@ -1,5 +1,0 @@
----
-# Collection requirements for hv_vspone_object_kmip_server_role
-collections:
-  - name: hitachivantara.vspone_object
-    version: ">=1.0.0"

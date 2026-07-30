@@ -1,2 +1,0 @@
-minor_changes:
-  - na_ontap_snapmirror - updated documentation for `identity_preserve` and `max_transfer_rate`.

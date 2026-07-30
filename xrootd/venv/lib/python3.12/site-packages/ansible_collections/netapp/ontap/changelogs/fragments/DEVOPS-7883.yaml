@@ -1,2 +1,0 @@
-minor_changes:
-  - na_ontap_security_certificates - Added support to generate certificate signing requests (CSRs) in REST.

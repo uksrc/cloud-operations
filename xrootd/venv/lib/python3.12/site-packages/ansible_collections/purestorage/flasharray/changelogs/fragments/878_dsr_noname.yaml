@@ -1,2 +1,0 @@
-bugfixes:
- - purefa_info - Fixed AttributeError when directory service role has no name

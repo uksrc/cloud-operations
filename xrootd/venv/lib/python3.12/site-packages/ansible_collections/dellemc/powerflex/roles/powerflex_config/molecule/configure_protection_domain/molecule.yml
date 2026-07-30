@@ -1,5 +1,0 @@
----
-scenario:
-  test_sequence:
-    - converge
-    - idempotence

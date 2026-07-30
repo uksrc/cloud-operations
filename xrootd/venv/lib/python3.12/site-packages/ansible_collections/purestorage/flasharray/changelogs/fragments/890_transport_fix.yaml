@@ -1,2 +1,0 @@
-bugfixes:
- - purefa_connect - Fixed issue where incorrect transport type was passed.

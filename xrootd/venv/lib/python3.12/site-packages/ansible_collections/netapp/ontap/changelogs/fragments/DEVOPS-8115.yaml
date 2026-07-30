@@ -1,2 +1,0 @@
-minor_changes:
-  - na_ontap_net_ifgrp - Update `mode` parameter to specify allowed values.

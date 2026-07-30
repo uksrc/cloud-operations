@@ -1,2 +1,0 @@
-bugfixes:
-  - purefa_offload - Fixed broken required_if validation that never executed due to comparing argument_spec dictionary to string instead of parameter value
