@@ -127,10 +127,20 @@ resource "openstack_compute_instance_v2" "xrootd_instance" {
 
 data "openstack_networking_port_v2" "xrootd_instance_port" {
   device_id  = openstack_compute_instance_v2.xrootd_instance.id
-  network_id = data.openstack_networking_network_v2.ska_uksrc_network.id
+  network_id = data.openstack_networking_network_v2.ska_uksrc_network_wcdc_dirac.id
 }
 
 resource "openstack_networking_floatingip_associate_v2" "floating_ip_mapping" {
   floating_ip = var.openstack_floating_ip
   port_id     = data.openstack_networking_port_v2.xrootd_instance_port.id
 }
+
+# data "openstack_networking_port_v2" "xrootd_instance_port" {
+#   device_id  = openstack_compute_instance_v2.xrootd_instance.id
+#   network_id = data.openstack_networking_network_v2.ska_uksrc_network.id
+# }
+
+# resource "openstack_networking_floatingip_associate_v2" "floating_ip_mapping" {
+#   floating_ip = var.openstack_floating_ip
+#   port_id     = data.openstack_networking_port_v2.xrootd_instance_port.id
+# }
