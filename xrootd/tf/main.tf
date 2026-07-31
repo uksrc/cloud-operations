@@ -84,16 +84,9 @@ resource "openstack_networking_port_v2" "ska_uksrc_wcdc_dirac_sriov_port" {
   name           = "${var.environment}-wcdc-dirac-sriov"
   network_id     = data.openstack_networking_network_v2.ska_uksrc_network_wcdc_dirac.id
   admin_state_up = "true"
-  port_security_enabled = false
 
   binding {
     vnic_type = "direct"
-    profile   = jsonencode({ trusted = true })
-  }
-
-  fixed_ip {
-    subnet_id  = data.openstack_networking_subnet_v2.ska_uksrc_subnet_wcdc_dirac.id
-    ip_address = "192.84.5.2"
   }
 }
 
@@ -123,20 +116,10 @@ resource "openstack_compute_instance_v2" "xrootd_instance" {
 
 data "openstack_networking_port_v2" "xrootd_instance_port" {
   device_id  = openstack_compute_instance_v2.xrootd_instance.id
-  network_id = data.openstack_networking_network_v2.ska_uksrc_network_wcdc_dirac.id
+  network_id = data.openstack_networking_network_v2.ska_uksrc_network.id
 }
 
 resource "openstack_networking_floatingip_associate_v2" "floating_ip_mapping" {
   floating_ip = var.openstack_floating_ip
   port_id     = data.openstack_networking_port_v2.xrootd_instance_port.id
 }
-
-# data "openstack_networking_port_v2" "xrootd_instance_port" {
-#   device_id  = openstack_compute_instance_v2.xrootd_instance.id
-#   network_id = data.openstack_networking_network_v2.ska_uksrc_network.id
-# }
-
-# resource "openstack_networking_floatingip_associate_v2" "floating_ip_mapping" {
-#   floating_ip = var.openstack_floating_ip
-#   port_id     = data.openstack_networking_port_v2.xrootd_instance_port.id
-# }
