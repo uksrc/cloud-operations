@@ -97,6 +97,14 @@
     immediate: true
   loop: "{{ xrootd_allowed_ip_addresses }}"
 
+- name: Allow all egress traffic from the 100Gb SRIOV interface to any destination
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    rich_rule: "rule family='ipv4' destination address='0.0.0.0/0' accept"
+    permanent: true
+    state: enabled
+    immediate: true
+
 - name: Restart firewalld service
   ansible.builtin.service:
     name: firewalld
