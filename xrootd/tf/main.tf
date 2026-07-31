@@ -86,13 +86,9 @@ resource "openstack_networking_port_v2" "ska_uksrc_wcdc_dirac_sriov_port" {
   admin_state_up = "true"
   port_security_enabled = false
 
-  value_specs = {
-    "binding:vnic_type" = "direct"
-
-    # Optional: trusted VF
-    "binding:profile" = jsonencode({
-      trusted = true
-    })
+  binding {
+    vnic_type = "direct"
+    profile   = jsonencode({ trusted = true })
   }
 
   fixed_ip {
