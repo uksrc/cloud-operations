@@ -10,13 +10,14 @@
     state: started
     enabled: yes
 
-# Disabling this firewalld rule temporarily, as needed to test the new 100gbp link network access on port 1094
-- name: open xrootd port in firewalld
+# XRootD access must only be via the 100Gb SRIOV link, so block port 1094
+# on the management (public) zone. Clients must use the 100Gb interface IP.
+- name: close xrootd port on the public zone (only allow via 100Gb SRIOV link)
   ansible.posix.firewalld:
     zone: public
     port: 1094/tcp
     permanent: true
-    state: enabled
+    state: disabled
     immediate: true
 
 - name: open port 80 for LetsEncrypt in firewalld
@@ -41,6 +42,16 @@
   ansible.posix.firewalld:
     zone: trusted
     source: "{{ ssh_local_access_cidr }}"
+    permanent: true
+    state: enabled
+    immediate: true
+
+# The trusted zone accepts all traffic by default, so explicitly reject
+# XRootD port 1094 to force clients onto the 100Gb SRIOV link only
+- name: block xrootd port on the trusted zone (only allow via 100Gb SRIOV link)
+  ansible.posix.firewalld:
+    zone: trusted
+    rich_rule: "rule family='ipv4' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' reject"
     permanent: true
     state: enabled
     immediate: true
