@@ -55,16 +55,41 @@
 
 # 100Gb WCDC DIRAC SRIOV interface firewall rules
 # Neutron security groups have no effect on SRIOV direct ports, so guest OS firewall is the only protection
-
 - name: Get the SRIOV interface name
   ansible.builtin.shell: |
-    ip -o addr show to {{ wcdc_dirac_subnet }} | head -1 | awk '{print $2}'
+    # First try: interface with IP in the WCDC Dirac subnet
+    iface=$(ip -o addr show to {{ wcdc_dirac_subnet }} | head -1 | awk '{print $2}')
+    if [ -z "$iface" ]; then
+      # Fallback: interface without any IP
+      for i in $(ls /sys/class/net | grep -v lo); do
+        if ! ip -o addr show dev "$i" | grep -q "inet "; then
+          iface="$i"
+          break
+        fi
+      done
+    fi
+    echo "$iface"
   register: sriov_iface_result
   changed_when: false
+# - name: Get the SRIOV interface name (interface without an IP)
+#   ansible.builtin.shell: |
+#     for iface in $(ls /sys/class/net | grep -v lo); do
+#       if ! ip -o addr show dev "$iface" | grep -q "inet "; then
+#         echo "$iface"
+#         break
+#       fi
+#     done
+#   register: sriov_iface_result
+#   changed_when: false
 
 - name: Set SRIOV interface fact
   ansible.builtin.set_fact:
     wcdc_dirac_interface: "{{ sriov_iface_result.stdout }}"
+
+- name: Fail if SRIOV interface not found
+  ansible.builtin.fail:
+    msg: "SRIOV interface without an IP not found"
+  when: wcdc_dirac_interface | length == 0
 
 - name: Create a dedicated firewalld zone for the 100Gb SRIOV interface
   ansible.posix.firewalld:
@@ -80,30 +105,30 @@
     state: enabled
     immediate: true
 
-#- name: Allow XRootD access from the 100Gb subnet on the SRIOV interface
-#  ansible.posix.firewalld:
-#    zone: "{{ wcdc_dirac_zone }}"
-#    rich_rule: "rule family='ipv4' source address='{{ wcdc_dirac_subnet }}' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' accept"
-#    permanent: true
-#    state: enabled
-#    immediate: true
-#
-#- name: Allow XRootD access from specific allowed IPs on the SRIOV interface
-#  ansible.posix.firewalld:
-#    zone: "{{ wcdc_dirac_zone }}"
-#    rich_rule: "rule family='ipv4' source address='{{ item }}' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' accept"
-#    permanent: true
-#    state: enabled
-#    immediate: true
-#  loop: "{{ xrootd_allowed_ip_addresses }}"
-#
-#- name: Allow all egress traffic from the 100Gb SRIOV interface to any destination
-#  ansible.posix.firewalld:
-#    zone: "{{ wcdc_dirac_zone }}"
-#    rich_rule: "rule family='ipv4' destination address='0.0.0.0/0' accept"
-#    permanent: true
-#    state: enabled
-#    immediate: true
+- name: Allow XRootD access from the 100Gb subnet on the SRIOV interface
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    rich_rule: "rule family='ipv4' source address='{{ wcdc_dirac_subnet }}' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' accept"
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: Allow XRootD access from specific allowed IPs on the SRIOV interface
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    rich_rule: "rule family='ipv4' source address='{{ item }}' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' accept"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop: "{{ xrootd_allowed_ip_addresses }}"
+
+- name: Allow all egress traffic from the 100Gb SRIOV interface to any destination
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    rich_rule: "rule family='ipv4' destination address='0.0.0.0/0' accept"
+    permanent: true
+    state: enabled
+    immediate: true
 
 - name: Restart firewalld service
   ansible.builtin.service:
@@ -113,18 +138,21 @@
 # Set default route via the 100Gb SRIOV interface gateway
 # This ensures XRootD data traffic uses the high-speed 100Gb link by default
 
-#- name: Get the NetworkManager connection name for the SRIOV interface
-#  ansible.builtin.shell: |
-#    nmcli -t -f NAME,DEVICE con show --active | grep ":{{ wcdc_dirac_interface }}$" | cut -d: -f1
-#  register: nm_connection_result
-#  changed_when: false
-#  when: wcdc_dirac_interface is defined and wcdc_dirac_interface | length > 0
-#
-#- name: Set the default route via the 100Gb SRIOV gateway
-#  ansible.builtin.shell: |
-#    nmcli con mod "{{ nm_connection_result.stdout }}" ipv4.gateway "{{ wcdc_dirac_gateway }}"
-#    nmcli con down "{{ nm_connection_result.stdout }}"
-#    nmcli con up "{{ nm_connection_result.stdout }}"
-#  when:
-#    - nm_connection_result.stdout is defined
-#    - nm_connection_result.stdout | length > 0
+- name: Get the NetworkManager connection name for the SRIOV interface
+  ansible.builtin.shell: |
+    nmcli -t -f NAME,DEVICE con show --active | grep ":{{ wcdc_dirac_interface }}$" | cut -d: -f1
+  register: nm_connection_result
+  changed_when: false
+  when: wcdc_dirac_interface is defined and wcdc_dirac_interface | length > 0
+
+- name: Set the IP address and default route via the 100Gb SRIOV gateway
+  ansible.builtin.shell: |
+    nmcli con mod "{{ nm_connection_result.stdout }}" \
+      ipv4.addresses "{{ wcdc_dirac_ip }}/27" \
+      ipv4.gateway "{{ wcdc_dirac_gateway }}" \
+      ipv4.method manual
+    nmcli con down "{{ nm_connection_result.stdout }}"
+    nmcli con up "{{ nm_connection_result.stdout }}"
+  when:
+    - nm_connection_result.stdout is defined
+    - nm_connection_result.stdout | length > 0
