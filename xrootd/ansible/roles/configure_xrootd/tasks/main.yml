@@ -79,12 +79,12 @@
     line: 'Environment=XDG_CACHE_HOME=/var/cache/xrootd'
   become: true
 
-- name: change owner of macaroon secret
-  ansible.builtin.file:
-    path: /etc/xrootd/macaroon-secret
-    owner: xrootd
-    group: xrootd
-  become: true
+#- name: change owner of macaroon secret
+#  ansible.builtin.file:
+#    path: /etc/xrootd/macaroon-secret
+#    owner: xrootd
+#    group: xrootd
+#  become: true
 
 - name: start and enable xrootd http service
   ansible.builtin.service:
