@@ -56,30 +56,30 @@
 # 100Gb WCDC DIRAC SRIOV interface firewall rules
 # Neutron security groups have no effect on SRIOV direct ports, so guest OS firewall is the only protection
 
-#- name: Get the SRIOV interface name
-#  ansible.builtin.shell: |
-#    ip -o addr show to {{ wcdc_dirac_subnet }} | head -1 | awk '{print $2}'
-#  register: sriov_iface_result
-#  changed_when: false
-#
-#- name: Set SRIOV interface fact
-#  ansible.builtin.set_fact:
-#    wcdc_dirac_interface: "{{ sriov_iface_result.stdout }}"
-#
-#- name: Create a dedicated firewalld zone for the 100Gb SRIOV interface
-#  ansible.posix.firewalld:
-#    zone: "{{ wcdc_dirac_zone }}"
-#    state: present
-#    permanent: true
-#
-#- name: Add the SRIOV interface to the dedicated zone
-#  ansible.posix.firewalld:
-#    zone: "{{ wcdc_dirac_zone }}"
-#    interface: "{{ wcdc_dirac_interface }}"
-#    permanent: true
-#    state: enabled
-#    immediate: true
-#
+- name: Get the SRIOV interface name
+  ansible.builtin.shell: |
+    ip -o addr show to {{ wcdc_dirac_subnet }} | head -1 | awk '{print $2}'
+  register: sriov_iface_result
+  changed_when: false
+
+- name: Set SRIOV interface fact
+  ansible.builtin.set_fact:
+    wcdc_dirac_interface: "{{ sriov_iface_result.stdout }}"
+
+- name: Create a dedicated firewalld zone for the 100Gb SRIOV interface
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    state: present
+    permanent: true
+
+- name: Add the SRIOV interface to the dedicated zone
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    interface: "{{ wcdc_dirac_interface }}"
+    permanent: true
+    state: enabled
+    immediate: true
+
 #- name: Allow XRootD access from the 100Gb subnet on the SRIOV interface
 #  ansible.posix.firewalld:
 #    zone: "{{ wcdc_dirac_zone }}"
