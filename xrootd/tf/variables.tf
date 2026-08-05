@@ -43,17 +43,17 @@ variable "openstack_wcdc_dirac_network" {
   type        = string
 }
 
-variable "openstack_wcdc_dirac_subnet" {
-  description = "100Gbps subnet to attach the XRootD instance to"
-  type        = string
-}
+# variable "openstack_wcdc_dirac_subnet" {
+#   description = "100Gbps subnet to attach the XRootD instance to"
+#   type        = string
+# }
 
 variable "openstack_iris_network" {
   description = "IRIS network to attach the XRootD instance to"
   type        = string
 }
 
-variable "openstack_iris_subnet" {
-  description = "IRIS subnet to attach the XRootD instance to"
-  type        = string
-}
+# variable "openstack_iris_subnet" {
+#   description = "IRIS subnet to attach the XRootD instance to"
+#   type        = string
+# }
