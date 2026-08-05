@@ -23,11 +23,6 @@ variable "openstack_ska_uksrc_subnet" {
   type        = string
 }
 
-variable "openstack_floating_ip" {
-  description = "The OpenStack external IP to associate with the XRootD instance"
-  type        = string
-}
-
 variable "state_s3_endpoint" {
   description = "The S3 endpoint URL for the tofu state"
   type        = string
