@@ -3,3 +3,6 @@ wcdc_dirac_subnet: 192.84.5.0/27
 wcdc_dirac_gateway: 192.84.5.30
 wcdc_dirac_zone: wcdc-dirac
 wcdc_dirac_xrootd_port: 1094
+wcdc_dirac_interface: "eth1"
+iris_interface: "eth2"
+iris_subnet: 10.7.0.0/16

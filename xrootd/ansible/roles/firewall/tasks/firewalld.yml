@@ -10,47 +10,81 @@
     state: started
     enabled: yes
 
-- name: open xrootd port in firewalld
-  ansible.posix.firewalld:
-    zone: public
-    port: 1094/tcp
-    permanent: true
-    state: enabled
-    immediate: true
+# Configuration for the WCDC-DIRAC network (100Gbps)
 
-- name: open port 80 for LetsEncrypt in firewalld
+- name: Create a new zone for the WCDC-DIRAC network
   ansible.posix.firewalld:
-    zone: public
-    port: 80/tcp
+    zone: "{{ wcdc_dirac_zone }}"
     permanent: true
     state: enabled
-    immediate: true
+    immediate: yes
+
+# - name: Add the WCDC-DIRAC network to the wcdc-dirac zone in firewalld
+#   ansible.posix.firewalld:
+#     zone: "{{ wcdc_dirac_zone }}"
+#     source: "{{ wcdc_dirac_subnet }}"
+#     interface: "{{ wcdc_dirac_interface }}"
+#     permanent: true
+#     state: enabled
+#     immediate: true
+
+# - name: open xrootd port in firewalld
+#   ansible.posix.firewalld:
+#     zone: "{{ wcdc_dirac_zone }}"
+#     port: 1094/tcp
+#     permanent: true
+#     state: enabled
+#     immediate: true
+
+# - name: open port 80 for LetsEncrypt in firewalld
+#   ansible.posix.firewalld:
+#     zone: "{{ wcdc_dirac_zone }}"
+#     port: 80/tcp
+#     permanent: true
+#     state: enabled
+#     immediate: true
+
+# Configuration for the IRIS network
+
+# - name: Add the IRIS network to the public zone in firewalld
+#   ansible.posix.firewalld:
+#     zone: public
+#     source: "{{ iris_subnet }}"
+#     interface: "{{ iris_interface }}"
+#     permanent: true
+#     state: enabled
+#     immediate: true
+
+# Configuration for the SSH network (local access)
 
 # firewalld ssh config taken from https://docs.rackspace.com/docs/limit-ssh-access-by-ip-address
 
-- name: add the ssh service to the trusted zone in firewalld
-  ansible.posix.firewalld:
-    zone: trusted
-    service: ssh
-    permanent: true
-    state: enabled
-    immediate: true
+# - name: add the ssh service to the trusted zone in firewalld
+#   ansible.posix.firewalld:
+#     zone: trusted
+#     service: ssh
+#     permanent: true
+#     state: enabled
+#     immediate: true
 
-- name: add ssh source network to the trusted zone in firewalld
-  ansible.posix.firewalld:
-    zone: trusted
-    source: "{{ ssh_local_access_cidr }}"
-    permanent: true
-    state: enabled
-    immediate: true
+# - name: add ssh source network to the trusted zone in firewalld
+#   ansible.posix.firewalld:
+#     zone: trusted
+#     source: "{{ ssh_local_access_cidr }}"
+#     permanent: true
+#     state: enabled
+#     immediate: true
 
-- name: remove ssh service from the public zone in firewalld
-  ansible.posix.firewalld:
-    zone: public
-    service: ssh
-    permanent: true
-    state: disabled
-    immediate: true
+# - name: remove ssh service from the public zone in firewalld
+#   ansible.posix.firewalld:
+#     zone: public
+#     service: ssh
+#     permanent: true
+#     state: disabled
+#     immediate: true
+- name: Reload firewalld
+  firewalld:
+    state: reloaded
 
 - name: Restart firewalld service
   ansible.builtin.service:
