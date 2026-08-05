@@ -10,14 +10,12 @@
     state: started
     enabled: yes
 
-# XRootD access must only be via the 100Gb SRIOV link, so block port 1094
-# on the management (public) zone. Clients must use the 100Gb interface IP.
-- name: close xrootd port on the public zone (only allow via 100Gb SRIOV link)
+- name: open xrootd port in firewalld
   ansible.posix.firewalld:
     zone: public
     port: 1094/tcp
     permanent: true
-    state: disabled
+    state: enabled
     immediate: true
 
 - name: open port 80 for LetsEncrypt in firewalld
@@ -46,16 +44,6 @@
     state: enabled
     immediate: true
 
-# The trusted zone accepts all traffic by default, so explicitly reject
-# XRootD port 1094 to force clients onto the 100Gb SRIOV link only
-- name: block xrootd port on the trusted zone (only allow via 100Gb SRIOV link)
-  ansible.posix.firewalld:
-    zone: trusted
-    rich_rule: "rule family='ipv4' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' reject"
-    permanent: true
-    state: enabled
-    immediate: true
-
 - name: remove ssh service from the public zone in firewalld
   ansible.posix.firewalld:
     zone: public
@@ -64,84 +52,7 @@
     state: disabled
     immediate: true
 
-# 100Gb WCDC DIRAC SRIOV interface firewall rules
-# Neutron security groups have no effect on SRIOV direct ports, so guest OS firewall is the only protection
-# The SRIOV port gets its IP via DHCP from the WCDC-DIRAC subnet allocation pool.
-# Do NOT set a static IP via nmcli - the port cannot have a fixed IP (policy restriction),
-# and switching to manual mode breaks the DHCP lease, causing ARP failures to the gateway.
-
-- name: Get the SRIOV interface name (interface with IP in the WCDC Dirac subnet)
-  ansible.builtin.shell: |
-    iface=$(ip -o addr show to {{ wcdc_dirac_subnet }} | head -1 | awk '{print $2}')
-    echo "$iface"
-  register: sriov_iface_result
-  changed_when: false
-
-- name: Set SRIOV interface fact
-  ansible.builtin.set_fact:
-    wcdc_dirac_interface: "{{ sriov_iface_result.stdout }}"
-
-- name: Fail if SRIOV interface not found
-  ansible.builtin.fail:
-    msg: "SRIOV interface with IP in {{ wcdc_dirac_subnet }} not found. Check that the WCDC-DIRAC SRIOV port has a DHCP-assigned IP."
-  when: wcdc_dirac_interface | length == 0
-
-- name: Create a dedicated firewalld zone for the 100Gb SRIOV interface
-  ansible.posix.firewalld:
-    zone: "{{ wcdc_dirac_zone }}"
-    state: present
-    permanent: true
-
-- name: Add the SRIOV interface to the dedicated zone
-  ansible.posix.firewalld:
-    zone: "{{ wcdc_dirac_zone }}"
-    interface: "{{ wcdc_dirac_interface }}"
-    permanent: true
-    state: enabled
-    immediate: true
-
-- name: Allow XRootD access from the 100Gb subnet on the SRIOV interface
-  ansible.posix.firewalld:
-    zone: "{{ wcdc_dirac_zone }}"
-    rich_rule: "rule family='ipv4' source address='{{ wcdc_dirac_subnet }}' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' accept"
-    permanent: true
-    state: enabled
-    immediate: true
-
-- name: Allow XRootD access from specific allowed IPs on the SRIOV interface
-  ansible.posix.firewalld:
-    zone: "{{ wcdc_dirac_zone }}"
-    rich_rule: "rule family='ipv4' source address='{{ item }}' port port='{{ wcdc_dirac_xrootd_port }}' protocol='tcp' accept"
-    permanent: true
-    state: enabled
-    immediate: true
-  loop: "{{ xrootd_allowed_ip_addresses }}"
-
-- name: Allow all egress traffic from the 100Gb SRIOV interface to any destination
-  ansible.posix.firewalld:
-    zone: "{{ wcdc_dirac_zone }}"
-    rich_rule: "rule family='ipv4' destination address='0.0.0.0/0' accept"
-    permanent: true
-    state: enabled
-    immediate: true
-
-# Reload firewalld to apply all permanent changes without losing zone bindings.
-# A full service restart can drop interface-to-zone assignments.
-- name: Reload firewalld to apply permanent changes
-  ansible.builtin.command: firewall-cmd --reload
-  changed_when: true
-
-# Verification: ensure the SRIOV interface is in the correct zone and can reach the gateway
-- name: Verify the SRIOV interface is in the wcdc-dirac zone
-  ansible.builtin.shell: |
-    firewall-cmd --get-active-zones | grep -A1 "{{ wcdc_dirac_zone }}" | grep "{{ wcdc_dirac_interface }}"
-  register: zone_verify
-  changed_when: false
-  failed_when: zone_verify.rc != 0
-
-- name: Verify the SRIOV interface can reach the gateway
-  ansible.builtin.shell: |
-    ping -c 1 -W 2 {{ wcdc_dirac_gateway }}
-  register: gateway_ping
-  changed_when: false
-  failed_when: gateway_ping.rc != 0
+- name: Restart firewalld service
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted
