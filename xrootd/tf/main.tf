@@ -29,6 +29,15 @@ data "openstack_networking_subnet_v2" "ska_uksrc_subnet_wcdc_dirac" {
   name       = var.openstack_wcdc_dirac_subnet
 }
 
+data "openstack_networking_network_v2" "iris_network" {
+  name = var.openstack_iris_network
+}
+
+data "openstack_networking_subnet_v2" "iris_subnet" {
+  network_id = data.openstack_networking_network_v2.iris_network.id
+  name       = var.openstack_iris_subnet
+}
+
 resource "openstack_networking_secgroup_v2" "ska_uksrc_xrootd_sg" {
   name        = "${var.environment}-sg"
   description = "XRootD server access at Cambridge"
@@ -90,6 +99,16 @@ resource "openstack_networking_port_v2" "ska_uksrc_wcdc_dirac_sriov_port" {
   }
 }
 
+# IRIS SRIOV port
+resource "openstack_networking_port_v2" "iris_sriov_port" {
+  name           = "${var.environment}-iris-sriov"
+  network_id     = data.openstack_networking_network_v2.iris_network.id
+  admin_state_up = "true"
+  binding {
+    vnic_type = "direct"
+  }
+}
+
 resource "openstack_compute_instance_v2" "xrootd_instance" {
 
   name      = var.environment
@@ -104,13 +123,13 @@ resource "openstack_compute_instance_v2" "xrootd_instance" {
   })
 
   network {
-    name = "iris-ska-src-sriov"
-  }
-  network {
     name = var.openstack_ska_uksrc_network
   }
   network {
     port = openstack_networking_port_v2.ska_uksrc_wcdc_dirac_sriov_port.id
+  }
+  network {
+    port = openstack_networking_port_v2.iris_sriov_port.id
   }
 }
 
