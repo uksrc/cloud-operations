@@ -5,4 +5,5 @@ wcdc_dirac_zone: wcdc-dirac
 wcdc_dirac_xrootd_port: 1094
 wcdc_dirac_interface: "eth1"
 iris_interface: "eth2"
-iris_subnet: 10.7.0.0/16
+uksrc_interface: "eth0"
+wcdc_dirac_ip: 192.84.5.20

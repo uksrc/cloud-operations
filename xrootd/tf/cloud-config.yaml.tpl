@@ -18,3 +18,9 @@ packages:
   - e2fsprogs
   - xfsprogs
   - python3.12
+
+# Append Google DNS nameservers to resolv.conf without overwriting
+runcmd:
+  - |
+    grep -q "nameserver 8.8.8.8" /etc/resolv.conf || echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    grep -q "nameserver 8.8.4.4" /etc/resolv.conf || echo "nameserver 8.8.4.4" >> /etc/resolv.conf

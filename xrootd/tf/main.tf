@@ -97,6 +97,9 @@ resource "openstack_networking_port_v2" "ska_uksrc_wcdc_dirac_sriov_port" {
   binding {
     vnic_type = "direct"
   }
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # IRIS SRIOV port
