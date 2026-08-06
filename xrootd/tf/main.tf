@@ -24,19 +24,9 @@ data "openstack_networking_network_v2" "ska_uksrc_network_wcdc_dirac" {
   name = var.openstack_wcdc_dirac_network
 }
 
-# data "openstack_networking_subnet_v2" "ska_uksrc_subnet_wcdc_dirac" {
-#   network_id = data.openstack_networking_network_v2.ska_uksrc_network_wcdc_dirac.id
-#   name       = var.openstack_wcdc_dirac_subnet
-# }
-
 data "openstack_networking_network_v2" "iris_network" {
   name = var.openstack_iris_network
 }
-
-# data "openstack_networking_subnet_v2" "iris_subnet" {
-#   network_id = data.openstack_networking_network_v2.iris_network.id
-#   name       = var.openstack_iris_subnet
-# }
 
 resource "openstack_networking_secgroup_v2" "ska_uksrc_xrootd_sg" {
   name        = "${var.environment}-sg"
@@ -54,39 +44,18 @@ resource "openstack_networking_secgroup_rule_v2" "ssh_access" {
   description       = "Allow SSH from internal network"
 }
 
-# resource "openstack_networking_secgroup_rule_v2" "letsencrypt_access" {
-#   direction         = "ingress"
-#   ethertype         = "IPv4"
-#   protocol          = "tcp"
-#   port_range_min    = 80
-#   port_range_max    = 80
-#   remote_ip_prefix  = "0.0.0.0/0"
-#   security_group_id = openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
-#   description       = "Allow HTTP for Let's Encrypt HTTP-01 challenge"
-# }
-
-# resource "openstack_networking_secgroup_rule_v2" "xroot_access" {
-#   for_each          = toset(var.xrootd_allowed_ip_addresses)
-#   direction         = "ingress"
-#   ethertype         = "IPv4"
-#   protocol          = "tcp"
-#   port_range_min    = 1094
-#   port_range_max    = 1094
-#   remote_ip_prefix  = each.value
-#   security_group_id = openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
-#   description       = "Allow XRootD access from ${each.value}"
-# }
-
-# resource "openstack_networking_secgroup_rule_v2" "local_xroot_access" {
-#   direction         = "ingress"
-#   ethertype         = "IPv4"
-#   protocol          = "tcp"
-#   port_range_min    = 1094
-#   port_range_max    = 1094
-#   remote_ip_prefix  = data.openstack_networking_subnet_v2.ska_uksrc_subnet.cidr
-#   security_group_id = openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
-#   description       = "Allow XRootD access from ${var.openstack_ska_uksrc_network}"
-# }
+# UKSRC port
+resource "openstack_networking_port_v2" "uksrc_port" {
+  name           = "${var.environment}-uksrc"
+  network_id     = data.openstack_networking_network_v2.ska_uksrc_network.id
+  admin_state_up = "true"
+  lifecycle {
+    prevent_destroy = true
+  }
+  security_group_ids = [
+    openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
+  ]
+}
 
 # 100Gb WCDC DIRAC SRIOV port
 resource "openstack_networking_port_v2" "ska_uksrc_wcdc_dirac_sriov_port" {
@@ -110,6 +79,9 @@ resource "openstack_networking_port_v2" "iris_sriov_port" {
   binding {
     vnic_type = "direct"
   }
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "openstack_compute_instance_v2" "xrootd_instance" {
@@ -119,14 +91,12 @@ resource "openstack_compute_instance_v2" "xrootd_instance" {
   flavor_id = data.openstack_compute_flavor_v2.xrootd_flavor.flavor_id
   key_pair  = data.openstack_compute_keypair_v2.xrootd_keypair.name
 
-  security_groups = [openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.name]
-
   user_data = templatefile("cloud-config.yaml.tpl", {
     default_username = var.default_username
   })
 
   network {
-    name = var.openstack_ska_uksrc_network
+    port = openstack_networking_port_v2.uksrc_port.id
   }
   network {
     port = openstack_networking_port_v2.ska_uksrc_wcdc_dirac_sriov_port.id

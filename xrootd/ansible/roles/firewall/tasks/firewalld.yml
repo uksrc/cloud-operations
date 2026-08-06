@@ -39,14 +39,6 @@
     nmcli con mod "System eth1"
     ipv4.route-metric 50
 
-# - name: Set DNS servers for System eth1
-#   ansible.builtin.command: >
-#     nmcli con mod "System eth1"
-#     ipv4.dns "8.8.8.8 1.1.1.1"
-
-# - name: Bring up System eth1 connection
-#   ansible.builtin.command: nmcli con up "System eth1"
-
 - name: open port 1094 for XRootD in firewalld
   ansible.posix.firewalld:
     zone: "{{ wcdc_dirac_zone }}"
