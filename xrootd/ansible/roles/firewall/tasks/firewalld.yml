@@ -18,6 +18,12 @@
     state: present
     permanent: yes
 
+- name: Create a new zone for the UKSRC network
+  firewalld:
+    zone: "{{ uksrc_zone }}"
+    state: present
+    permanent: yes
+
 - name: Reload firewalld to apply permanent changes
   ansible.builtin.command: firewall-cmd --reload
   changed_when: true
@@ -39,13 +45,25 @@
     nmcli con mod "System eth1"
     ipv4.route-metric 50
 
-- name: open port 1094 for XRootD in firewalld
+# Restrict port 1094 access to only the allowed XRootD client IPs and the SSH local access CIDR
+
+- name: Remove blanket open port 1094 for XRootD in firewalld
   ansible.posix.firewalld:
     zone: "{{ wcdc_dirac_zone }}"
     port: 1094/tcp
     permanent: true
+    state: disabled
+    immediate: true
+
+- name: Allow xrootd allowed IPs and ssh local access CIDR to port 1094 in firewalld
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    rich_rule: 'rule family="ipv4" source address="{{ item }}" port port="1094" protocol="tcp" accept'
+    permanent: true
     state: enabled
     immediate: true
+  loop: "{{ xrootd_allowed_ip_addresses + [ssh_local_access_cidr] + [wcdc_dirac_subnet] }}"
+
 
 - name: open port 80 for LetsEncrypt in firewalld
   ansible.posix.firewalld:
@@ -55,10 +73,9 @@
     state: enabled
     immediate: true
 
-# Configuration for the UKSRC network
 - name: Set NM zone for eth0
   ansible.builtin.command: >
-    nmcli connection modify "System {{ uksrc_interface }}" connection.zone trusted
+    nmcli connection modify "System {{ uksrc_interface }}" connection.zone "{{ uksrc_zone }}"
   changed_when: true
 
 - name: Lower priority for System eth0
@@ -79,17 +96,18 @@
 
 # firewalld ssh config taken from https://docs.rackspace.com/docs/limit-ssh-access-by-ip-address
 
-- name: add the ssh service to the trusted zone in firewalld
+# Restrict SSH to only the local access CIDR
+- name: add the ssh service to the uksrc zone in firewalld
   ansible.posix.firewalld:
-    zone: trusted
+    zone: "{{ uksrc_zone }}"
     service: ssh
     permanent: true
     state: enabled
     immediate: true
 
-- name: add ssh source network to the trusted zone in firewalld
+- name: add ssh source network to the uksrc zone in firewalld
   ansible.posix.firewalld:
-    zone: trusted
+    zone: "{{ uksrc_zone }}"
     source: "{{ ssh_local_access_cidr }}"
     permanent: true
     state: enabled

@@ -110,11 +110,11 @@ Ansible playbook steps:
 Make sure the inventory has all the necessary varibles set then run the playbook against the just deployed server. N.B. you can do a dry-run first with the --check flag.
 
 ```
-ansible-playbook xrootd.yml -i inventory.yaml --limit <server name>
+ansible-playbook xrootd.yml -i cambridge-inventory.yaml --limit <server name>
 ```
 
 Different parts of the playbook can be run separately using tag(s) e.g.
 
 ```
-ansible-playbook xrootd.yml -i inventory.yaml --limit <server name> --tags install_xrootd
+ansible-playbook xrootd.yml -i cambridge-inventory.yaml --limit <server name> --tags install_xrootd
 ```
