@@ -1,7 +1,7 @@
 # SKA Metadata Manager PostgreSQL Ansible Playbook
 
 This Ansible playbook configures a PostgreSQL database server for the SKA Metadata Manager according to the requirements documented at:
-https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
+<https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager>
 
 ## What it does
 
@@ -141,27 +141,27 @@ Additional system users (beyond the primary user created via Terraform) are mana
 #### Option 2: Export environment variables manually
 
 ```bash
-export POSTGRES_PASSWORD="secure-password-here"
+export POSTGRES_PASSWORD='secure-password-here'
 
 # CAOM Preprod
-export CAOM_PREPROD_ADMIN_PASSWORD="secure-password-here"
-export CAOM_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
-export CAOM_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+export CAOM_PREPROD_ADMIN_PASSWORD='secure-password-here'
+export CAOM_PREPROD_TAP_ADMIN_PASSWORD='secure-password-here'
+export CAOM_PREPROD_TAP_USER_PASSWORD='secure-password-here'
 
 # CAOM Production
-export CAOM_ADMIN_PASSWORD="secure-password-here"
-export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
-export CAOM_TAP_USER_PASSWORD="secure-password-here"
+export CAOM_ADMIN_PASSWORD='secure-password-here'
+export CAOM_TAP_ADMIN_PASSWORD='secure-password-here'
+export CAOM_TAP_USER_PASSWORD='secure-password-here'
 
 # SDS Preprod
-export SDS_PREPROD_ADMIN_PASSWORD="secure-password-here"
-export SDS_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
-export SDS_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+export SDS_PREPROD_ADMIN_PASSWORD='secure-password-here'
+export SDS_PREPROD_TAP_ADMIN_PASSWORD='secure-password-here'
+export SDS_PREPROD_TAP_USER_PASSWORD='secure-password-here'
 
 # SDS Production
-export SDS_ADMIN_PASSWORD="secure-password-here"
-export SDS_TAP_ADMIN_PASSWORD="secure-password-here"
-export SDS_TAP_USER_PASSWORD="secure-password-here"
+export SDS_ADMIN_PASSWORD='secure-password-here'
+export SDS_TAP_ADMIN_PASSWORD='secure-password-here'
+export SDS_TAP_USER_PASSWORD='secure-password-here'
 ```
 
 #### Option 3: Use Ansible Vault (Recommended for production)
