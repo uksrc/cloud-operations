@@ -64,10 +64,10 @@ This will automatically deploy both preprod and prod environments for the CAOM a
 
    ```shell
    # Connect to CAOM production database
-   sudo -u postgres psql -d caom
+   psql -U postgres -d caom -h localhost -W
 
    # Or connect to preprod
-   sudo -u postgres psql -d caom_preprod
+   psql -U postgres -d caom_preprod -h localhost -W
 
    # Check extensions
    \dx
