@@ -1,18 +1,31 @@
 ---
 # Setup CAOM database schema
-# This playbook deploys both preprod and prod environments
+# Deploys ALL environments by default.
+# Deploy a single environment with:
+#   ansible-playbook -i inventory setup_mm_db_schema.yml -e env=preprod
 #
 - name: Setup CAOM database schema
   hosts: all
   become: yes
+  vars:
+    # Restricts which environment(s) to deploy.
+    # Empty => every environment in caom_envs. Override with -e env=<name>.
+    deploy_env: "{{ env | default('') }}"
   vars_files:
     - group_vars/all/schema/caomdb.yml
     - group_vars/all/postgres.yml
 
   tasks:
-    - name: Setup database schema for each environment
+    - name: Fail fast if requested environment is not valid
+      fail:
+        msg: "Environment '{{ deploy_env }}' is not valid. Valid options: {{ caom_envs | join(', ') }}"
+      when:
+        - deploy_env | length > 0
+        - deploy_env not in caom_envs
+
+    - name: Setup database schema for selected environment(s)
       include_role:
         name: setup_db_schema
-      loop: "{{ caom_envs }}"
+      loop: "{{ caom_envs if not deploy_env else [deploy_env] }}"
       loop_control:
         loop_var: caom_env
