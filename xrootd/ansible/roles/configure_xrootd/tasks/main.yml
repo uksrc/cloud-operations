@@ -72,12 +72,19 @@
 
 # Default cache location is $HOME/.cache, but the xrootd@http service runs as our xrootd user and has no
 # home directory, so set an env var to point to the new cache dir
-- name: Set an env var in the xrootd@http service file to point to the scitokens cache dir
-  ansible.builtin.lineinfile:
-    path: /usr/lib/systemd/system/xrootd@.service
-    insertafter: '^\[Service\]$'
-    line: 'Environment=XDG_CACHE_HOME=/var/cache/xrootd'
+- name: Create the xrootd@http service override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/xrootd@http.service.d
+    state: directory
+    mode: '0755'
+
+- name: Add the xrootd@http systemd drop-in override file
+  ansible.builtin.copy:
+    src: overrides.conf
+    dest: /etc/systemd/system/xrootd@http.service.d/overrides.conf
+    mode: '0644'
   become: true
+
 
 - name: change owner of macaroon secret
   ansible.builtin.file:
