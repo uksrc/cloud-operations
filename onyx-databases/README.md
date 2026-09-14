@@ -11,29 +11,33 @@ There are more [docs in the Ansible directory](./ansible/README.md) on how to cu
 
 ## Usage
 
-1. Set up S3 credentials:
-   1. Find the project ID from `openstack project list`.
-   2. List the credentials using `openstack credentials list` and matching the project ID.
-   3. Set env vars `AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` to the `"access"` and `"secret"` values from the credential data, OR set these credentials in `~/.aws/credentials` like:
+1. To store the TF state we use OpenStack's object store. The OpenStack object store has an AWS S3 interface, so we set up S3 credentials:
+    1. Find the project ID from `openstack project list`.
+    2. List the credentials using `openstack credentials list` and matching the project ID.
+    3. Set env vars `AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` to the `"access"` and `"secret"` values from the credential data, OR set these credentials in `~/.aws/credentials` like:
 
-   ```toml
-   [default]
-   aws_access_key_id=[CREDENTIAL_ACCESS]
-   aws_secret_access_key=[CREDENTIAL_SECRET]
-   ```
+    ```toml
+    [default]
+    aws_access_key_id=[CREDENTIAL_ACCESS]
+    aws_secret_access_key=[CREDENTIAL_SECRET]
+    ```
 
 2. Add `host_users.auto.tfvars` with users and SSH keys, based on the example, in the `tf` directory.
+
 3. Add `.env` with database passwords, based on the example, in the `ansible` directory. **Important:** You need to set passwords for both preprod and prod environments for both CAOM and SDS databases.
+
 4. Add a `users.yml` in the `ansible/group_vars/all` directory, see the example file in the same directory for hints.
+
 5. Run OpenTofu:
 
-```shell
-cd tf
-tofu plan
-tofu apply
-```
+   ```shell
+   cd tf
+   tofu init  # first time only
+   tofu plan
+   tofu apply
+   ```
 
-This will automatically deploy both preprod and prod environments for the CAOM and SDS databases.
+   This will automatically deploy both preprod and prod environments for the CAOM and SDS databases.
 
 ## Verification
 
