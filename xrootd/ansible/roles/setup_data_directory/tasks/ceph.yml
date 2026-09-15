@@ -17,7 +17,7 @@
   ansible.builtin.template:
     src: ceph.conf.j2
     dest: /etc/ceph/ceph.conf
-    mode: '0600'
+    mode: "0600"
     owner: root
     group: root
   become: true
@@ -26,14 +26,14 @@
   ansible.builtin.template:
     src: ceph-keyring.j2
     dest: "/etc/ceph/ceph.client.{{ manila_access_to }}.keyring"
-    mode: '0600'
+    mode: "0600"
     owner: root
     group: root
   become: true
 
 - name: Add manila share to fstab
   ansible.posix.mount:
-    path: /skadata
+    path: /uksrc-cam-t0
     src: "{{ manila_host }}:{{ manila_share_export }}"
     fstype: ceph
     opts: "name={{ manila_access_to }},{{ manila_share_mnt_opts }}"

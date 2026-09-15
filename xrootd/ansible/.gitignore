@@ -6,3 +6,7 @@
 
 # User configuration file (use users.yml.example as template)
 group_vars/all/users.yml
+
+# Allowed IPs file (use xrootd_allowed_ips.yml.example as template)
+group_vars/all/xrootd_allowed_ips.yml
+ansible_vault_pass_file.txt

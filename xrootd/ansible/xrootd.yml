@@ -46,3 +46,15 @@
     - role: rucio
       when: ansible_facts["distribution"] == "Rocky" and rucio == true
     - tests
+
+# Benchmark the 100Gb WCDC-DIRAC link and the XRootD serving on it.
+# Server side only: link checks + optional iperf3 server and data files.
+# Client side runs from roles/benchmark_xrootd/files/run-benchmark-client.sh
+#   ansible-playbook xrootd.yml -i cambridge-inventory.yml --limit uksrc-cam-prod-xrootd --tags benchmark
+- hosts: all
+  tags: benchmark
+  any_errors_fatal: true
+  gather_facts: true
+  roles:
+    - benchmark_xrootd
+  become: true

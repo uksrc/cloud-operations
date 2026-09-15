@@ -1,0 +1,13 @@
+[Unit]
+Description=iperf3 benchmark server for the 100Gb WCDC-DIRAC link
+Documentation=man:iperf3(1)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/iperf3 -s -B {{ benchmark_server_ip }} -p {{ benchmark_iperf3_port }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
