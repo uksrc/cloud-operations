@@ -1,0 +1,41 @@
+---
+# Optional: temporarily open the xrootd and iperf3 ports to the IPs listed in
+# benchmark_allow_client_ips within the 100Gb firewalld zone. Use this for a
+# machine that is not on the 192.84.5.0/27 subnet but still wants to benchmark
+# against the 100Gb server IP, e.g. a developer workstation.
+#
+# Remember to remove the rules afterwards, e.g. for each client IP:
+#   sudo firewall-cmd --zone=wcdc-dirac --permanent \
+#     --remove-rich-rule='rule family="ipv4" source address="86.21.218.207/32" port port="1094" protocol="tcp" accept'
+#   sudo firewall-cmd --zone=wcdc-dirac --permanent \
+#     --remove-rich-rule='rule family="ipv4" source address="86.21.218.207/32" port port="5201" protocol="tcp" accept'
+#   sudo firewall-cmd --zone=wcdc-dirac --permanent \
+#     --remove-rich-rule='rule family="ipv4" source address="86.21.218.207/32" port port="5201" protocol="udp" accept'
+#   sudo firewall-cmd --reload
+
+- name: Open the xrootd port for the benchmark client IPs in the {{ benchmark_zone }} zone
+  ansible.posix.firewalld:
+    zone: "{{ benchmark_zone }}"
+    rich_rule: 'rule family="ipv4" source address="{{ item }}" port port="{{ benchmark_xrootd_port }}" protocol="tcp" accept'
+    permanent: true
+    state: enabled
+    immediate: true
+  loop: "{{ benchmark_allow_client_ips }}"
+
+- name: Open the iperf3 TCP port for the benchmark client IPs in the {{ benchmark_zone }} zone
+  ansible.posix.firewalld:
+    zone: "{{ benchmark_zone }}"
+    rich_rule: 'rule family="ipv4" source address="{{ item }}" port port="{{ benchmark_iperf3_port }}" protocol="tcp" accept'
+    permanent: true
+    state: enabled
+    immediate: true
+  loop: "{{ benchmark_allow_client_ips }}"
+
+- name: Open the iperf3 UDP port for the benchmark client IPs in the {{ benchmark_zone }} zone
+  ansible.posix.firewalld:
+    zone: "{{ benchmark_zone }}"
+    rich_rule: 'rule family="ipv4" source address="{{ item }}" port port="{{ benchmark_iperf3_port }}" protocol="udp" accept'
+    permanent: true
+    state: enabled
+    immediate: true
+  loop: "{{ benchmark_allow_client_ips }}"

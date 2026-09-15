@@ -118,3 +118,90 @@ Different parts of the playbook can be run separately using tag(s) e.g.
 ```
 ansible-playbook xrootd.yml -i cambridge-inventory.yaml --limit <server name> --tags install_xrootd
 ```
+
+## Benchmarking the 100 Gb link
+
+The production XRootD server serves HTTP on port 1094 over the 100Gb/s
+WCDC-DIRAC link (`eth1`, `192.84.5.20/27`). The `benchmark_xrootd` role and
+its client script test how much of that link is actually used. The suite is
+layered so the bottleneck can be attributed correctly:
+
+| Layer | Test | Proves |
+|-------|------|--------|
+| Link | server-side `ethtool` check | NIC is negotiated at 100000Mb/s full duplex |
+| Network path | iperf3 (32 parallel TCP streams) | the raw path over the 100Gb IP saturates the link |
+| Application | XRootD HTTP downloads | how fast the server actually serves data end-to-end |
+
+### Server side (Ansible)
+
+```sh
+ansible-playbook xrootd.yml -i cambridge-inventory.yml --limit uksrc-cam-prod-xrootd --tags benchmark
+```
+
+This runs the 100Gb link checks (interface up, `ethtool` speed == 100000Mb/s,
+IP/routing, MTU, firewalld zone and port rules) and, by default, installs and
+starts an `iperf3` server bound to `192.84.5.20:5201`. Configure it with the
+role variables in `roles/benchmark_xrootd/defaults/main.yml`, for example:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `benchmark_iface` | `eth1` | the 100Gb interface |
+| `benchmark_expected_link_speed_mbps` | `100000` | speed the link must negotiate |
+| `benchmark_server_ip` | `192.84.5.20` | 100Gb IP / iperf3 bind address |
+| `benchmark_iperf3_port` | `5201` | iperf3 server port |
+| `benchmark_iperf3_enable` | `true` | leave iperf3 running after the playbook |
+| `benchmark_allow_client_ips` | `[]` | temporarily open ports for these IPs |
+| `benchmark_prepare_data` | `false` | create download files under `data_path` |
+| `benchmark_file_count` / `benchmark_file_size_gb` | `4` / `20` | size of the test files |
+| `benchmark_data_fill` | `sparse` | `sparse` (instant zeros) or `zero` (dense) |
+
+Only the link checks are assertions. The numeric benchmarks must run from a
+client because a server cannot saturate its own NIC.
+
+### Client side
+
+From any machine that can reach `192.84.5.20` (the benchmark client host), run:
+
+```sh
+roles/benchmark_xrootd/files/run-benchmark-client.sh \
+  -s 192.84.5.20 -p 5201 -n 32 -t 30 -f /benchmark/bench-1.bin
+```
+
+- From a host on the WCDC-DIRAC-791 network the iperf3 result measures the
+  true 100Gb path.
+- From the public internet (e.g. a developer workstation such as the one
+  running this playbook) it measures the end-to-end path, which may be capped
+  by the client's own uplink/ISP and must not be blamed on the server.
+- Pass a WLCG/SKA-IAM bearer token with `-T TOKEN` for the XRootD read tests;
+  reads are auth-restricted (SciTokens) so downloads without a token may be
+  denied. `-r` adds a reverse (upload) test, `-u` a UDP line-rate test, `-j`
+  uses 8900-byte packets for the UDP test on a jumbo-frames path.
+- Thresholds can be tuned with `BENCH_NET_PASS_GBPS` (default 90) and
+  `BENCH_XROOTD_PASS_GBPS` (default 10).
+
+### Firewall note
+
+Port 1094 is firewalled to the `xrootd_allowed_ip_addresses` list plus the
+100Gb subnet, so a developer machine on a different public IP (e.g.
+`86.21.218.207`) needs a temporary allowance to reach the xrootd and iperf3
+ports. Add it with:
+
+```sh
+ansible-playbook xrootd.yml -i cambridge-inventory.yml --limit uksrc-cam-prod-xrootd \
+  --tags benchmark -e 'benchmark_allow_client_ips=["86.21.218.207/32"]'
+```
+
+The rules are removed with `firewall-cmd` (see the comments in
+`roles/benchmark_xrootd/tasks/02_firewall_allow_benchmark.yml`) - do not leave
+them in place on the production host.
+
+### Interpreting results
+
+- **Link checks** prove the NIC exists and is negotiated at 100Gb/s full
+  duplex (ethtool `Speed: 100000Mb/s`).
+- **iperf3 (32 parallel TCP streams)** passing 90 Gbps proves the raw network
+  path saturates the 100Gb link; a single TCP stream will usually report far
+  less and is expected.
+- **XRootD HTTP downloads** show what the server really serves. A gap between
+  the iperf3 and HTTP numbers is expected when the storage backend (a single
+  CephFS mount) is the limiting factor - it does not mean the link is slow.

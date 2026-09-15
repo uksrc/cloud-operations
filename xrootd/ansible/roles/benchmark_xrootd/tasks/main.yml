@@ -1,0 +1,15 @@
+---
+- name: Run 100Gb link checks
+  ansible.builtin.include_tasks: 01_link_checks.yml
+
+- name: Allow benchmark client IPs through the 100Gb firewalld zone (optional)
+  ansible.builtin.include_tasks: 02_firewall_allow_benchmark.yml
+  when: benchmark_allow_client_ips | length > 0
+
+- name: Configure the iperf3 benchmark server (optional)
+  ansible.builtin.include_tasks: 03_iperf3_server.yml
+  when: benchmark_iperf3_enable | bool
+
+- name: Prepare benchmark data files (optional)
+  ansible.builtin.include_tasks: 04_prepare_benchmark_data.yml
+  when: benchmark_prepare_data | bool

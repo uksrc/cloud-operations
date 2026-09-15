@@ -1,0 +1,37 @@
+---
+# Tier 3 (optional): create large files under the exported data path so the
+# client has something real to download over XRootD (HTTP GET on port 1094).
+# With benchmark_data_fill: sparse the files are created instantly with
+# truncate; reading them mostly measures the network. With "zero" the files
+# are fully written first, so downloads exercise the storage backend too.
+
+- name: Create the benchmark data directory
+  ansible.builtin.file:
+    path: "{{ data_path }}/{{ benchmark_data_dir }}"
+    state: directory
+    owner: xrootd
+    group: xrootd
+    mode: "0755"
+
+- name: Create sparse benchmark files with truncate
+  ansible.builtin.command: "truncate -s {{ benchmark_file_size_gb }}G {{ data_path }}/{{ benchmark_data_dir }}/{{ benchmark_file_prefix }}{{ item }}.bin"
+  args:
+    creates: "{{ data_path }}/{{ benchmark_data_dir }}/{{ benchmark_file_prefix }}{{ item }}.bin"
+  loop: "{{ range(1, benchmark_file_count + 1) | list }}"
+  when: benchmark_data_fill == "sparse"
+
+- name: Create fully-written benchmark files with dd
+  ansible.builtin.command: "dd if=/dev/zero of={{ data_path }}/{{ benchmark_data_dir }}/{{ benchmark_file_prefix }}{{ item }}.bin bs=1M count={{ benchmark_file_size_gb * 1024 }} status=none"
+  args:
+    creates: "{{ data_path }}/{{ benchmark_data_dir }}/{{ benchmark_file_prefix }}{{ item }}.bin"
+  loop: "{{ range(1, benchmark_file_count + 1) | list }}"
+  when: benchmark_data_fill == "zero"
+
+- name: List the benchmark files
+  ansible.builtin.command: "ls -lh {{ data_path }}/{{ benchmark_data_dir }}/"
+  register: benchmark_file_list
+  changed_when: false
+
+- name: Show the benchmark files
+  ansible.builtin.debug:
+    var: benchmark_file_list.stdout_lines

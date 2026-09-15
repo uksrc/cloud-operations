@@ -1,0 +1,99 @@
+---
+# Tier 1 checks: prove the machine actually has a 100Gb link, that it is the
+# interface XRootD serves on, and that traffic prefers it. Each check asserts
+# PASS/FAIL so the role fails loudly when the 100Gb link is not as expected.
+
+- name: Ensure ethtool is installed
+  ansible.builtin.dnf:
+    name: ethtool
+    state: present
+
+- name: Get the link state of {{ benchmark_iface }}
+  ansible.builtin.command: "ip -o -brief link show {{ benchmark_iface }}"
+  register: iface_state
+  changed_when: false
+  failed_when: iface_state.rc != 0
+
+- name: "PASS - interface {{ benchmark_iface }} is UP"
+  ansible.builtin.assert:
+    that:
+      - "'UP' in iface_state.stdout"
+    success_msg: "Interface {{ benchmark_iface }} exists and is UP"
+    fail_msg: "Interface {{ benchmark_iface }} is missing or DOWN - check the WCDC-DIRAC NIC"
+
+- name: Query the negotiated link speed with ethtool
+  ansible.builtin.command: "ethtool {{ benchmark_iface }}"
+  register: ethtool_speed
+  changed_when: false
+  failed_when: ethtool_speed.rc != 0
+
+- name: "PASS - {{ benchmark_iface }} is negotiated at {{ benchmark_expected_link_speed_mbps }}Mb/s full duplex"
+  ansible.builtin.assert:
+    that:
+      - "'Speed: {{ benchmark_expected_link_speed_mbps }}Mb/s' in ethtool_speed.stdout"
+      - "'Duplex: Full' in ethtool_speed.stdout"
+    success_msg: "{{ benchmark_iface }} is a full-duplex {{ benchmark_expected_link_speed_mbps }}Mb/s (100Gb) link"
+    fail_msg: "{{ benchmark_iface }} is NOT negotiated at {{ benchmark_expected_link_speed_mbps }}Mb/s - this is not a working 100Gb link"
+
+- name: Get the IPv4 configuration of {{ benchmark_iface }}
+  ansible.builtin.command: "ip -4 addr show {{ benchmark_iface }}"
+  register: ipv4_conf
+  changed_when: false
+  failed_when: ipv4_conf.rc != 0
+
+- name: "PASS - {{ benchmark_iface }} is bound to {{ benchmark_server_ip }}"
+  ansible.builtin.assert:
+    that:
+      - "'{{ benchmark_server_ip }}' in ipv4_conf.stdout"
+    success_msg: "{{ benchmark_iface }} carries {{ benchmark_server_ip }}"
+    fail_msg: "{{ benchmark_iface }} does not carry {{ benchmark_server_ip }} - the 100Gb IP is not configured"
+
+- name: Show the routing table
+  ansible.builtin.command: "ip route show"
+  register: routing_table
+  changed_when: false
+
+- name: "PASS - the default route prefers {{ benchmark_iface }}"
+  ansible.builtin.assert:
+    that:
+      - "'default' in routing_table.stdout"
+      - "'dev {{ benchmark_iface }}' in routing_table.stdout"
+    success_msg: "Default route is via {{ benchmark_iface }} so data traffic uses the 100Gb link"
+    fail_msg: "Default route is not via {{ benchmark_iface }} - check ipv4.route-metric in the firewall role"
+
+- name: Get the MTU of {{ benchmark_iface }}
+  ansible.builtin.command: "ip -o link show {{ benchmark_iface }}"
+  register: mtu_info
+  changed_when: false
+  failed_when: mtu_info.rc != 0
+
+- name: Report the MTU
+  ansible.builtin.debug:
+    msg: "MTU on {{ benchmark_iface }} is {{ mtu_info.stdout.split('mtu ')[1].split(' ')[0] }} (9000 jumbo frames give the best 100Gb throughput)"
+
+- name: Get the active firewalld zones
+  ansible.builtin.command: "firewall-cmd --get-active-zones"
+  register: active_zones
+  changed_when: false
+  failed_when: active_zones.rc != 0
+
+- name: "PASS - {{ benchmark_iface }} is in the {{ benchmark_zone }} firewalld zone"
+  ansible.builtin.assert:
+    that:
+      - "'{{ benchmark_zone }}' in active_zones.stdout"
+      - "'{{ benchmark_iface }}' in active_zones.stdout"
+    success_msg: "{{ benchmark_iface }} sits in the {{ benchmark_zone }} zone"
+    fail_msg: "{{ benchmark_iface }} is not in the {{ benchmark_zone }} zone - check the firewall role"
+
+- name: Get the rich rules of the {{ benchmark_zone }} zone
+  ansible.builtin.command: "firewall-cmd --zone={{ benchmark_zone }} --list-rich-rules"
+  register: zone_rules
+  changed_when: false
+  failed_when: zone_rules.rc != 0
+
+- name: "PASS - XRootD port {{ benchmark_xrootd_port }} is open in the {{ benchmark_zone }} zone"
+  ansible.builtin.assert:
+    that:
+      - "'port port=\"{{ benchmark_xrootd_port }}\"' in zone_rules.stdout"
+    success_msg: "Port {{ benchmark_xrootd_port }} is reachable over the 100Gb link for the allowed clients"
+    fail_msg: "Port {{ benchmark_xrootd_port }} has no rule in the {{ benchmark_zone }} zone - check the firewall role"

@@ -1,0 +1,30 @@
+---
+# Tier 2: install iperf3 and run a server bound to the 100Gb interface IP so a
+# client can measure the raw network path throughput independently of XRootD.
+
+- name: Install iperf3
+  ansible.builtin.dnf:
+    name: iperf3
+    state: present
+
+- name: Install the iperf3 benchmark server systemd unit
+  ansible.builtin.template:
+    src: iperf3-server.service.j2
+    dest: /etc/systemd/system/xrootd-benchmark-iperf3.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd to pick up the iperf3 unit
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start the iperf3 benchmark server
+  ansible.builtin.systemd:
+    name: xrootd-benchmark-iperf3
+    state: started
+    enabled: true
+
+- name: Show the iperf3 endpoint
+  ansible.builtin.debug:
+    msg: "iperf3 server listening on {{ benchmark_server_ip }}:{{ benchmark_iperf3_port }} (stop it with: systemctl disable --now xrootd-benchmark-iperf3)"
