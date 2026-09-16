@@ -29,6 +29,8 @@ brew
 brew/*
 .venv/
 .venv/*
+venv/
+venv/*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
