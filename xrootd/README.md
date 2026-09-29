@@ -118,7 +118,7 @@ Above ansible command sometimes gives an hostkey verification failed error so in
 ```
 eval $(ssh-agent -s)
 ssh-add ~/.ssh/<xrootd-key>
-ssh -i ~/.ssh/<xrootd-key> uksrc-xrootd@192.168100.123
+ssh -i ~/.ssh/<xrootd-key> uksrc-xrootd@192.168.100.123
 ```
 
 Different parts of the playbook can be run separately using tag(s) e.g.
