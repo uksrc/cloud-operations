@@ -47,3 +47,8 @@ variable "wcdc_dirac_static_public_ip" {
   description = "WCDC Dirac network static public IP"
   type        = string
 }
+
+variable "uksrc_static_private_ip" {
+  description = "UKSRC network static private IP"
+  type        = string
+}
