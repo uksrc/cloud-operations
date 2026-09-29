@@ -4,6 +4,10 @@ A repo containing various infrastructure definitions.
 
 ## Documentation
 
+### Canfar Replication
+
+- [Canfar Replication Guide](canfar-replication/README.md)
+
 ### XRootD
 
 - [XRootD Server Setup](xrootd/README.md)

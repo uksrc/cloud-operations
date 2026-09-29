@@ -28,6 +28,10 @@ data "openstack_networking_network_v2" "iris_network" {
   name = var.openstack_iris_network
 }
 
+data "openstack_networking_subnet_v2" "ska_uksrc_subnet_wcdc_dirac" {
+  name = "WCDC-DIRAC-791"
+}
+
 resource "openstack_networking_secgroup_v2" "ska_uksrc_xrootd_sg" {
   name        = "${var.environment}-sg"
   description = "XRootD server access at Cambridge"
@@ -52,6 +56,10 @@ resource "openstack_networking_port_v2" "uksrc_port" {
   lifecycle {
     prevent_destroy = true
   }
+  fixed_ip {
+    subnet_id = data.openstack_networking_subnet_v2.ska_uksrc_subnet.id
+    ip_address = var.uksrc_static_private_ip
+  }
   security_group_ids = [
     openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
   ]
@@ -65,6 +73,10 @@ resource "openstack_networking_port_v2" "ska_uksrc_wcdc_dirac_sriov_port" {
 
   binding {
     vnic_type = "direct"
+  }
+  fixed_ip {
+    subnet_id = data.openstack_networking_subnet_v2.ska_uksrc_subnet_wcdc_dirac.id
+    ip_address = var.wcdc_dirac_static_public_ip
   }
   lifecycle {
     prevent_destroy = true

@@ -113,6 +113,14 @@ Make sure the inventory has all the necessary varibles set then run the playbook
 ansible-playbook xrootd.yml -i cambridge-inventory.yaml --limit <server name>
 ```
 
+Above ansible command sometimes gives an hostkey verification failed error so in order to fix it make sure to run the following
+
+```
+eval $(ssh-agent -s)
+ssh-add ~/.ssh/<xrootd-key>
+ssh -i ~/.ssh/<xrootd-key> uksrc-xrootd@192.168.100.123
+```
+
 Different parts of the playbook can be run separately using tag(s) e.g.
 
 ```
