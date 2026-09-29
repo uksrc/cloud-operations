@@ -58,7 +58,7 @@ resource "openstack_networking_port_v2" "uksrc_port" {
   }
   fixed_ip {
     subnet_id = data.openstack_networking_subnet_v2.ska_uksrc_subnet.id
-    ip_address = "192.168.100.123"
+    ip_address = var.uksrc_static_private_ip
   }
   security_group_ids = [
     openstack_networking_secgroup_v2.ska_uksrc_xrootd_sg.id
