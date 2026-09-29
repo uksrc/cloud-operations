@@ -42,3 +42,8 @@ variable "openstack_iris_network" {
   description = "IRIS network to attach the XRootD instance to"
   type        = string
 }
+
+variable "wcdc_dirac_static_public_ip" {
+  description = "WCDC Dirac network static public IP"
+  type        = string
+}
