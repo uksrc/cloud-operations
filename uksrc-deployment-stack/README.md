@@ -29,3 +29,30 @@ This deployment serves as a basis for the [**ukSRC DeploymentStack**](https://gi
    tofu plan
    tofu apply
    ```
+
+4. SSH onto the VM.
+
+   ```shell
+   ssh ubuntu@192.168.65.105
+   ```
+
+5. Install Docker, with buildx:
+
+   ```shell
+   sudo apt install -y docker.io docker-buildx
+   sudo usermod -aG docker ubuntu
+   newgrp docker
+   ```
+
+6. Checkout the deployment stack git repo:
+
+   1. Clone: `git clone git@gitlab.com:ska-telescope/src/src-api/ska-src-api-deployment-stack.git`
+   2. Clone submodules:
+
+      ```shell
+      cd ska-src-api-deployment-stack
+      git submodule init
+      git submodule update
+      ```
+
+7. Run the `make install-single`.
