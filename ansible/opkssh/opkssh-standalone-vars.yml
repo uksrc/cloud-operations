@@ -1,0 +1,38 @@
+opkssh_install_auth_cmd_user: opksshuser
+opkssh_install_auth_cmd_group: opksshuser
+opkssh_install_version: v0.14.0 # cannot be 'latest'
+opkssh_install_dir: /usr/local/bin
+opkssh_install_binary_name: opkssh
+opkssh_install_github_repo: openpubkey/opkssh
+# amd64 or arm64, derived from the host's architecture
+opkssh_install_arch: "{{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'amd64' }}"
+opkssh_install_binary_url: "https://github.com/{{ opkssh_install_github_repo }}/releases/download/{{ opkssh_install_version }}/opkssh-linux-{{ opkssh_install_arch }}"
+
+# OS-dependent paths/services (Ubuntu vs Rocky)
+opkssh_nologin_shell: "{{ '/usr/sbin/nologin' if ansible_facts.os_family == 'Debian' else '/sbin/nologin' }}"
+opkssh_sshd_service: "{{ 'ssh' if ansible_facts.os_family == 'Debian' else 'sshd' }}"
+
+opkssh_disable_authorized_keys: true
+opkssh_enable_authorized_keys_groups: [adm] # groups whose ~/.ssh/authorized_keys still work
+
+# SELinux (Rocky etc.): the upstream opkssh.te policy module is compiled and
+# installed when SELinux is not disabled. These map to its booleans.
+# opkssh_enable_home permits per-user policy files (~/.opk/auth_id) - off as
+# this playbook only uses the system-wide /etc/opk/auth_id.
+opkssh_selinux_enable_home_policy: false
+opkssh_selinux_enable_proxy: false # allow HTTPS via a general HTTP proxy
+opkssh_selinux_enable_squid: false # allow HTTPS via a Squid proxy
+opkssh_selinux_te_url: "https://raw.githubusercontent.com/{{ opkssh_install_github_repo }}/refs/tags/{{ opkssh_install_version }}/opkssh.te"
+
+opkssh_providers:
+  ska_iam:
+    issuer_uri: https://ska-iam.stfc.ac.uk/
+    client_id: 5e6e0177-629f-4e88-9ca7-ec4b58d32a2e # production; staging: a32a0b07-21d3-4c0b-8088-e79e0627e649
+    expires: 12h
+
+# List of {name: <linux user>, opkssh_claim_selector: <email|sub|group>, [opkssh_provider: <key>]}
+opkssh_auth_id: []
+opkssh_default_provider: "{{ opkssh_providers.keys() | first }}"
+
+_opkssh_provider_keys: ['expires', 'client_id', 'issuer_uri']
+_opkssh_auth_id_keys: ['name', 'opkssh_claim_selector']
