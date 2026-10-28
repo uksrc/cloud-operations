@@ -1,0 +1,6 @@
+---
+# System update and security configuration defaults
+
+# Slack notification configuration for reboot requirements
+# Set SLACK_WEBHOOK_URL environment variable or update this value
+slack_webhook_url: "{{ lookup('env', 'SLACK_WEBHOOK_URL') | default('', true) }}"
