@@ -1,7 +1,7 @@
 ---
 # INSTRUCTIONS:
-# 1. Copy this file to users.yml: cp users.yml.example users.yml
-# 2. Edit users.yml with your actual user SSH keys
+# 1. Copy this file to users.yml: `cp users.yml.example users.yml`
+# 2. Edit users.yml with your actual users and optionally their SSH keys
 # 3. users.yml is gitignored and will not be checked into version control
 #
 # Additional users to create on the system (excluding primary user)
@@ -11,12 +11,21 @@
 # Users are tracked via the 'ansible-added' group. If you remove a user, you will
 # need to manually remove them from the host; including `/etc/sudoers.d/` file.
 #
-# Format:
-#   username: "ssh-rsa AAAAB3... user@host"
+# Users can be authorised to log in via opkssh (OpenPubkey SSH).
+# Each entry maps a Linux user (above or the primary user) to an identity
+# claim from the OIDC provider, usually their email address.
 #
 # Example:
+#
+#  Alice has a opkssh_claim_selector (`email` claim, but can be `sub`) AND a static_ssh_key, Bob just has the former
+#
 # additional_users:
-#   alice: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... alice@example.com"
-#   bob: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... bob@example.com"
+#   - name: alice
+#     opkssh_claim_selector: alice@example.com
+#     static_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... alice@example.com"
+#   - name: bob
+#     opkssh_claim_selector: bob@example.com
+#     static_ssh_key: ""
 
-additional_users: {}
+
+additional_users: []

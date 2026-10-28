@@ -1,0 +1,5 @@
+---
+- name: Restart OpenSSH server
+  ansible.builtin.systemd:
+    name: "{{ opkssh_sshd_service }}"
+    state: restarted

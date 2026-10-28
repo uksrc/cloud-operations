@@ -1,0 +1,8 @@
+---
+- name: Install and configure opkssh on the VM
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/all/users.yml
+  roles:
+    - add_opkssh

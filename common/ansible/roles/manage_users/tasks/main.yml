@@ -7,40 +7,40 @@
 
 - name: Ensure additional users exist
   ansible.builtin.user:
-    name: "{{ item.key }}"
-    comment: "{{ item.key }}"
+    name: "{{ item.name }}"
+    comment: "{{ item.name }}"
     shell: /bin/bash
     create_home: yes
     groups: " {{ admin_groups }}"
     append: yes
-  loop: "{{ additional_users | dict2items }}"
+  loop: "{{ additional_users }}"
   when: additional_users is defined and additional_users | length > 0
 
 - name: Set up SSH directory for additional users
   ansible.builtin.file:
-    path: "/home/{{ item.key }}/.ssh"
+    path: "/home/{{ item.name }}/.ssh"
     state: directory
-    owner: "{{ item.key }}"
-    group: "{{ item.key }}"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
     mode: "0700"
-  loop: "{{ additional_users | dict2items }}"
+  loop: "{{ additional_users }}"
   when: additional_users is defined and additional_users | length > 0
 
 - name: Add SSH authorized keys for additional users
   ansible.posix.authorized_key:
-    user: "{{ item.key }}"
+    user: "{{ item.name }}"
     state: present
-    key: "{{ item.value }}"
+    key: "{{ item.static_ssh_key }}"
     exclusive: no
-  loop: "{{ additional_users | dict2items }}"
-  when: additional_users is defined and additional_users | length > 0
+  loop: "{{ additional_users }}"
+  when: item.static_ssh_key | length > 0
 
 - name: Configure sudo access for additional users
   ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/{{ item.key }}
-    line: "{{ item.key }} ALL=(ALL) NOPASSWD:ALL"
+    path: /etc/sudoers.d/{{ item.name }}
+    line: "{{ item.name }} ALL=(ALL) NOPASSWD:ALL"
     create: yes
     mode: "0440"
     validate: "/usr/sbin/visudo -cf %s"
-  loop: "{{ additional_users | dict2items }}"
+  loop: "{{ additional_users }}"
   when: additional_users is defined and additional_users | length > 0
