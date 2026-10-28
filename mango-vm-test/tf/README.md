@@ -30,10 +30,14 @@ This directory contains the configuration used to deploy the Mango test VM insta
 
 2. Add host_users.auto.tfvars with users and SSH keys, based on the example, in the tf directory.
 
-3. Run OpenTofu:
+3. Run OpenTofu - Before you run OT, define your clouds.yaml file (for example: OS_CLOUD=RAL) the easiest way to do this is just export it in the terminal using "export OS_CLOUD=RAL"
 
 ```shell
 cd tf
+tofu init
+
 tofu plan
+
 tofu apply
 ```
+
