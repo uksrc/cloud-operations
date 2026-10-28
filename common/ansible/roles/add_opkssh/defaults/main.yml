@@ -25,14 +25,14 @@ opkssh_selinux_enable_squid: false # allow HTTPS via a Squid proxy
 opkssh_selinux_te_url: "https://raw.githubusercontent.com/{{ opkssh_install_github_repo }}/refs/tags/{{ opkssh_install_version }}/opkssh.te"
 
 opkssh_providers:
-  ska_iam:
-    issuer_uri: https://ska-iam.stfc.ac.uk/
-    client_id: 2c4c4d8e-d577-42ad-a798-743201578a61
-    expires: 12h
+    ska_iam:
+        issuer_uri: https://ska-iam.stfc.ac.uk/
+        client_id: 2c4c4d8e-d577-42ad-a798-743201578a61
+        expires: 12h
 
 # List of {name: <linux user>, opkssh_claim_selector: <email|sub|group>, [opkssh_provider: <key>]}
 opkssh_auth_id: []
 opkssh_default_provider: "{{ opkssh_providers.keys() | first }}"
 
-_opkssh_provider_keys: ['expires', 'client_id', 'issuer_uri']
-_opkssh_auth_id_keys: ['name', 'opkssh_claim_selector']
+_opkssh_provider_keys: ["expires", "client_id", "issuer_uri"]
+_opkssh_auth_id_keys: ["name", "opkssh_claim_selector"]

@@ -14,9 +14,9 @@ See [defaults/main.yml](defaults/main.yml) for the full list. The ones you
 will most likely set per-deployment:
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | `opkssh_providers` | SKA IAM (production client ID) | OIDC providers, keyed by name, each with `issuer_uri`, `client_id`, `expires` |
-| `additional_users` | `[]` | List of `{name: <linux user>, opkssh_claim_selector: <email|sub|group>}` authorising users |
+| `additional_users` | `[]` | List of `{name: <linux user>, opkssh_claim_selector: <email | sub | group>}` authorising users |
 | `opkssh_disable_authorized_keys` | `true` | Disable `~/.ssh/authorized_keys` globally |
 | `opkssh_enable_authorized_keys_groups` | `[adm]` | Groups whose `~/.ssh/authorized_keys` still works |
 | `opkssh_install_version` | `v0.14.0` | opkssh release to install |
