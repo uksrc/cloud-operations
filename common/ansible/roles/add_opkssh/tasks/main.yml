@@ -127,45 +127,27 @@
     mode: '0750'
 
 - name: Configure OpenSSH server to use opkssh
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: opkssh_conf.j2
     dest: /etc/ssh/sshd_config.d/60-opk-ssh.conf
     owner: root
     group: root
     mode: '0600'
-    content: |
-      {% if opkssh_disable_authorized_keys | bool %}
-      AuthorizedKeysFile none
-      {% endif %}
-      Match Address *
-          AuthorizedKeysCommand {{ opkssh_install_dir }}/{{ opkssh_install_binary_name }} verify %u %k %t
-          AuthorizedKeysCommandUser {{ opkssh_install_auth_cmd_user }}
-
-      {% for group in opkssh_enable_authorized_keys_groups %}
-      Match Group {{ group }}
-          AuthorizedKeysFile .ssh/authorized_keys
-      {% endfor %}
   notify: Restart OpenSSH server
 
 - name: Configure allowed OpenID Providers
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: providers.j2
     dest: /etc/opk/providers
     owner: root
     group: "{{ opkssh_install_auth_cmd_group }}"
     mode: '0640'
-    content: |
-      # {{ ansible_managed }}
-      {% for item in opkssh_providers.values() %}
-      {{ item.issuer_uri }} {{ item.client_id }} {{ item.expires }}
-      {% endfor %}
+
 
 - name: Configure authorized identities
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: auth_id.j2
     dest: /etc/opk/auth_id
     owner: root
     group: "{{ opkssh_install_auth_cmd_group }}"
     mode: '0640'
-    content: |
-      # {{ ansible_managed }}
-      {% for item in additional_users %}
-      {{ item.name }} {{ item.opkssh_claim_selector }} {{ opkssh_providers[item.opkssh_provider | default(opkssh_default_provider)].issuer_uri }}
-      {% endfor %}
