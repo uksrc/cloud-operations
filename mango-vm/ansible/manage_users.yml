@@ -1,5 +1,5 @@
 ---
-- name: Manage additional users on PostgreSQL VM
+- name: Manage additional users on Mango VM
   hosts: all
   become: yes
   vars_files:
