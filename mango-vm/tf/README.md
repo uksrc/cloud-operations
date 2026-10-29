@@ -4,7 +4,7 @@ This directory contains the configuration used to deploy the Mango test VM insta
 
 ## VM Specifications
 
-- **Name:** `mango-vm-test`
+- **Name:** `mango-vm`
 - **Flavor:** `l3.xsmall`
 - **CPU:** 16 Cores
 - **RAM:** 60 GB
@@ -40,4 +40,3 @@ tofu plan
 
 tofu apply
 ```
-
