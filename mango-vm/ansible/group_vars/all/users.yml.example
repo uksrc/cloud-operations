@@ -34,5 +34,4 @@
 #     opkssh_claim_selector: bob@example.com
 #     static_ssh_key: ""
 
-
 additional_users: []
