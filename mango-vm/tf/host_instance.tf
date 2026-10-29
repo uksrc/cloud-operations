@@ -52,9 +52,9 @@ resource "openstack_networking_secgroup_rule_v2" "mango_ssh" {
   protocol          = "tcp"
   port_range_min    = 22
   port_range_max    = 22
-  remote_ip_prefix  = var.network_cidr
+  remote_ip_prefix  = "0.0.0.0/0"
   security_group_id = openstack_networking_secgroup_v2.mango_sg.id
-  description       = "Allow SSH from internal network"
+  description       = "Allow SSH from anywhere"
 }
 
 data "openstack_networking_network_v2" "uksrc_network" {
