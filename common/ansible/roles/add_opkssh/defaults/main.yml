@@ -27,7 +27,7 @@ opkssh_selinux_te_url: "https://raw.githubusercontent.com/{{ opkssh_install_gith
 opkssh_providers:
   ska_iam:
     issuer_uri: https://ska-iam.stfc.ac.uk/
-    client_id: 5e6e0177-629f-4e88-9ca7-ec4b58d32a2e # production; staging: a32a0b07-21d3-4c0b-8088-e79e0627e649
+    client_id: 2c4c4d8e-d577-42ad-a798-743201578a61
     expires: 12h
 
 # List of {name: <linux user>, opkssh_claim_selector: <email|sub|group>, [opkssh_provider: <key>]}
