@@ -1,0 +1,5 @@
+{{ ansible_managed | comment }}
+{% for item in additional_users %}
+  {{ item.name }} {{ item.opkssh_claim_selector }}
+  {{ opkssh_providers[item.opkssh_provider | default(opkssh_default_provider)].issuer_uri }}
+{% endfor %}
