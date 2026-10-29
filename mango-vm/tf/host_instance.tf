@@ -6,10 +6,7 @@ data "openstack_images_image_v2" "openstack_image" {
 }
 
 data "openstack_compute_flavor_v2" "vm_flavor" {
-  name = "l3.xsmall"
-
-# (l3.xsmall, 60 gigs RAM, 400 DISK, 16 CORES)
-
+  name = "l3.xsmall" # l3.xsmall: 60 gigs RAM, 400 DISK, 16 CORES
 }
 
 variable "primary_user" {
@@ -32,6 +29,11 @@ variable "fixed_ip" {
   description = "Fixed IP address for the Mango VM within the internal network"
   type        = string
   default     = "192.168.64.104"
+}
+
+variable "floating_ip" {
+  description = "Floating IP address for the Mango VM for external access"
+  type        = string
 }
 
 resource "openstack_compute_keypair_v2" "mango_primary_key" {
@@ -95,6 +97,11 @@ resource "openstack_compute_instance_v2" "mango_vm" {
   }
 }
 
+resource "openstack_networking_floatingip_associate_v2" "mango_floating_ip_assoc" {
+  floating_ip = var.floating_ip
+  port_id     = openstack_networking_port_v2.mango_port.id
+}
+
 output "instance_id" {
   description = "Instance ID"
   value       = openstack_compute_instance_v2.mango_vm.id
@@ -116,6 +123,11 @@ output "fixed_ip_address" {
 }
 
 output "instance_ip_address" {
-  description = "IP address of the mango VM instance"
+  description = "Internal IP address of the mango VM instance"
   value       = openstack_compute_instance_v2.mango_vm.access_ip_v4
+}
+
+output "external_ip_address" {
+  description = "External IP address of the Mango VM instance - i.e. on the internet"
+  value = openstack_networking_floatingip_associate_v2.mango_floating_ip_assoc.floating_ip
 }
