@@ -1,19 +1,19 @@
-# How to access Mango-vm with OPKSSH
+# How to access Mango-vm with OPKSSH on a MAC
 
-1. Install OPKSSH on to your local machine here: https://github.com/openpubkey/opkssh - follow the steps below depending on your systemOS, the easiest way to do this on a MAC is with brew:
+1. Install OPKSSH on to your local machine here: https://github.com/openpubkey/opkssh - follow the steps below depending on your systemOS (this guide is for MacOS users but can be addapted for Linux/Windows systems). The easiest way to do this on a MAC is with brew:
 
 ```
 brew tap openpubkey/opkssh
 brew install opkssh
 ```
 
-Or alternativly: please note if you choose the alternative you need to run a sudo mv opkssh /usr/local/bin/ afterwards to manually move your OPKSSH into your /usr/local/bin/.
+Or alternatively if you don't have brew installed: please note if you choose the alternative you need to run a sudo mv opkssh /usr/local/bin/ afterwards to manually move your OPKSSH into your /usr/local/bin/.
 
 ```
 curl -L https://github.com/openpubkey/opkssh/releases/latest/download/opkssh-osx-amd64 -o opkssh; chmod +x opkssh
 ```
 
-2. Create folder to store your OPKSSH credientials
+2. Create folder to store your OPKSSH credentials
 
 ```
  mkdir -p ~/.opk
@@ -49,7 +49,7 @@ Host mango
         ForwardAgent yes
 ```
 
-5. Run: `opkssh login skaiam` this will create a new window in your browser to verify your login using SKAIAM - Please select promt me again next time to avoid issues.
+5. Run: `opkssh login skaiam` this will create a new window in your browser to verify your login using SKAIAM - Please select prompt me again next time to avoid issues.
 
 6. Finally run:
    `ssh mango`
