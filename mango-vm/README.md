@@ -1,6 +1,6 @@
 # How to access Mango-vm with OPKSSH on a MAC
 
-1. Install OPKSSH on to your local machine here: https://github.com/openpubkey/opkssh - follow the steps below depending on your systemOS (this guide is for MacOS users but can be addapted for Linux/Windows systems). The easiest way to do this on a MAC is with brew:
+1. Install OPKSSH on to your local machine here: <https://github.com/openpubkey/opkssh> - follow the steps below depending on your systemOS (this guide is for MacOS users but can be addapted for Linux/Windows systems). The easiest way to do this on a MAC is with brew:
 
 ```
 brew tap openpubkey/opkssh
@@ -13,13 +13,13 @@ Or alternatively if you don't have brew installed: please note if you choose the
 curl -L https://github.com/openpubkey/opkssh/releases/latest/download/opkssh-osx-amd64 -o opkssh; chmod +x opkssh
 ```
 
-2. Create folder to store your OPKSSH credentials
+1. Create folder to store your OPKSSH credentials
 
 ```
  mkdir -p ~/.opk
 ```
 
-3. run `nano ~/.opk/config.yml` & copy in the below:
+1. run `nano ~/.opk/config.yml` & copy in the below:
 
 ```
 ---
@@ -39,18 +39,18 @@ providers:
       - http://localhost:11110/login-callback
 ```
 
-4. Modify your .ssh/config file using `nano ~/.ssh/config` and insert the below - Please note to change "your-username" to your SKAIAM username:
+1. Modify your .ssh/config file using `nano ~/.ssh/config` and insert the below - Please note to change "your-username" to your SKAIAM username:
 
 ```
 Host mango
         User your-username
         Hostname 130.246.214.241
-	IdentityAgent "~/.ssh/id_ecdsa"
+ IdentityAgent "~/.ssh/id_ecdsa"
         ForwardAgent yes
 ```
 
-5. Run: `opkssh login skaiam` this will create a new window in your browser to verify your login using SKAIAM - Please select prompt me again next time to avoid issues.
+1. Run: `opkssh login skaiam` this will create a new window in your browser to verify your login using SKAIAM - Please select prompt me again next time to avoid issues.
 
-6. Finally run:
+2. Finally run:
    `ssh mango`
    to access the Virtual Machine.
