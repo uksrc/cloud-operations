@@ -7,7 +7,7 @@ brew tap openpubkey/opkssh
 brew install opkssh
 ```
 
-Or alternatively if you don't have brew installed: please note if you choose the alternative you need to run a sudo mv opkssh /usr/local/bin/ afterwards to manually move your OPKSSH into your /usr/local/bin/.
+Or alternatively if you don't have brew installed: please note if you choose the alternative you need to run a `sudo mv opkssh /usr/local/bin/` afterwards to manually move your OPKSSH into your /usr/local/bin/.
 
 ```
 curl -L https://github.com/openpubkey/opkssh/releases/latest/download/opkssh-osx-amd64 -o opkssh; chmod +x opkssh
@@ -39,7 +39,7 @@ providers:
       - http://localhost:11110/login-callback
 ```
 
-4. Modify your .ssh/config file using `nano ~/.ssh/config` - please note to change "your-username" to your SKAIAM username:
+4. Modify your .ssh/config file using `nano ~/.ssh/config` and insert the below - Please note to change "your-username" to your SKAIAM username:
 
 ```
 Host mango
