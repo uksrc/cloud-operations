@@ -7,7 +7,7 @@ brew tap openpubkey/opkssh
 brew install opkssh
 ```
 
-Or alternatively if you don't have brew installed: please note if you choose the alternative you need to run a sudo mv opkssh /usr/local/bin/ afterwards to manually move your OPKSSH into your /usr/local/bin/.
+Or alternatively if you don't have brew installed: please note if you choose the alternative you need to run a `sudo mv opkssh /usr/local/bin/` afterwards to manually move your OPKSSH into your /usr/local/bin/.
 
 ```
 curl -L https://github.com/openpubkey/opkssh/releases/latest/download/opkssh-osx-amd64 -o opkssh; chmod +x opkssh
