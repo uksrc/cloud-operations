@@ -20,6 +20,20 @@
     regexp: '^reboot = .*$'
     line: 'reboot = when-needed'
 
+- name: Just get security updates (default is all updates)
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/automatic.conf
+    search_string: 'upgrade_type = default'
+    line: 'upgrade_type = security'
+    state: present
+
+- name: Apply the updates
+  ansible.builtin.lineinfile:
+    path: /etc/dnf/automatic.conf
+    search_string: 'apply_updates = no'
+    line: 'apply_updates = yes'
+    state: present
+
 - name: Change automatic updates trigger time to 2am (default is 6am)
   ansible.builtin.lineinfile:
     path: /usr/lib/systemd/system/dnf-automatic.timer
