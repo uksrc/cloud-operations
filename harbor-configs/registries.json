@@ -1,0 +1,94 @@
+[
+  {
+    "creation_time": "2026-10-13T10:58:49.589Z",
+    "credential": {},
+    "id": 9,
+    "name": "harbor.skao.int",
+    "status": "healthy",
+    "type": "harbor",
+    "update_time": "2026-10-13T10:58:49.589Z",
+    "url": "https://harbor.skao.int"
+  },
+  {
+    "creation_time": "2025-07-28T11:49:18.012Z",
+    "credential": {},
+    "id": 2,
+    "name": "SKA INT",
+    "status": "healthy",
+    "type": "harbor",
+    "update_time": "2026-02-20T18:04:44.349Z",
+    "url": "https://harbor.srcnet.skao.int"
+  },
+  {
+    "creation_time": "2025-10-06T09:22:48.328Z",
+    "credential": {},
+    "id": 6,
+    "name": "artefact-skao-int",
+    "status": "healthy",
+    "type": "docker-registry",
+    "update_time": "2026-10-14T09:30:52.664Z",
+    "url": "https://artefact.skao.int"
+  },
+  {
+    "creation_time": "2026-06-19T12:41:48.964Z",
+    "credential": {},
+    "id": 7,
+    "name": "remote-harbor",
+    "status": "healthy",
+    "type": "harbor",
+    "update_time": "2026-06-22T20:27:24.183Z",
+    "url": "https://images.canfar.net"
+  },
+  {
+    "creation_time": "2025-07-28T10:30:51.675Z",
+    "credential": {},
+    "id": 1,
+    "insecure": true,
+    "name": "CADC",
+    "status": "healthy",
+    "type": "harbor",
+    "update_time": "2026-10-14T18:11:39.086Z",
+    "url": "https://images.opencadc.org"
+  },
+  {
+    "creation_time": "2026-02-27T16:51:25.332Z",
+    "credential": {},
+    "id": 8,
+    "name": "CANFAR Images",
+    "status": "healthy",
+    "type": "harbor",
+    "update_time": "2026-10-14T18:16:20.585Z",
+    "url": "https://images.canfar.net"
+  },
+  {
+    "creation_time": "2025-07-31T13:48:52.397Z",
+    "credential": {},
+    "id": 4,
+    "name": "SKA INT Gitlab Prepare Data",
+    "status": "healthy",
+    "type": "gitlab",
+    "update_time": "2026-10-17T21:30:30.498Z",
+    "url": "https://registry.gitlab.com"
+  },
+  {
+    "creation_time": "2025-07-29T15:28:44.852Z",
+    "credential": {},
+    "id": 3,
+    "name": "Docker Hub",
+    "status": "healthy",
+    "type": "docker-hub",
+    "update_time": "2026-10-20T10:35:30.478Z",
+    "url": "https://hub.docker.com"
+  },
+  {
+    "creation_time": "2025-08-13T16:04:34.272Z",
+    "credential": {},
+    "description": "Useful to obtain Jupyterhub images",
+    "id": 5,
+    "name": "Quay.io",
+    "status": "healthy",
+    "type": "quay",
+    "update_time": "2026-10-24T08:05:30.891Z",
+    "url": "https://quay.io"
+  }
+]
