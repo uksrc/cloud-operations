@@ -1,0 +1,10 @@
+# Primary user configuration for the PostgreSQL VM
+# This user is created via cloud-init during VM boot and gets the OpenStack keypair attached
+
+primary_user = "ubuntu"
+
+primary_user_ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... ubuntu@example.com"
+
+# Additional users should be configured in:
+# ansible/group_vars/all/users.yml (copy from users.yml.example first)
+

@@ -436,3 +436,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# MacOS
+.DS_Store
+
+# Local opkssh user authorisation list
+ansible/opkssh/users.yml
