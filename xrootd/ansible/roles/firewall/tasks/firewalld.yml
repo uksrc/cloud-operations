@@ -55,6 +55,15 @@
     state: disabled
     immediate: true
 
+- name: delete old rules e.g. where RSE IPs have changed
+  ansible.posix.firewalld:
+    zone: "{{ wcdc_dirac_zone }}"
+    rich_rule: 'rule family="ipv4" source address="{{ item }}" port port="1094" protocol="tcp" accept'
+    permanent: true
+    state: disabled
+    immediate: true
+  loop: "{{ xrootd_1094_rules_to_remove }}"
+
 - name: Allow xrootd allowed IPs and ssh local access CIDR to port 1094 in firewalld
   ansible.posix.firewalld:
     zone: "{{ wcdc_dirac_zone }}"
@@ -62,7 +71,7 @@
     permanent: true
     state: enabled
     immediate: true
-  loop: "{{ xrootd_allowed_ip_addresses + [ssh_local_access_cidr] + [wcdc_dirac_subnet] }}"
+  loop: "{{ xrootd_1094_allowed_ip_addresses + [ssh_local_access_cidr] + [wcdc_dirac_subnet] }}"
 
 
 - name: open port 80 for LetsEncrypt in firewalld
