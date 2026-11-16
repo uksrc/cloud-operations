@@ -31,6 +31,7 @@ db_users:
 postgres_extensions:
   - citext
   - pg_sphere
+  - pgcrypto
 
 # Required schemas and their owners
 postgres_schemas:

@@ -1,4 +1,4 @@
-  #https://xrootd.org/dload.html#official-rpm-repositories
+#https://xrootd.org/dload.html#official-rpm-repositories
 
 - name: printing debug
   debug:
@@ -9,7 +9,7 @@
     url: https://xrootd.web.cern.ch/repo/RPM-GPG-KEY.txt
     dest: /etc/apt/trusted.gpg.d/xrootd.asc
   become: true
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: add repo to source list
   ansible.builtin.lineinfile:

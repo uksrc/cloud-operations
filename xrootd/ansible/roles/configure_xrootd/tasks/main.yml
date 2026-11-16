@@ -85,14 +85,6 @@
     mode: '0644'
   become: true
 
-
-- name: change owner of macaroon secret
-  ansible.builtin.file:
-    path: /etc/xrootd/macaroon-secret
-    owner: xrootd
-    group: xrootd
-  become: true
-
 - name: start and enable xrootd http service
   ansible.builtin.service:
     name: xrootd@http

@@ -1,7 +1,7 @@
 # SKA Metadata Manager PostgreSQL Ansible Playbook
 
 This Ansible playbook configures a PostgreSQL database server for the SKA Metadata Manager according to the requirements documented at:
-https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
+<https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager>
 
 ## What it does
 
@@ -20,6 +20,7 @@ https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
 7. **Installs extensions**:
    - `citext` - Case-insensitive text
    - `pg_sphere` - Spatial query support
+   - `pgcrypto` - Cryptographic functions support (e.g. for encrypted columns)
 
 ## Requirements
 
@@ -30,7 +31,9 @@ https://gitlab.com/ska-telescope/src/src-mm/ska-src-mm-metadata-manager
 
 ### Multi-Environment Setup
 
-Both CAOM and SDS databases are configured to deploy preprod and prod environments automatically in a single playbook run. The configuration is managed via environment-specific variables.
+Both CAOM and SDS databases deploy preprod and prod environments automatically in a single playbook run by default. The configuration is managed via environment-specific variables.
+
+You can optionally restrict a run to a **single environment** by passing `-e env=<name>` (valid values: `preprod`, `prod`). When omitted, all environments are deployed. Passing an invalid environment name fails fast before any database changes are made.
 
 ### CAOM Database
 
@@ -141,27 +144,27 @@ Additional system users (beyond the primary user created via Terraform) are mana
 #### Option 2: Export environment variables manually
 
 ```bash
-export POSTGRES_PASSWORD="secure-password-here"
+export POSTGRES_PASSWORD='secure-password-here'
 
 # CAOM Preprod
-export CAOM_PREPROD_ADMIN_PASSWORD="secure-password-here"
-export CAOM_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
-export CAOM_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+export CAOM_PREPROD_ADMIN_PASSWORD='secure-password-here'
+export CAOM_PREPROD_TAP_ADMIN_PASSWORD='secure-password-here'
+export CAOM_PREPROD_TAP_USER_PASSWORD='secure-password-here'
 
 # CAOM Production
-export CAOM_ADMIN_PASSWORD="secure-password-here"
-export CAOM_TAP_ADMIN_PASSWORD="secure-password-here"
-export CAOM_TAP_USER_PASSWORD="secure-password-here"
+export CAOM_ADMIN_PASSWORD='secure-password-here'
+export CAOM_TAP_ADMIN_PASSWORD='secure-password-here'
+export CAOM_TAP_USER_PASSWORD='secure-password-here'
 
 # SDS Preprod
-export SDS_PREPROD_ADMIN_PASSWORD="secure-password-here"
-export SDS_PREPROD_TAP_ADMIN_PASSWORD="secure-password-here"
-export SDS_PREPROD_TAP_USER_PASSWORD="secure-password-here"
+export SDS_PREPROD_ADMIN_PASSWORD='secure-password-here'
+export SDS_PREPROD_TAP_ADMIN_PASSWORD='secure-password-here'
+export SDS_PREPROD_TAP_USER_PASSWORD='secure-password-here'
 
 # SDS Production
-export SDS_ADMIN_PASSWORD="secure-password-here"
-export SDS_TAP_ADMIN_PASSWORD="secure-password-here"
-export SDS_TAP_USER_PASSWORD="secure-password-here"
+export SDS_ADMIN_PASSWORD='secure-password-here'
+export SDS_TAP_ADMIN_PASSWORD='secure-password-here'
+export SDS_TAP_USER_PASSWORD='secure-password-here'
 ```
 
 #### Option 3: Use Ansible Vault (Recommended for production)
@@ -192,11 +195,18 @@ If you need to run the playbooks manually:
    ```bash
    cd ansible
 
-   # Deploy both CAOM preprod and prod databases
+   # Deploy ALL environments (both preprod and prod) by default
    ansible-playbook -i inventory setup_mm_db_schema.yml
-
-   # Deploy both SDS preprod and prod databases
    ansible-playbook -i inventory setup_sds_db_schema.yml
+
+   # Deploy a SINGLE environment only
+   ansible-playbook -i inventory setup_mm_db_schema.yml -e env=preprod
+   ansible-playbook -i inventory setup_mm_db_schema.yml -e env=prod
+   ansible-playbook -i inventory setup_sds_db_schema.yml -e env=preprod
+   ansible-playbook -i inventory setup_sds_db_schema.yml -e env=prod
+
+   # Invalid environment names fail fast, e.g.:
+   ansible-playbook -i inventory setup_mm_db_schema.yml -e env=bogus   # aborts: invalid environment
    ```
 
-Each playbook automatically creates both preprod and prod environments.
+By default, each playbook deploys both preprod and prod environments. Pass `-e env=<name>` to deploy only that environment (e.g. `-e env=preprod`).

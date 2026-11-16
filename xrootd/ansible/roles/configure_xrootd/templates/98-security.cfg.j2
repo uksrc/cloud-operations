@@ -5,14 +5,14 @@ sec.level all compatible
 # Authentication and Authorisation part
 ofs.authorize 1
 ofs.authlib ++ libXrdAccSciTokens.so config=/etc/xrootd/scitokens.cfg
-ofs.authlib ++ libXrdMacaroons.so
+#ofs.authlib ++ libXrdMacaroons.so
 acc.authdb /etc/xrootd/Authfile
 acc.audit deny
 acc.authrefresh 60
 
 # For Macaroons
-http.exthandler xrdmacaroons libXrdMacaroons.so
-macaroons.secretkey /etc/xrootd/macaroon-secret
+#http.exthandler xrdmacaroons libXrdMacaroons.so
+#macaroons.secretkey /etc/xrootd/macaroon-secret
 
 # Pass the bearer token to the Xrootd authorization framework.
 http.header2cgi Authorization authz
