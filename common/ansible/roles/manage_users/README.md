@@ -17,11 +17,23 @@ This role manages additional user accounts on the PostgreSQL VM. The primary use
 
    ```yaml
    additional_users:
-     alice: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... alice@example.com"
-     bob: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... bob@example.com"
+     - name: alice
+       opkssh_claim_selector: alice@example.com
+       static_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... alice@example.com"
+       groups:
+         - docker
+     - name: bob
+       opkssh_claim_selector: bob@example.com
+       static_ssh_key: ""
    ```
 
+   The optional `groups` list adds extra groups on top of the default admin
+   groups (users, admin, wheel, ansible-added). Any extra groups that don't
+   exist yet are created automatically, so users can be granted membership of
+   groups whose packages aren't installed yet (e.g. `docker`).
+
 3. Run the playbook:
+
    ```bash
    cd ansible
    ansible-playbook -i inventory manage_users.yml
@@ -32,10 +44,11 @@ This role manages additional user accounts on the PostgreSQL VM. The primary use
 ## What This Role Does
 
 - Creates user accounts with home directories
+- Creates any extra per-user groups that don't exist yet (from each user's optional `groups` list)
 - Sets up SSH directories with correct permissions
 - Adds SSH public keys to `~/.ssh/authorized_keys`
 - Grants sudo access with NOPASSWD
-- Adds users to appropriate groups (users, admin, wheel, ansible-managed)
+- Adds users to appropriate groups (users, admin, wheel, ansible-added, plus any per-user `groups`)
 - **Automatically removes users** that were previously managed but are no longer in the list
 
 ## User Removal

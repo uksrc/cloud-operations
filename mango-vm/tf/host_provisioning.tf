@@ -11,9 +11,10 @@ locals {
       -u ${local.primary_user} \
     EOT
 
-  system_update_command       = "sleep 60\n${local.ansible_base_command} update_system.yml"
-  manage_users_command        = "${local.ansible_base_command} manage_users.yml"
-  add_opkssh_command          = "${local.ansible_base_command} add_opkssh.yml"
+  system_update_command    = "sleep 60\n${local.ansible_base_command} update_system.yml"
+  manage_users_command     = "${local.ansible_base_command} manage_users.yml"
+  deployment_stack_command = "${local.ansible_base_command} deployment_stack.yml"
+  add_opkssh_command       = "${local.ansible_base_command} add_opkssh.yml"
 
 }
 
@@ -37,8 +38,27 @@ resource "null_resource" "system_update_provisioner" {
   }
 }
 
-resource "null_resource" "manage_users_provisioner" {
+resource "null_resource" "deployment_stack_provisioner" {
   depends_on = [null_resource.system_update_provisioner]
+
+  triggers = {
+    host_instance_id = openstack_compute_instance_v2.mango_vm.id
+    playbook_hash    = filemd5("${path.module}/../ansible/deployment_stack.yml")
+    role_hash        = md5(join("", [for f in fileset("${path.module}/../ansible/roles/deployment_stack", "**") : filemd5("${path.module}/../ansible/roles/deployment_stack/${f}")]))
+    vars_hash = md5(join("", [
+      try(filemd5("${path.module}/../ansible/group_vars/all/users.yml"), "")
+    ]))
+    provisioner_command_hash = md5(local.deployment_stack_command)
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = local.deployment_stack_command
+  }
+}
+
+resource "null_resource" "manage_users_provisioner" {
+  depends_on = [null_resource.deployment_stack_provisioner]
 
   triggers = {
     host_instance_id = openstack_compute_instance_v2.mango_vm.id

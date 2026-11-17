@@ -5,13 +5,20 @@
     state: present
     system: yes
 
+- name: Ensure extra groups exist
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ additional_users | selectattr('groups', 'defined') | map(attribute='groups') | flatten | unique }}"
+  when: additional_users is defined and additional_users | length > 0
+
 - name: Ensure additional users exist
   ansible.builtin.user:
     name: "{{ item.name }}"
     comment: "{{ item.name }}"
     shell: /bin/bash
     create_home: yes
-    groups: " {{ admin_groups }}"
+    groups: "{{ admin_groups ~ (',' ~ item.groups | join(',') if item.groups is defined and item.groups | length > 0 else '') }}"
     append: yes
   loop: "{{ additional_users }}"
   when: additional_users is defined and additional_users | length > 0
