@@ -16,7 +16,7 @@ will most likely set per-deployment:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `opkssh_providers` | SKA IAM (production client ID) | OIDC providers, keyed by name, each with `issuer_uri`, `client_id`, `expires` |
-| `opkssh_auth_id` | `[]` | List of `{name: <linux user>, opkssh_claim_selector: <email|sub|group>}` authorising users |
+| `additional_users` | `[]` | List of `{name: <linux user>, opkssh_claim_selector: <email|sub|group>}` authorising users |
 | `opkssh_disable_authorized_keys` | `true` | Disable `~/.ssh/authorized_keys` globally |
 | `opkssh_enable_authorized_keys_groups` | `[adm]` | Groups whose `~/.ssh/authorized_keys` still works |
 | `opkssh_install_version` | `v0.14.0` | opkssh release to install |
@@ -29,14 +29,14 @@ will most likely set per-deployment:
   hosts: all
   become: true
   vars:
-    opkssh_auth_id:
+    additional_users:
       - name: jane
         opkssh_claim_selector: jane@example.com
   roles:
     - add_opkssh
 ```
 
-The users listed in `opkssh_auth_id` must already exist on the host (e.g.
+The users listed in `additional_users` must already exist on the host (e.g.
 via the `manage_users` role).
 
 ## Handlers
