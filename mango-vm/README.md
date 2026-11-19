@@ -22,7 +22,7 @@ curl -L https://github.com/openpubkey/opkssh/releases/latest/download/opkssh-osx
 3. run `nano ~/.opk/config.yml` & copy in the below:
 
 ```
---
+---
 default_provider: skaiam
 
 providers:
