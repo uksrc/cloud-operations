@@ -1,0 +1,74 @@
+---
+# Docker Engine packages from Docker's own apt repository. The stack requires
+# Docker 27+ and the buildx plugin, so Ubuntu's docker.io is not used.
+deployment_stack_docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+deployment_stack_extra_packages:
+  - make
+  - git
+  - gettext-base
+
+# Minimum acceptable Docker Engine major version
+deployment_stack_docker_min_major: 27
+
+# inotify limits: the cluster and dev tooling watch many files
+deployment_stack_sysctl_settings:
+  fs.inotify.max_user_instances: 1024
+  fs.inotify.max_user_watches: 524288
+
+deployment_stack_sysctl_file: /etc/sysctl.d/99-inotify.conf
+
+# Local *.test hostnames served by the cluster load balancer on loopback
+deployment_stack_hosts_marker: "# {mark} SKA SRCNet deployment stack (*.test)"
+deployment_stack_hosts_entries:
+  - headlamp.test
+  - console.test
+  - vault.test
+  - harbor.test
+  - grafana.test
+  - kibana.test
+  - elasticsearch.test
+  - prometheus.test
+  - iam.test
+  - ums.test
+  - storm1.test
+  - sdapi.test
+  - storm2.test
+  - papi.test
+  - aapi.test
+  - artifact-importer.test
+  - scapi.test
+  - caom.test
+  - fts.test
+  - fts-monitoring.test
+  - rucio.test
+  - rucio-auth.test
+  - rucio-trace.test
+  - dmapi.test
+  - datalink.test
+  - gatekeeper.test
+  - slurmrestd.test
+  - dataops.test
+  - jupyterhub.test
+  - broker.test
+  - geapi.test
+  - mock-battle-api.test
+  - lur.test
+  - aqs.test
+  - psapi.test
+  - waldur.test
+  - sreg.test
+  - pathfinder.test
+  - science-gateway.test
+
+deployment_stack_hosts_ip: "127.0.0.1"
+
+# Docker daemon configuration. The MTU is only pinned when the host NIC MTU is
+# below 1500 (common on OpenStack), otherwise image pulls can hang.
+deployment_stack_docker_daemon_config_path: /etc/docker/daemon.json
+deployment_stack_docker_mtu_threshold: 1500
