@@ -8,6 +8,27 @@ Supports Ubuntu and Rocky Linux. On SELinux-enabled systems (Rocky) the
 upstream `opkssh.te` policy module is compiled and installed; no AppArmor
 configuration is needed on Ubuntu.
 
+## Usage
+
+### Initial Setup
+
+1. Create your opkssh configuration file:
+
+   ```bash
+   cd ansible/group_vars/all
+   cp opkssh.yml.example opkssh.yml
+   ```
+
+2. Edit `opkssh.yml` with your actual values (do not edit the `.example` file):
+
+   ```yaml
+   opkssh_providers:
+   ska_iam:
+     issuer_uri: https://my-iam.com/
+     client_id: dfb450f4-794d-xrwq7...
+     expires: 12h
+   ```
+
 ## Role variables
 
 See [defaults/main.yml](defaults/main.yml) for the full list. The ones you

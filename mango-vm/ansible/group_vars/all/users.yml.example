@@ -8,21 +8,28 @@
 # The primary user is already created by cloud-init during VM provisioning
 # and is defined in tf/host_users.auto.tfvars
 #
-# Users are tracked via the 'ansible-added' group. If you remove a user, you will
-# need to manually remove them from the host; including `/etc/sudoers.d/` file.
+# User Removal
+# Users created by this role are tagged with the `ansible-managed` group.
+# When you remove a user from `additional_users` and run the playbook again, that user will be automatically removed from the system (including their home directory and sudoes file if exists).
 #
 # Users can be authorised to log in via opkssh (OpenPubkey SSH).
 # Each entry maps a Linux user (above or the primary user) to an identity
 # claim from the OIDC provider, usually their email address.
 #
 # Each entry may also specify an optional `groups` list of extra groups the
-# user is added to (in addition to the default admin groups). For example,
-# the deployment stack tooling calls Docker directly, so users who run it
+# user is added to. For example, the deployment stack tooling calls Docker directly, so users who run it
 # need `docker` group membership (effectively root-equivalent).
+#
+# By default no user is given sudo access. In order to provide a sudo access add a sudo key
+#
+# By default, `sshd` is configured so keys in user's `~/.ssh/authorized_keys`
+#   files do NOT permit login, unless user is in a group listed in
+#   `appliances_admin_user_groups` (default: `[adm]`).
+#   This is to prevent users provisioning their own keys instead of using OIDC.
 #
 # Example:
 #
-#  Alice has a opkssh_claim_selector (`email` claim, but can be `sub`) AND a static_ssh_key, Bob just has the former
+#  Alice has a opkssh_claim_selector (`email` claim, but can be `sub`) a static_ssh_key a member of group `[docker and adm]`  and a sudo access, Bob just has the former
 #
 # additional_users:
 #   - name: alice
@@ -30,6 +37,8 @@
 #     static_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC... alice@example.com"
 #     groups:
 #       - docker
+#       - adm
+#     sudo: "alice ALL=(ALL) NOPASSWD:ALL"
 #   - name: bob
 #     opkssh_claim_selector: bob@example.com
 #     static_ssh_key: ""

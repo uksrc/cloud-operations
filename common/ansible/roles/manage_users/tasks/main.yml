@@ -12,16 +12,78 @@
   loop: "{{ additional_users | selectattr('groups', 'defined') | map(attribute='groups') | flatten | unique }}"
   when: additional_users is defined and additional_users | length > 0
 
+# --- User Removal ---
+- name: Get ansible-added group members
+  # ansible.builtin.getent:
+  # database: group
+  # key: ansible-added
+  ansible.builtin.command: getent group ansible-added
+  register: _ansible_added_group
+  when: additional_users is defined
+
+- name: Show additional_users
+  debug:
+    var: additional_users
+
+- name: Show type
+  debug:
+    msg: "{{ additional_users | type_debug }}"
+
+- name: Show getent result
+  debug:
+    msg: "{{ _ansible_added_group.stdout }}"
+
+- name: Set existing users fact
+  ansible.builtin.set_fact:
+    existing_users: >-
+      {{
+        (_ansible_added_group.stdout.split(':')[3] | default(''))
+        .split(',')
+        | reject('equalto', '')
+        | list
+      }}
+  when: _ansible_added_group.rc == 0
+
+- name: Set users to remove
+  ansible.builtin.set_fact:
+    _users_to_remove: >-
+      {{
+        existing_users
+        | difference(
+            additional_users | default([]) | map(attribute='name') | list
+          )
+      }}
+
+- name: Remove users no longer in additional_users
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: absent
+    remove: yes
+  loop: "{{ _users_to_remove | default([]) }}"
+  when:
+    - additional_users is defined
+    - _users_to_remove | default([]) | length > 0
+
+- name: Remove sudoers files for removed users
+  ansible.builtin.file:
+    path: /etc/sudoers.d/{{ item }}
+    state: absent
+  loop: "{{ _users_to_remove | default([]) }}"
+  when:
+    - additional_users is defined
+    - _users_to_remove | default([]) | length > 0
+
+# --- User Creation ---
 - name: Ensure additional users exist
   ansible.builtin.user:
     name: "{{ item.name }}"
     comment: "{{ item.name }}"
     shell: /bin/bash
     create_home: yes
-    groups: "{{ admin_groups ~ (',' ~ item.groups | join(',') if item.groups is defined and item.groups | length > 0 else '') }}"
+    groups: "{{ (item.groups | default([]) + ['ansible-added']) | join(',') }}"
     append: yes
   loop: "{{ additional_users }}"
-  when: additional_users is defined and additional_users | length > 0
+  when: additional_users is defined and additional_users is not none and additional_users | length > 0
 
 - name: Set up SSH directory for additional users
   ansible.builtin.file:
@@ -31,7 +93,7 @@
     group: "{{ item.name }}"
     mode: "0700"
   loop: "{{ additional_users }}"
-  when: additional_users is defined and additional_users | length > 0
+  when: additional_users is defined and additional_users is not none and additional_users | length > 0
 
 - name: Add SSH authorized keys for additional users
   ansible.posix.authorized_key:
@@ -40,14 +102,21 @@
     key: "{{ item.static_ssh_key }}"
     exclusive: no
   loop: "{{ additional_users }}"
-  when: item.static_ssh_key | default('') | length > 0
+  when:
+    - additional_users is defined and additional_users is not none and additional_users | length > 0
+    - additional_users | map(attribute='static_ssh_key')
 
 - name: Configure sudo access for additional users
   ansible.builtin.lineinfile:
     path: /etc/sudoers.d/{{ item.name }}
-    line: "{{ item.name }} ALL=(ALL) NOPASSWD:ALL"
+    line: "{{ item.sudo }}"
     create: yes
     mode: "0440"
     validate: "/usr/sbin/visudo -cf %s"
   loop: "{{ additional_users }}"
-  when: additional_users is defined and additional_users | length > 0
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - additional_users is defined and additional_users is not none and additional_users | length > 0
+    - item.state | default('present') == 'present'
+    - "'sudo' in item"

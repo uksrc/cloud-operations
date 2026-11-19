@@ -27,7 +27,7 @@ Additional system users (beyond the primary user created via Terraform) are mana
    cp users.yml.example users.yml
    ```
 
-2. Edit `users.yml` (not the `.example` file) with your actual users and SSH keys:
+2. Edit `users.yml` (not the `.example` file) with your actual users, SSH keys and opkssh client_id and issuer_uri:
 
    ```yaml
    additional_users:
@@ -39,6 +39,12 @@ Additional system users (beyond the primary user created via Terraform) are mana
      - name: bob
        opkssh_claim_selector: bob@example.com
        static_ssh_key: ""
+
+   opkssh_providers:
+     ska_iam:
+       issuer_uri: https://my-iam.com/
+       client_id: dfb450f4-794d-xrwq7...
+       expires: 12h
    ```
 
    The optional `groups` list adds extra groups on top of the default admin

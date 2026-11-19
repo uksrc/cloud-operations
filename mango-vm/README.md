@@ -45,7 +45,7 @@ providers:
 Host mango
         User your-username
         Hostname 130.246.214.241
- IdentityAgent "~/.ssh/id_ecdsa"
+        IdentityAgent "~/.ssh/id_ecdsa"
         ForwardAgent yes
 ```
 
