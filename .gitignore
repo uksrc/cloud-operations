@@ -442,3 +442,7 @@ FodyWeavers.xsd
 
 # Local opkssh user authorisation list
 ansible/opkssh/users.yml
+
+#Ignore Dockerfile for harbor backup
+harbor-configs/testdockerfile
+harbor-configs/harbor_ed25519
