@@ -1,0 +1,8 @@
+---
+- name: Install and configure opkssh on the VM
+  hosts: all
+  become: true
+  vars_files:
+    - "{{ lookup('ansible.builtin.env', 'VM_ANSIBLE_DIR') }}/group_vars/all/users.yml"
+  roles:
+    - add_opkssh

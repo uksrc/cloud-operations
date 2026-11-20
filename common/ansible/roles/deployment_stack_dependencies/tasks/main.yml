@@ -1,0 +1,166 @@
+---
+# Prerequisites for the SKA SRCNet deployment stack on mango-vm:
+# Docker Engine 27+ from Docker's apt repo, local *.test hostnames,
+# raised inotify limits and MTU-aware Docker daemon settings.
+
+- name: Check target distribution
+  ansible.builtin.assert:
+    that: ansible_facts["distribution"] == "Ubuntu"
+    fail_msg: "The deployment_stack role only supports Ubuntu targets."
+
+# --- Packages: Docker Engine from Docker's apt repository ---
+- name: Install apt prerequisites for the Docker repository
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: yes
+
+- name: Ensure Docker apt keyring directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install Docker's official GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Map Ansible architecture to Docker's Debian-style arch name
+  ansible.builtin.set_fact:
+    # Docker's apt repo uses Debian arch names (amd64/arm64), not the
+    # x86_64/aarch64 that ansible_facts.architecture reports.
+    _deployment_stack_docker_arch: "{{ { 'x86_64': 'amd64', 'aarch64': 'arm64' }[ansible_facts.architecture] | default(ansible_facts.architecture) }}"
+
+- name: Add Docker's apt repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/ubuntu
+    suites: "{{ ansible_facts.distribution_release }}"
+    components: stable
+    architectures: "{{ _deployment_stack_docker_arch }}"
+    signed_by: /etc/apt/keyrings/docker.asc
+    state: present
+  register: _deployment_stack_docker_repo
+
+- name: Update apt cache after adding the Docker repository
+  ansible.builtin.apt:
+    update_cache: yes
+  when: _deployment_stack_docker_repo.changed
+
+- name: Verify the Docker repository provides docker-ce
+  ansible.builtin.command: apt-cache policy docker-ce
+  register: _deployment_stack_docker_ce_policy
+  changed_when: false
+  failed_when: "_deployment_stack_docker_ce_policy.stdout is not search('Candidate: [0-9]')"
+
+- name: Install Docker Engine and tooling
+  ansible.builtin.apt:
+    name: "{{ deployment_stack_docker_packages + deployment_stack_extra_packages }}"
+    state: present
+
+- name: Gather installed package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Check Docker Engine meets the minimum required version
+  ansible.builtin.assert:
+    that: _deployment_stack_docker_version is version(deployment_stack_docker_min_major, '>=')
+    fail_msg: >-
+      Docker {{ _deployment_stack_docker_version }} is installed but the stack
+      requires version {{ deployment_stack_docker_min_major }} or newer.
+  vars:
+    _deployment_stack_docker_version: >-
+      {{ ansible_facts.packages['docker-ce'][0].version | regex_replace('^[0-9]+:([0-9.]+).*', '\1') }}
+
+- name: Ensure Docker is enabled and running
+  ansible.builtin.systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+# --- Docker access for users ---
+# Users are created by the manage_users role; grant docker group membership via
+# the per-user `groups` list in users.yml (see group_vars/all/users.yml.example).
+- name: Warn if no users request docker group membership
+  ansible.builtin.debug:
+    msg: >-
+      No entries in additional_users have 'docker' in their groups list.
+  when: _deployment_stack_docker_users | length == 0
+  vars:
+    _deployment_stack_docker_users: >-
+      {{ additional_users | default([])
+         | selectattr('groups', 'defined')
+         | selectattr('groups', 'contains', 'docker')
+         | list }}
+
+# --- Hosts file entries for local *.test services ---
+- name: Add SKA SRCNet *.test hostnames to /etc/hosts
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "{{ deployment_stack_hosts_marker }}"
+    block: |
+      {% for hostname in deployment_stack_hosts_entries %}
+      {{ deployment_stack_hosts_ip }} {{ hostname }}
+      {% endfor %}
+
+# --- Kernel settings (inotify limits) ---
+- name: Configure inotify sysctl limits
+  ansible.builtin.copy:
+    dest: "{{ deployment_stack_sysctl_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by Ansible
+      {% for key, value in deployment_stack_sysctl_settings | dictsort %}
+      {{ key }}={{ value }}
+      {% endfor %}
+  register: _deployment_stack_sysctl
+
+- name: Apply sysctl limits
+  ansible.builtin.command: sysctl --system
+  when: _deployment_stack_sysctl.changed
+  changed_when: true
+
+# --- Docker daemon settings ---
+- name: Detect host network MTU
+  ansible.builtin.set_fact:
+    _deployment_stack_host_mtu: >-
+      {{ ansible_facts[ansible_facts.default_ipv4.interface].mtu | default(1500) | int }}
+
+- name: Pin Docker daemon MTU when the host MTU is below the threshold
+  when: _deployment_stack_host_mtu < deployment_stack_docker_mtu_threshold | int
+  block:
+    - name: Write /etc/docker/daemon.json with matching MTU
+      ansible.builtin.template:
+        src: daemon.json.j2
+        dest: "{{ deployment_stack_docker_daemon_config_path }}"
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart docker
+
+- name: Note the space available to Docker's data-root
+  ansible.builtin.debug:
+    msg: >-
+      Docker data-root is /var/lib/docker; the mount backing it has
+      {{ (_deployment_stack_docker_mount.size_available | default(0)) | human_readable(unit='G') }}
+      free. The stack needs ~100 GB of images and volumes; if this is too
+      small, set "data-root" in {{ deployment_stack_docker_daemon_config_path }}
+      to point at a larger volume.
+  vars:
+    _deployment_stack_docker_mount: >-
+      {{ ansible_facts.mounts
+         | selectattr('mount', 'in', ['/', '/var', '/var/lib', '/var/lib/docker'])
+         | sort(attribute='mount')
+         | last }}

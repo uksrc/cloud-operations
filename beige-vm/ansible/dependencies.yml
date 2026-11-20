@@ -1,0 +1,8 @@
+---
+- name: Install mango-vm deployment stack prerequisites
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all/users.yml
+  roles:
+    - deployment_stack_dependencies
