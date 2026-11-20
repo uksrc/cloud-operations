@@ -12,21 +12,21 @@ configuration is needed on Ubuntu.
 
 ### Initial Setup
 
-1. Create your opkssh configuration file:
+1. Use the environment-specific `users.yml` file, which Mango's Terraform provisioner tracks for configuration changes. Create it from the example only if it does not already exist:
 
    ```bash
    cd ansible/group_vars/all
-   cp opkssh.yml.example opkssh.yml
+   [ -f users.yml ] || cp users.yml.example users.yml
    ```
 
-2. Edit `opkssh.yml` with your actual values (do not edit the `.example` file):
+2. Add the following provider settings to `users.yml` alongside `additional_users`, using your actual values (do not edit the `.example` file):
 
    ```yaml
    opkssh_providers:
-   ska_iam:
-     issuer_uri: https://my-iam.com/
-     client_id: dfb450f4-794d-xrwq7...
-     expires: 12h
+     ska_iam:
+       issuer_uri: https://my-iam.com/
+       client_id: dfb450f4-794d-xrwq7...
+       expires: 12h
    ```
 
 ## Role variables
