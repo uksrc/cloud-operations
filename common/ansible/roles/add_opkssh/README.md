@@ -8,15 +8,36 @@ Supports Ubuntu and Rocky Linux. On SELinux-enabled systems (Rocky) the
 upstream `opkssh.te` policy module is compiled and installed; no AppArmor
 configuration is needed on Ubuntu.
 
+## Usage
+
+### Initial Setup
+
+1. Use the environment-specific `users.yml` file, which Mango's Terraform provisioner tracks for configuration changes. Create it from the example only if it does not already exist:
+
+   ```bash
+   cd ansible/group_vars/all
+   [ -f users.yml ] || cp users.yml.example users.yml
+   ```
+
+2. Add the following provider settings to `users.yml` alongside `additional_users`, using your actual values (do not edit the `.example` file):
+
+   ```yaml
+   opkssh_providers:
+     ska_iam:
+       issuer_uri: https://my-iam.com/
+       client_id: dfb450f4-794d-xrwq7...
+       expires: 12h
+   ```
+
 ## Role variables
 
 See [defaults/main.yml](defaults/main.yml) for the full list. The ones you
 will most likely set per-deployment:
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | `opkssh_providers` | SKA IAM (production client ID) | OIDC providers, keyed by name, each with `issuer_uri`, `client_id`, `expires` |
-| `additional_users` | `[]` | List of `{name: <linux user>, opkssh_claim_selector: <email|sub|group>}` authorising users |
+| `additional_users` | `[]` | List of `{name: <linux user>, opkssh_claim_selector: <email | sub | group>}` authorising users |
 | `opkssh_disable_authorized_keys` | `true` | Disable `~/.ssh/authorized_keys` globally |
 | `opkssh_enable_authorized_keys_groups` | `[adm]` | Groups whose `~/.ssh/authorized_keys` still works |
 | `opkssh_install_version` | `v0.14.0` | opkssh release to install |
