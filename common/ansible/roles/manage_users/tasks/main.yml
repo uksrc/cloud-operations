@@ -14,9 +14,6 @@
 
 # --- User Removal ---
 - name: Get ansible-added group members
-  # ansible.builtin.getent:
-  # database: group
-  # key: ansible-added
   ansible.builtin.command: getent group ansible-added
   register: _ansible_added_group
   when: additional_users is defined
@@ -44,15 +41,30 @@
       }}
   when: _ansible_added_group.rc == 0
 
+- name: Set users with state absent fact
+  ansible.builtin.set_fact:
+    _state_absent_users: >-
+      {{
+        additional_users | default([])
+        | selectattr('state', 'defined')
+        | selectattr('state', 'equalto', 'absent')
+        | map(attribute='name')
+        | list
+      }}
+  when: additional_users is defined
+
 - name: Set users to remove
   ansible.builtin.set_fact:
     _users_to_remove: >-
       {{
-        existing_users
+        (existing_users | default([])
         | difference(
             additional_users | default([]) | map(attribute='name') | list
-          )
+          ))
+        | union(_state_absent_users | default([]))
+        | unique
       }}
+  when: additional_users is defined
 
 - name: Remove users no longer in additional_users
   ansible.builtin.user:
@@ -73,6 +85,48 @@
     - additional_users is defined
     - _users_to_remove | default([]) | length > 0
 
+# --- Sync group memberships (remove users from groups they no longer belong to) ---
+- name: Get current groups for additional users
+  ansible.builtin.command: id -Gn {{ item.name }}
+  register: _user_current_groups
+  changed_when: false
+  failed_when: false
+  loop: "{{ additional_users | default([]) }}"
+  when:
+    - additional_users is defined
+    - additional_users | length > 0
+
+- name: Set groups to remove per user fact
+  ansible.builtin.set_fact:
+    _group_removals: >-
+      {{
+        (_group_removals | default([]))
+        + [
+          {
+            'name': item.item.name,
+            'groups': (
+              (item.stdout | default('') | split)
+              | difference((item.item.groups | default([]) + ['ansible-added']))
+              | list
+            )
+          }
+        ]
+      }}
+  loop: "{{ _user_current_groups.results | default([]) }}"
+  when:
+    - item.rc == 0
+    - item.stdout | default('') | length > 0
+
+- name: Remove users from groups they no longer belong to
+  ansible.builtin.command: gpasswd -d {{ item.0.name }} {{ item.1 }}
+  register: _gpasswd_result
+  changed_when: _gpasswd_result.rc == 0
+  failed_when: false
+  loop: "{{ _group_removals | default([]) | subelements('groups') }}"
+  when:
+    - additional_users is defined
+    - _group_removals | default([]) | length > 0
+
 # --- User Creation ---
 - name: Ensure additional users exist
   ansible.builtin.user:
@@ -82,8 +136,13 @@
     create_home: yes
     groups: "{{ (item.groups | default([]) + ['ansible-added']) | join(',') }}"
     append: yes
+    state: "{{ item.state | default('present') }}"
   loop: "{{ additional_users }}"
-  when: additional_users is defined and additional_users is not none and additional_users | length > 0
+  when:
+    - additional_users is defined
+    - additional_users is not none
+    - additional_users | length > 0
+    - item.state | default('present') == 'present'
 
 - name: Set up SSH directory for additional users
   ansible.builtin.file:
@@ -93,7 +152,11 @@
     group: "{{ item.name }}"
     mode: "0700"
   loop: "{{ additional_users }}"
-  when: additional_users is defined and additional_users is not none and additional_users | length > 0
+  when:
+    - additional_users is defined
+    - additional_users is not none
+    - additional_users | length > 0
+    - item.state | default('present') == 'present'
 
 - name: Add SSH authorized keys for additional users
   ansible.posix.authorized_key:
@@ -103,8 +166,11 @@
     exclusive: no
   loop: "{{ additional_users }}"
   when:
-    - additional_users is defined and additional_users is not none and additional_users | length > 0
-    - additional_users | map(attribute='static_ssh_key')
+    - additional_users is defined
+    - additional_users is not none
+    - additional_users | length > 0
+    - item.state | default('present') == 'present'
+    - item.static_ssh_key | default('') | length > 0
 
 - name: Configure sudo access for additional users
   ansible.builtin.lineinfile:
@@ -117,6 +183,18 @@
   loop_control:
     label: "{{ item.name }}"
   when:
-    - additional_users is defined and additional_users is not none and additional_users | length > 0
+    - additional_users is defined
+    - additional_users is not none
+    - additional_users | length > 0
     - item.state | default('present') == 'present'
     - "'sudo' in item"
+
+- name: Remove sudoers files for users without sudo access
+  ansible.builtin.file:
+    path: /etc/sudoers.d/{{ item.name }}
+    state: absent
+  loop: "{{ additional_users | default([]) }}"
+  when:
+    - additional_users is defined
+    - item.state | default('present') == 'present'
+    - "'sudo' not in item"
