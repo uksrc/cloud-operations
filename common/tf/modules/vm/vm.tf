@@ -1,21 +1,26 @@
 # Inputs
 
+variable "deployment_name" {
+  description = "The name of the deployment - to distinguish it from others - e.g. 'mango', 'onyx', 'beige'"
+  type        = string
+}
+
 variable "image_name" {
   description = "The machine image to use"
-  type = string
-  default = "ubuntu-noble-24.04-nogui"
+  type        = string
+  default     = "ubuntu-noble-24.04-nogui"
 }
 
 variable "flavour" {
   description = "The machine flavour to use"
-  type = string
-  default = "l3.nano"  # TODO: Check this is the smallest flavour at RAL
+  type        = string
+  default     = "l3.nano"
 }
 
 variable "network" {
   description = "The network to connect the VM to"
-  type = string
-  default = "UKSRC-Network"
+  type        = string
+  default     = "UKSRC-Network"
 }
 
 variable "network_cidr" {
@@ -27,7 +32,7 @@ variable "network_cidr" {
 variable "primary_user" {
   description = "Username for the primary user created via cloud-init"
   type        = string
-  default = "ubuntu"
+  default     = "ubuntu"
 }
 
 variable "primary_user_ssh_key" {
@@ -36,12 +41,12 @@ variable "primary_user_ssh_key" {
 }
 
 variable "fixed_ip" {
-  description = "Fixed IP address for the Mango VM within the internal network"
+  description = "Fixed IP address for the VM within the internal network"
   type        = string
 }
 
 variable "floating_ip" {
-  description = "Floating IP address for the Mango VM for external access"
+  description = "Floating IP address for the VM for external access"
   type        = string
 }
 
@@ -67,29 +72,29 @@ data "openstack_networking_subnet_v2" "uksrc_subnet" {
 
 # Resources
 
-resource "openstack_compute_keypair_v2" "mango_primary_key" {
-  name       = "mango-${var.primary_user}"
+resource "openstack_compute_keypair_v2" "vm_user_primary_key" {
+  name       = "${var.deployment_name}-${var.primary_user}"
   public_key = var.primary_user_ssh_key
 }
 
-resource "openstack_networking_secgroup_v2" "mango_sg" {
-  name        = "mango-vm-sg"
-  description = "Security group for Mango VM - allows internal network access"
+resource "openstack_networking_secgroup_v2" "vm_security_group" {
+  name        = "${var.deployment_name}-vm-sg"
+  description = "Security group for the VM - allows internal network access"
 }
 
-resource "openstack_networking_secgroup_rule_v2" "mango_ssh" {
+resource "openstack_networking_secgroup_rule_v2" "vm_ssh" {
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
   port_range_min    = 22
   port_range_max    = 22
   remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = openstack_networking_secgroup_v2.mango_sg.id
+  security_group_id = openstack_networking_secgroup_v2.vm_security_group.id
   description       = "Allow SSH from anywhere"
 }
 
-resource "openstack_networking_port_v2" "mango_port" {
-  name           = "mango-vm-port"
+resource "openstack_networking_port_v2" "internal_port" {
+  name           = "${var.deployment_name}-vm-port"
   network_id     = data.openstack_networking_network_v2.uksrc_network.id
   admin_state_up = true
 
@@ -99,15 +104,15 @@ resource "openstack_networking_port_v2" "mango_port" {
   }
 
   security_group_ids = [
-    openstack_networking_secgroup_v2.mango_sg.id
+    openstack_networking_secgroup_v2.vm_security_group.id
   ]
 }
 
-resource "openstack_compute_instance_v2" "mango_vm" {
-  name      = "mango-vm"
+resource "openstack_compute_instance_v2" "vm" {
+  name      = "${var.deployment_name}-vm"
   image_id  = data.openstack_images_image_v2.openstack_image.id
   flavor_id = data.openstack_compute_flavor_v2.vm_flavour.flavor_id
-  key_pair  = openstack_compute_keypair_v2.mango_primary_key.name
+  key_pair  = openstack_compute_keypair_v2.vm_user_primary_key.name
 
   user_data = templatefile("cloud-config.yaml.tpl", {
     primary_user = var.primary_user
@@ -115,22 +120,20 @@ resource "openstack_compute_instance_v2" "mango_vm" {
   })
 
   network {
-    port = openstack_networking_port_v2.mango_port.id
+    port = openstack_networking_port_v2.internal_port.id
   }
 }
 
-resource "openstack_networking_floatingip_associate_v2" "mango_floating_ip_assoc" {
+resource "openstack_networking_floatingip_associate_v2" "vm_floating_ip_assoc" {
   floating_ip = var.floating_ip
-  port_id     = openstack_networking_port_v2.mango_port.id
+  port_id     = openstack_networking_port_v2.internal_port.id
 }
 
 # Outputs
 
-# TODO: Check these are required by the calling TF code - there may be others required
-
 output "instance_id" {
   description = "Instance ID"
-  value       = openstack_compute_instance_v2.mango_vm.id
+  value       = openstack_compute_instance_v2.vm.id
 }
 
 output "primary_user" {
@@ -140,20 +143,20 @@ output "primary_user" {
 
 output "primary_keypair_name" {
   description = "Name of the keypair for the primary user"
-  value       = openstack_compute_keypair_v2.mango_primary_key.name
+  value       = openstack_compute_keypair_v2.vm_user_primary_key.name
 }
 
 output "fixed_ip_address" {
-  description = "Fixed internal IP address of the Mango VM"
+  description = "Fixed internal IP address of the VM"
   value       = var.fixed_ip
 }
 
 output "instance_ip_address" {
-  description = "Internal IP address of the mango VM instance"
-  value       = openstack_compute_instance_v2.mango_vm.access_ip_v4
+  description = "Internal IP address of the VM instance"
+  value       = openstack_compute_instance_v2.vm.access_ip_v4
 }
 
 output "external_ip_address" {
-  description = "External IP address of the Mango VM instance - i.e. on the internet"
-  value = openstack_networking_floatingip_associate_v2.mango_floating_ip_assoc.floating_ip
+  description = "External IP address of the VM instance - i.e. on the internet"
+  value       = openstack_networking_floatingip_associate_v2.vm_floating_ip_assoc.floating_ip
 }

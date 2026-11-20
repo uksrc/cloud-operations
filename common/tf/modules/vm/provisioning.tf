@@ -21,7 +21,7 @@ locals {
     VM_COMMON_ROLES_DIR   = local.common_roles_dir
     VM_NETWORK_CIDR       = var.network_cidr
     VM_PRIMARY_USER       = var.primary_user
-    VM_HOST_IP            = openstack_compute_instance_v2.mango_vm.access_ip_v4
+    VM_HOST_IP            = openstack_compute_instance_v2.vm.access_ip_v4
   }
 
   ansible_base_command = <<-EOT
@@ -41,10 +41,10 @@ locals {
 }
 
 resource "null_resource" "system_update_provisioner" {
-  depends_on = [openstack_compute_instance_v2.mango_vm]
+  depends_on = [openstack_compute_instance_v2.vm]
 
   triggers = {
-    host_instance_id = openstack_compute_instance_v2.mango_vm.id
+    host_instance_id = openstack_compute_instance_v2.vm.id
     playbook_hash    = filemd5("${local.module_ansible_dir}/update_system.yml")
     role_hash        = md5(join("", [for f in fileset("${local.common_roles_dir}/update_system", "**") : filemd5("${local.common_roles_dir}/update_system/${f}")]))
     vars_hash = md5(join("", [
@@ -67,7 +67,7 @@ resource "null_resource" "dependencies_provisioner" {
   count      = var.additional_dependencies ? 1 : 0
 
   triggers = {
-    host_instance_id = openstack_compute_instance_v2.mango_vm.id
+    host_instance_id = openstack_compute_instance_v2.vm.id
     playbook_hash    = filemd5("${local.ansible_dir}/dependencies.yml")
     role_hash        = md5(join("", [for f in fileset("${local.ansible_dir}/roles", "**") : filemd5("${local.ansible_dir}/roles/${f}")]))
 
@@ -86,7 +86,7 @@ resource "null_resource" "manage_users_provisioner" {
   depends_on = [null_resource.dependencies_provisioner]
 
   triggers = {
-    host_instance_id = openstack_compute_instance_v2.mango_vm.id
+    host_instance_id = openstack_compute_instance_v2.vm.id
     playbook_hash    = filemd5("${local.module_ansible_dir}/manage_users.yml")
     role_hash        = md5(join("", [for f in fileset("${local.common_roles_dir}/manage_users", "**") : filemd5("${local.common_roles_dir}/manage_users/${f}")]))
     vars_hash = md5(join("", [
@@ -107,7 +107,7 @@ resource "null_resource" "add_opkssh_provisioner" {
   depends_on = [null_resource.manage_users_provisioner]
 
   triggers = {
-    host_instance_id = openstack_compute_instance_v2.mango_vm.id
+    host_instance_id = openstack_compute_instance_v2.vm.id
     playbook_hash    = filemd5("${local.module_ansible_dir}/add_opkssh.yml")
     role_hash        = md5(join("", [for f in fileset("${local.common_roles_dir}/add_opkssh", "**") : filemd5("${local.common_roles_dir}/add_opkssh/${f}")]))
     vars_hash = md5(join("", [
