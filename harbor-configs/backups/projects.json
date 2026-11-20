@@ -364,8 +364,15 @@
       "update_time": "0001-01-01T00:00:00.000Z"
     },
     "metadata": {
+      "auto_sbom_generation": "true",
+      "auto_scan": "false",
+      "enable_content_trust": "false",
+      "enable_content_trust_cosign": "false",
+      "prevent_vul": "false",
       "proxy_cache_local_on_not_found": "false",
-      "public": "true"
+      "public": "true",
+      "reuse_sys_cve_allowlist": "true",
+      "severity": "low"
     },
     "name": "harbor",
     "owner_id": 6,
