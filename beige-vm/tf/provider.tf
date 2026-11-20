@@ -10,7 +10,7 @@ terraform {
   backend "s3" {
    endpoint = "s3.echo.stfc.ac.uk"
    bucket = "tofu-state"
-   key = "mango-vm/mango-vm.state"
+   key = "beige-vm/beige-vm.state"
    use_lockfile = true
    region = "RegionOne"
    skip_region_validation = true
