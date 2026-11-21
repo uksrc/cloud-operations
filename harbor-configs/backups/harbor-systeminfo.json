@@ -1,7 +1,7 @@
 {
   "auth_mode": "oidc_auth",
   "banner_message": "",
-  "current_time": "2026-11-20T14:40:03.310Z",
+  "current_time": "2026-11-21T14:40:03.179Z",
   "external_url": "https://harbor.ral.uksrc.org",
   "harbor_version": "v2.15.1-335c05f2",
   "has_ca_root": false,
