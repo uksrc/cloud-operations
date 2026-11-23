@@ -1,0 +1,5 @@
+bastion:
+  hosts:
+    RAL:
+      ansible_host: 130.246.80.163
+      ansible_user: ma2223
