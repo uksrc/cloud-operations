@@ -173,12 +173,10 @@
     - item.static_ssh_key | default('') | length > 0
 
 - name: Configure sudo access for additional users
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/{{ item.name }}
-    line: "{{ item.sudo }}"
-    create: yes
+  ansible.builtin.copy:
+    content: "{{ item.sudo }}\n"
+    dest: /etc/sudoers.d/{{ item.name }}
     mode: "0440"
-    validate: "/usr/sbin/visudo -cf %s"
   loop: "{{ additional_users }}"
   loop_control:
     label: "{{ item.name }}"
