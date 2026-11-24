@@ -133,12 +133,24 @@
     - _group_removals | default([]) | length > 0
 
 # --- User Creation ---
+
+- name: Ensure user primary groups exist
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    state: present
+    system: yes
+  loop: "{{ additional_users }}"
+  when:
+    - additional_users is defined
+    - additional_users | length > 0
+
 - name: Ensure additional users exist
   ansible.builtin.user:
     name: "{{ item.name }}"
     comment: "{{ item.name }}"
     shell: /bin/bash
     create_home: yes
+    group: "{{ item.name }}"
     groups: "{{ (item.groups | default([]) + ['ansible-added']) | join(',') }}"
     append: yes
     state: "{{ item.state | default('present') }}"
