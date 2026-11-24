@@ -28,7 +28,7 @@
 
 - name: Show getent result
   debug:
-    msg: "{{ _ansible_added_group.stdout }}"
+    msg: "{{ _ansible_added_group.stdout | default('') }}"
 
 - name: Set existing users fact
   ansible.builtin.set_fact:
@@ -39,7 +39,7 @@
         | reject('equalto', '')
         | list
       }}
-  when: _ansible_added_group.rc == 0
+  when: _ansible_added_group.rc | default(1) == 0
 
 - name: Set users with state absent fact
   ansible.builtin.set_fact:
