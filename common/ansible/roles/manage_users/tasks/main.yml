@@ -5,6 +5,11 @@
     state: present
     system: yes
 
+- name: Normalize additional_users fact
+  ansible.builtin.set_fact:
+    additional_users: >-
+      {{ additional_users if (additional_users is defined and additional_users is not none) else [] }}
+
 - name: Ensure extra groups exist
   ansible.builtin.group:
     name: "{{ item }}"
