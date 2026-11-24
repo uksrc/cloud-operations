@@ -58,7 +58,7 @@ This role manages additional user accounts on the PostgreSQL VM. The primary use
 
 Users created by this role are tagged with the `ansible-managed` group. When you remove a user from `additional_users` and run the playbook again, that user will be automatically removed from the system (including their home directory and sudoes file).
 
-**Important:** The primary user is protected from removal. Ensure `primary_user` is set correctly in [manage_users.yml](../../../manage_users.yml).
+**Note:** The primary user is created by cloud-init during VM provisioning and is not managed by this role, so it is not at risk of removal. Only users listed in `additional_users` are managed (added or removed).
 
 ## Benefits
 
