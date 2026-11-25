@@ -32,7 +32,7 @@
     dest: "{{ opkssh_install_dir }}/{{ opkssh_install_binary_name }}"
     owner: root
     group: "{{ opkssh_install_auth_cmd_group }}"
-    mode: '0755'
+    mode: "0755"
 
 # --- SELinux (Rocky etc.); mirrors scripts/install-linux.sh upstream ---
 - name: Configure SELinux for opkssh
@@ -51,7 +51,7 @@
       ansible.builtin.get_url:
         url: "{{ opkssh_selinux_te_url }}"
         dest: /tmp/opkssh.te
-        mode: '0600'
+        mode: "0600"
 
     - name: Create sshd_session_t variant of the policy
       # Newer policies run AuthorizedKeysCommand in sshd_session_t, not
@@ -64,7 +64,7 @@
       ansible.builtin.copy:
         dest: /tmp/opkssh-session.te
         content: "{{ _opkssh_te_session.stdout }}\n"
-        mode: '0600'
+        mode: "0600"
 
     - name: Compile and install SELinux module (sshd_session_t)
       ansible.builtin.shell: >-
@@ -99,14 +99,20 @@
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
-      loop: [/tmp/opkssh.te, /tmp/opkssh-session.te, /tmp/opkssh.mod, /tmp/opkssh.pp]
+      loop:
+        [
+          /tmp/opkssh.te,
+          /tmp/opkssh-session.te,
+          /tmp/opkssh.mod,
+          /tmp/opkssh.pp,
+        ]
       when: ansible_facts.selinux.status | default('disabled') != 'disabled'
 
 # --- Configure ---
 - name: Find sshd config with AuthorizedKeysCommand
   ansible.builtin.find:
     paths: /etc/ssh/sshd_config.d/
-    patterns: ['*.conf']
+    patterns: ["*.conf"]
     contains: AuthorizedKeysCommand
     read_whole_file: true
   register: _opkssh_authorized_keys_configs
@@ -124,7 +130,7 @@
     path: /etc/opk/policy.d
     owner: root
     group: "{{ opkssh_install_auth_cmd_group }}"
-    mode: '0750'
+    mode: "0750"
 
 - name: Configure OpenSSH server to use opkssh
   ansible.builtin.template:
@@ -132,7 +138,7 @@
     dest: /etc/ssh/sshd_config.d/60-opk-ssh.conf
     owner: root
     group: root
-    mode: '0600'
+    mode: "0600"
   notify: Restart OpenSSH server
 
 - name: Configure allowed OpenID Providers
@@ -141,8 +147,7 @@
     dest: /etc/opk/providers
     owner: root
     group: "{{ opkssh_install_auth_cmd_group }}"
-    mode: '0640'
-
+    mode: "0640"
 
 - name: Configure authorized identities
   ansible.builtin.template:
@@ -150,4 +155,4 @@
     dest: /etc/opk/auth_id
     owner: root
     group: "{{ opkssh_install_auth_cmd_group }}"
-    mode: '0640'
+    mode: "0640"

@@ -27,7 +27,7 @@ Additional system users (beyond the primary user created via Terraform) are mana
    cp users.yml.example users.yml
    ```
 
-2. Edit `users.yml` (not the `.example` file) with your actual users and SSH keys:
+2. Edit `users.yml` (not the `.example` file) with your actual users and SSH keys
 
    ```yaml
    additional_users:
@@ -93,5 +93,5 @@ If you need to run the playbooks manually:
    ```bash
    cd ansible
 
-    
+
    ```

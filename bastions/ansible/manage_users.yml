@@ -1,0 +1,8 @@
+---
+- name: Manage additional users on Bastion
+  hosts: all
+  become: yes
+  vars_files:
+    - group_vars/all/users.yml
+  roles:
+    - manage_users
