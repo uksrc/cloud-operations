@@ -39,5 +39,3 @@ jobs:
           push: false
           tags: |
             harbor-labeler:${{ steps.vars.outputs.tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
