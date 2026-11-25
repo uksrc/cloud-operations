@@ -1,4 +1,4 @@
-FROM alpine:3.24
+FROM alpine:latest
 
 #Dependencies (including openssh-client for the SSH Deploy Key and ca-certificates for HTTPS Harbor)
 RUN apk upgrade --no-cache && \
