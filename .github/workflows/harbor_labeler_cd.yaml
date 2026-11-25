@@ -2,7 +2,7 @@ name: Harbor Labeler Publish
 
 on:
   push:
-    branches: ["main"]
+    branches: ["pog-242-update-replication-image-to-remove-vulnerabilities"]
     paths:
       - "canfar-replication/**"
 
