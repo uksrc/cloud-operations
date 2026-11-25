@@ -7,7 +7,7 @@ on:
 
   push:
     branches:
-      - main
+      - pog-209-harbor-backup
     paths:
       - 'harbor-configs/Dockerfile'
       - 'harbor-configs/backup-harbor.sh'
