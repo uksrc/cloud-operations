@@ -49,7 +49,7 @@
 
         # Package list changed or first notification - send alert
         PACKAGES_DISPLAY=$(echo "$PACKAGES" | paste -sd, - | sed 's/,/, /g')
-        MESSAGE=":warning: *Reboot Required on $HOSTNAME*\n\nSecurity updates have been installed that require a system reboot.\n\n*Packages:* $PACKAGES_DISPLAY\n\n*Action needed:* Schedule a maintenance window to reboot this server."
+        MESSAGE=":warning: *Reboot Required on $HOSTNAME*\n\nPackage updates have been installed that require a system reboot.\n\n*Packages:* $PACKAGES_DISPLAY\n\n*Action needed:* Schedule a maintenance window to reboot this server."
 
         curl -X POST "$SLACK_WEBHOOK" \
           -H 'Content-Type: application/json' \
@@ -64,14 +64,18 @@
       fi
     mode: "0755"
 
-- name: Configure automatic security updates
+- name: Configure automatic package updates (all repositories)
   copy:
     dest: /etc/apt/apt.conf.d/50unattended-upgrades
     content: |
       Unattended-Upgrade::Allowed-Origins {
           "${distro_id}:${distro_codename}-security";
+          "${distro_id}:${distro_codename}-updates";
+          "${distro_id}:${distro_codename}-backports";
           "${distro_id}ESMApps:${distro_codename}-apps-security";
+          "${distro_id}ESMApps:${distro_codename}-apps-updates";
           "${distro_id}ESM:${distro_codename}-infra-security";
+          "${distro_id}ESM:${distro_codename}-infra-updates";
       };
       Unattended-Upgrade::AutoFixInterruptedDpkg "true";
       Unattended-Upgrade::MinimalSteps "true";
