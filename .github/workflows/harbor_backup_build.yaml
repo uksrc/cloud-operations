@@ -32,12 +32,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
+      - name: Log in to Harbor
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ vars.HARBOR_REGISTRY  }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
 
       - name: Extract Docker metadata (tags and labels)
         id: meta
@@ -54,7 +54,9 @@ jobs:
           context: ./harbor-configs
           file: ./harbor-configs/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+                      ${{ vars.HARBOR_REGISTRY }}/harbor/harbor-backup-tool:${{ github.sha }}
+                      ${{ vars.HARBOR_REGISTRY  }}/harbor/harbor-backup-tool:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
